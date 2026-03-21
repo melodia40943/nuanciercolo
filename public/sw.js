@@ -1,4 +1,4 @@
-const CACHE = 'nuancier-v5';
+const CACHE = 'nuancier-v6';
 
 const STATIC = [
   '/test',
@@ -44,7 +44,12 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Tout le reste : cache first, fallback network
+  // Pages HTML dynamiques : network only (back-office + pages publiques avec données fraîches)
+  if (!url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?)$/)) {
+    return; // laisse le navigateur faire la requête normalement
+  }
+
+  // Assets statiques : cache first, fallback network
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

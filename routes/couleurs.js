@@ -116,6 +116,61 @@ router.post('/couleurs/:id/delete', requireAuth, async (req, res) => {
   }
 });
 
+// Page édition en masse
+router.get('/couleurs/bulk', requireAuth, async (req, res) => {
+  const { marque_id } = req.query;
+  try {
+    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const resPointes = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const resPacks   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+
+    let sql = `
+      SELECT c.*, m.nom AS marque_nom,
+             po.nom AS pointe_nom,
+             pa.nom AS pack_nom
+      FROM couleurs c
+      JOIN marques m ON m.id = c.marque_id
+      LEFT JOIN pointes po ON po.id = c.pointe_id
+      LEFT JOIN packs pa ON pa.id = c.pack_min_id
+      WHERE 1=1
+    `;
+    const params = [];
+    if (marque_id) { sql += ` AND c.marque_id = $1`; params.push(marque_id); }
+    sql += ' ORDER BY m.nom, c.reference';
+
+    const resCouleurs = await pool.query(sql, params);
+    res.send(renderBulkEdit(resCouleurs.rows, resMarques.rows, resPointes.rows, resPacks.rows, { marque_id }));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+// API update en masse
+router.post('/api/couleurs/bulk', requireAuth, async (req, res) => {
+  const { ids, pointe_id, pack_min_id } = req.body;
+  if (!ids || !ids.length) return res.status(400).json({ error: 'Aucune couleur sélectionnée' });
+
+  const fields = [];
+  const params = [];
+  let i = 1;
+  if (pointe_id !== undefined) { fields.push(`pointe_id = $${i++}`); params.push(pointe_id || null); }
+  if (pack_min_id !== undefined) { fields.push(`pack_min_id = $${i++}`); params.push(pack_min_id || null); }
+  if (!fields.length) return res.status(400).json({ error: 'Rien à mettre à jour' });
+
+  params.push(ids);
+  try {
+    const result = await pool.query(
+      `UPDATE couleurs SET ${fields.join(', ')} WHERE id = ANY($${i}) RETURNING id`,
+      params
+    );
+    res.json({ updated: result.rowCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // --- Templates ---
 
 function nav() {
@@ -166,7 +221,10 @@ function renderCouleurs(couleurs, marques, filters) {
   <main>
     <div class="page-header">
       <h1>Couleurs <span class="count">(${couleurs.length})</span></h1>
-      <a href="/couleurs/new" class="btn-primary">+ Ajouter</a>
+      <div style="display:flex;gap:0.5rem;">
+        <a href="/couleurs/bulk" class="btn-secondary">Édition en masse</a>
+        <a href="/couleurs/new" class="btn-primary">+ Ajouter</a>
+      </div>
     </div>
 
     <form method="GET" action="/couleurs" class="filters">
@@ -630,6 +688,187 @@ function renderForm({ marques, pointes, packs, couleur }) {
         if (couleur) window.location.href = '/couleurs';
       });
     }
+  </script>
+</body>
+</html>`;
+}
+
+function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
+  const optMarques = marques.map(m =>
+    `<option value="${m.id}" ${filters.marque_id == m.id ? 'selected' : ''}>${m.nom}</option>`
+  ).join('');
+
+  const optPointes = ['<option value="">— Inchangée —</option>', '<option value="null">— Aucune —</option>',
+    ...pointes.map(p => `<option value="${p.id}">${p.nom}</option>`)
+  ].join('');
+
+  const optPacks = ['<option value="">— Inchangé —</option>', '<option value="null">— Aucun —</option>',
+    ...packs.map(p => `<option value="${p.id}">${p.marque_nom} — ${p.nom}</option>`)
+  ].join('');
+
+  const rows = couleurs.map(c => `
+    <tr>
+      <td><input type="checkbox" class="row-check" value="${c.id}"></td>
+      <td><span class="color-swatch" style="background:${c.hex}"></span></td>
+      <td>${c.marque_nom}</td>
+      <td>${c.reference}</td>
+      <td>${c.hex}</td>
+      <td class="cell-photo">${c.hex_photo ? `<span class="color-swatch" style="background:${c.hex_photo}"></span> ${c.hex_photo}` : '<span class="missing">—</span>'}</td>
+      <td>${c.pointe_nom || '<span class="missing">—</span>'}</td>
+      <td>${c.pack_nom || '<span class="missing">—</span>'}</td>
+    </tr>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuancier — Édition en masse</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .bulk-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 2px solid #e0e0e0;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .bulk-bar select { min-width: 180px; }
+    .bulk-bar .count-label { font-size: 0.85rem; color: #666; white-space: nowrap; }
+    .bulk-bar .sep { width: 1px; height: 24px; background: #ddd; }
+    table td.cell-photo { font-size: 0.82rem; }
+    .missing { color: #bbb; }
+    td input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+    th:first-child { width: 36px; }
+    .select-all-row th { background: #f8f8f8; }
+  </style>
+</head>
+<body>
+  ${nav()}
+  <main>
+    <div class="page-header">
+      <h1>Édition en masse <span class="count">(${couleurs.length})</span></h1>
+      <a href="/couleurs">← Retour</a>
+    </div>
+
+    <form method="GET" action="/couleurs/bulk" class="filters">
+      <select name="marque_id">
+        <option value="">Toutes les marques</option>
+        ${optMarques}
+      </select>
+      <button type="submit">Filtrer</button>
+      <a href="/couleurs/bulk">Réinitialiser</a>
+    </form>
+
+    <div class="bulk-bar">
+      <label class="count-label"><span id="sel-count">0</span> sélectionnée(s)</label>
+      <div class="sep"></div>
+      <label>Pointe</label>
+      <select id="bulk-pointe">${optPointes}</select>
+      <label>Pack minimum</label>
+      <select id="bulk-pack">${optPacks}</select>
+      <button type="button" id="btn-apply-bulk" class="btn-primary" disabled>Appliquer</button>
+      <div class="sep"></div>
+      <button type="button" id="btn-select-all" class="btn-secondary">Tout sélectionner</button>
+      <button type="button" id="btn-deselect-all" class="btn-secondary">Tout désélectionner</button>
+      <span id="bulk-status" style="font-size:0.85rem;color:#27ae60;display:none"></span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="check-all"></th>
+          <th>Couleur</th>
+          <th>Marque</th>
+          <th>Référence</th>
+          <th>Hex (scan)</th>
+          <th>Hex (photo)</th>
+          <th>Pointe</th>
+          <th>Pack min</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows || '<tr><td colspan="8">Aucune couleur.</td></tr>'}
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    const checkAll = document.getElementById('check-all');
+    const btnApply = document.getElementById('btn-apply-bulk');
+    const btnSelAll = document.getElementById('btn-select-all');
+    const btnDeselAll = document.getElementById('btn-deselect-all');
+    const selCount = document.getElementById('sel-count');
+    const bulkStatus = document.getElementById('bulk-status');
+
+    function getChecked() {
+      return [...document.querySelectorAll('.row-check:checked')].map(el => parseInt(el.value));
+    }
+
+    function updateUI() {
+      const n = getChecked().length;
+      selCount.textContent = n;
+      btnApply.disabled = n === 0;
+    }
+
+    document.querySelectorAll('.row-check').forEach(cb => {
+      cb.addEventListener('change', updateUI);
+    });
+
+    checkAll.addEventListener('change', () => {
+      document.querySelectorAll('.row-check').forEach(cb => cb.checked = checkAll.checked);
+      updateUI();
+    });
+
+    btnSelAll.addEventListener('click', () => {
+      document.querySelectorAll('.row-check').forEach(cb => cb.checked = true);
+      checkAll.checked = true;
+      updateUI();
+    });
+
+    btnDeselAll.addEventListener('click', () => {
+      document.querySelectorAll('.row-check').forEach(cb => cb.checked = false);
+      checkAll.checked = false;
+      updateUI();
+    });
+
+    btnApply.addEventListener('click', async () => {
+      const ids = getChecked();
+      if (!ids.length) return;
+
+      const pointeVal = document.getElementById('bulk-pointe').value;
+      const packVal   = document.getElementById('bulk-pack').value;
+
+      const body = { ids };
+      if (pointeVal !== '') body.pointe_id   = pointeVal === 'null' ? null : pointeVal;
+      if (packVal   !== '') body.pack_min_id = packVal   === 'null' ? null : packVal;
+
+      if (!('pointe_id' in body) && !('pack_min_id' in body)) {
+        alert('Sélectionne au moins une valeur à appliquer (Pointe ou Pack).');
+        return;
+      }
+
+      btnApply.disabled = true;
+      const r = await fetch('/api/couleurs/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await r.json();
+      if (r.ok) {
+        bulkStatus.textContent = '✓ ' + data.updated + ' couleur(s) mise(s) à jour';
+        bulkStatus.style.display = 'inline';
+        setTimeout(() => { bulkStatus.style.display = 'none'; }, 3000);
+      } else {
+        alert('Erreur : ' + (data.error || 'inconnue'));
+      }
+      btnApply.disabled = false;
+    });
   </script>
 </body>
 </html>`;
