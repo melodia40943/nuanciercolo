@@ -121,6 +121,8 @@ cv.addEventListener('mousemove', e => {
 cv.addEventListener('mouseleave', ()=>{ lens.style.display='none'; });
 cv.addEventListener('mousedown', e => {
   if (!imgEl) return; e.preventDefault();
+  // Enlever le focus d'un éventuel input actif pour éviter le collage du presse-papier
+  if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
   const {x,y}=cvXY(e);
   if (e.button===1||e.button===2) { panning=true; panStart={x,y}; cv.style.cursor='grabbing'; return; }
   if (e.button!==0) return;
@@ -179,6 +181,14 @@ function doSample() {
   const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
   if (!result) { showToast('⚠️ Zone invalide — réessaie'); return; }
   sampledColor=result;
+
+  // Quadrants
+  if (result.quads) result.quads.forEach((q,i) => {
+    const cell=document.getElementById(`sc${i}`);
+    if (!cell) return;
+    cell.style.background=q.hex;
+    cell.querySelector('span').textContent=q.hex.toUpperCase();
+  });
 
   document.getElementById('sample-preview').style.background=result.hex;
   document.getElementById('sample-hex').textContent=result.hex.toUpperCase();

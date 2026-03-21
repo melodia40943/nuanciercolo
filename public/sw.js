@@ -1,4 +1,4 @@
-const CACHE = 'nuancier-v4';
+const CACHE = 'nuancier-v5';
 
 const STATIC = [
   '/test',
@@ -24,6 +24,10 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Ignorer les requêtes non-GET et les extensions navigateur
+  if (e.request.method !== 'GET') return;
+  if (!e.request.url.startsWith('http')) return;
+
   const url = new URL(e.request.url);
 
   // API couleurs : network first, fallback cache

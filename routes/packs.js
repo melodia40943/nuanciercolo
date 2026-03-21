@@ -6,21 +6,17 @@ const router = express.Router();
 
 // Page liste
 router.get('/packs', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const packs   = await conn.query(`
+    const resPacks   = await pool.query(`
       SELECT p.*, m.nom AS marque_nom
       FROM packs p JOIN marques m ON m.id = p.marque_id
       ORDER BY m.nom, p.nom
     `);
-    const marques = await conn.query('SELECT * FROM marques ORDER BY nom');
-    res.send(renderPacks(packs, marques));
+    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
+    res.send(renderPacks(resPacks.rows, resMarques.rows));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
@@ -28,72 +24,56 @@ router.get('/packs', requireAuth, async (req, res) => {
 router.post('/api/packs', requireAuth, async (req, res) => {
   const { marque_id, nom, nb_couleurs, prix_approx, lien_temu, lien_amazon } = req.body;
   if (!marque_id || !nom) return res.status(400).json({ error: 'Champs manquants' });
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const result = await conn.query(
+    const result = await pool.query(
       `INSERT INTO packs (marque_id, nom, nb_couleurs, prix_approx, lien_temu, lien_amazon)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
       [marque_id, nom, nb_couleurs || null, prix_approx || null, lien_temu || null, lien_amazon || null]
     );
-    const [pack] = await conn.query(`
+    const pack = await pool.query(`
       SELECT p.*, m.nom AS marque_nom
       FROM packs p JOIN marques m ON m.id = p.marque_id
-      WHERE p.id = ?`, [result.insertId]
+      WHERE p.id = $1`, [result.rows[0].id]
     );
-    res.json(pack);
+    res.json(pack.rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // API — liste des packs (JSON, pour le formulaire)
 router.get('/api/packs', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const packs = await conn.query(`
+    const result = await pool.query(`
       SELECT p.*, m.nom AS marque_nom
       FROM packs p JOIN marques m ON m.id = p.marque_id
       ORDER BY m.nom, p.nom
     `);
-    res.json(packs);
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // API — liste des marques (JSON, pour le formulaire)
 router.get('/api/marques', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const marques = await conn.query('SELECT * FROM marques ORDER BY nom');
-    res.json(marques);
+    const result = await pool.query('SELECT * FROM marques ORDER BY nom');
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // Supprimer
 router.post('/packs/:id/delete', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    await conn.query('DELETE FROM packs WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM packs WHERE id = $1', [req.params.id]);
     res.redirect('/packs');
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 

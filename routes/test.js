@@ -16,10 +16,8 @@ router.get('/test', (req, res) => {
 
 // API — toutes les couleurs pour le matching client — publique
 router.get('/api/couleurs/all', async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const couleurs = await conn.query(`
+    const result = await pool.query(`
       SELECT c.id, c.reference, c.hex, c.r, c.g, c.b,
              c.hex_photo, c.r_photo, c.g_photo, c.b_photo,
              m.nom AS marque
@@ -27,11 +25,9 @@ router.get('/api/couleurs/all', async (req, res) => {
       JOIN marques m ON m.id = c.marque_id
       ORDER BY m.nom, c.reference
     `);
-    res.json(couleurs);
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });
-  } finally {
-    if (conn) conn.release();
   }
 });
 

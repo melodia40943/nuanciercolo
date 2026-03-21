@@ -6,16 +6,12 @@ const router = express.Router();
 
 // Page liste
 router.get('/marques', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const marques = await conn.query('SELECT * FROM marques ORDER BY nom');
-    res.send(renderMarques(marques));
+    const result = await pool.query('SELECT * FROM marques ORDER BY nom');
+    res.send(renderMarques(result.rows));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
@@ -23,34 +19,26 @@ router.get('/marques', requireAuth, async (req, res) => {
 router.post('/api/marques', requireAuth, async (req, res) => {
   const { nom, slug } = req.body;
   if (!nom || !slug) return res.status(400).json({ error: 'Champs manquants' });
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const result = await conn.query(
-      'INSERT INTO marques (nom, slug) VALUES (?, ?)', [nom, slug]
+    const result = await pool.query(
+      'INSERT INTO marques (nom, slug) VALUES ($1, $2) RETURNING id', [nom, slug]
     );
-    const [marque] = await conn.query('SELECT * FROM marques WHERE id = ?', [result.insertId]);
-    res.json(marque);
+    const marque = await pool.query('SELECT * FROM marques WHERE id = $1', [result.rows[0].id]);
+    res.json(marque.rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // Supprimer
 router.post('/marques/:id/delete', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    await conn.query('DELETE FROM marques WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM marques WHERE id = $1', [req.params.id]);
     res.redirect('/marques');
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 

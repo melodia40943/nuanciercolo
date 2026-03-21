@@ -7,10 +7,8 @@ const router = express.Router();
 // Liste des couleurs
 router.get('/couleurs', requireAuth, async (req, res) => {
   const { marque_id, ref } = req.query;
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const marques = await conn.query('SELECT * FROM marques ORDER BY nom');
+    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
 
     let sql = `
       SELECT c.*, m.nom AS marque_nom
@@ -19,127 +17,102 @@ router.get('/couleurs', requireAuth, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    if (marque_id) { sql += ' AND c.marque_id = ?'; params.push(marque_id); }
-    if (ref)       { sql += ' AND c.reference LIKE ?'; params.push(`%${ref}%`); }
+    let paramCount = 0;
+    if (marque_id) { sql += ` AND c.marque_id = $${++paramCount}`; params.push(marque_id); }
+    if (ref)       { sql += ` AND c.reference LIKE $${++paramCount}`; params.push(`%${ref}%`); }
     sql += ' ORDER BY m.nom, c.reference';
 
-    const couleurs = await conn.query(sql, params);
+    const resCouleurs = await pool.query(sql, params);
 
-    res.send(renderCouleurs(couleurs, marques, { marque_id, ref }));
+    res.send(renderCouleurs(resCouleurs.rows, resMarques.rows, { marque_id, ref }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // Formulaire ajout
 router.get('/couleurs/new', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const marques = await conn.query('SELECT * FROM marques ORDER BY nom');
-    const pointes = await conn.query('SELECT * FROM pointes ORDER BY nom');
-    const packs   = await conn.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
-    res.send(renderForm({ marques, pointes, packs, couleur: null }));
+    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const resPointes = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const resPacks   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    res.send(renderForm({ marques: resMarques.rows, pointes: resPointes.rows, packs: resPacks.rows, couleur: null }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // INSERT couleur (form classique → redirect)
 router.post('/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, pointe_id, pack_min_id } = req.body;
-  let conn;
+  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
   try {
-    conn = await pool.getConnection();
-    await conn.query(
-      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, pointe_id || null, pack_min_id || null]
+    await pool.query(
+      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null]
     );
     res.redirect('/couleurs');
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // INSERT couleur (API JSON → pas de redirect, pour ajout multiple)
 router.post('/api/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, pointe_id, pack_min_id } = req.body;
+  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
   if (!marque_id || !reference || !hex) return res.status(400).json({ error: 'Champs manquants' });
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const result = await conn.query(
-      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, pointe_id || null, pack_min_id || null]
+    const result = await pool.query(
+      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
+      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null]
     );
-    res.json({ id: Number(result.insertId), reference, hex, r, g, b });
+    res.json({ id: result.rows[0].id, reference, hex, r, g, b });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // Formulaire édition
 router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const [couleur] = await conn.query('SELECT * FROM couleurs WHERE id = ?', [req.params.id]);
-    if (!couleur) return res.redirect('/couleurs');
-    const marques = await conn.query('SELECT * FROM marques ORDER BY nom');
-    const pointes = await conn.query('SELECT * FROM pointes ORDER BY nom');
-    const packs   = await conn.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
-    res.send(renderForm({ marques, pointes, packs, couleur }));
+    const resCouleur = await pool.query('SELECT * FROM couleurs WHERE id = $1', [req.params.id]);
+    if (!resCouleur.rows.length) return res.redirect('/couleurs');
+    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const resPointes = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const resPacks   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    res.send(renderForm({ marques: resMarques.rows, pointes: resPointes.rows, packs: resPacks.rows, couleur: resCouleur.rows[0] }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // UPDATE couleur
 router.post('/couleurs/:id', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, pointe_id, pack_min_id } = req.body;
-  let conn;
+  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
   try {
-    conn = await pool.getConnection();
-    await conn.query(
-      'UPDATE couleurs SET marque_id=?, reference=?, hex=?, r=?, g=?, b=?, hex_photo=?, r_photo=?, g_photo=?, b_photo=?, pointe_id=?, pack_min_id=? WHERE id=?',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, pointe_id || null, pack_min_id || null, req.params.id]
+    await pool.query(
+      'UPDATE couleurs SET marque_id=$1, reference=$2, hex=$3, r=$4, g=$5, b=$6, hex_photo=$7, r_photo=$8, g_photo=$9, b_photo=$10, medium=$11, pointe_id=$12, pack_min_id=$13 WHERE id=$14',
+      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null, req.params.id]
     );
     res.redirect('/couleurs');
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 // DELETE couleur
 router.post('/couleurs/:id/delete', requireAuth, async (req, res) => {
-  let conn;
   try {
-    conn = await pool.getConnection();
-    await conn.query('DELETE FROM couleurs WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM couleurs WHERE id = $1', [req.params.id]);
     res.redirect('/couleurs');
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
@@ -377,6 +350,14 @@ function renderForm({ marques, pointes, packs, couleur }) {
           </div>
 
           <div class="form-group">
+            <label>Medium</label>
+            <select name="medium">
+              <option value="acrylique" ${(v.medium || 'acrylique') === 'acrylique' ? 'selected' : ''}>Acrylique</option>
+              <option value="gel" ${v.medium === 'gel' ? 'selected' : ''}>Gel</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Pointe</label>
             <select name="pointe_id">${optPointes}</select>
           </div>
@@ -404,6 +385,7 @@ function renderForm({ marques, pointes, packs, couleur }) {
         <div id="added-list" style="display:none; margin-top:1.5rem;">
           <h3 style="font-size:0.9rem; color:#555; margin-bottom:0.5rem;">Ajoutées dans cette session</h3>
           <div id="added-items"></div>
+          <a href="/couleurs" class="btn-primary" style="display:inline-block;margin-top:10px;text-decoration:none;">✓ Terminer</a>
         </div>` : ''}
       </section>
 
@@ -591,6 +573,7 @@ function renderForm({ marques, pointes, packs, couleur }) {
         r_photo:     document.getElementById('r-photo-input').value   || null,
         g_photo:     document.getElementById('g-photo-input').value   || null,
         b_photo:     document.getElementById('b-photo-input').value   || null,
+        medium:      form.querySelector('[name=medium]').value || 'acrylique',
         pointe_id:   form.querySelector('[name=pointe_id]').value,
         pack_min_id: document.getElementById('select-pack').value,
       };

@@ -1,20 +1,20 @@
 import bcrypt from 'bcrypt';
-import * as mariadb from 'mariadb';
+import pg from 'pg';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const { Pool } = pg;
+
 const hash = await bcrypt.hash('48rose48$NO', 12);
 
-const pool = mariadb.createPool({
+const pool = new Pool({
   host:     process.env.DB_HOST,
-  port:     parseInt(process.env.DB_PORT),
+  port:     parseInt(process.env.DB_PORT) || 5432,
   database: process.env.DB_NAME,
   user:     process.env.DB_USER,
   password: process.env.DB_PASS
 });
 
-const conn = await pool.getConnection();
-await conn.query('INSERT INTO users (username, password) VALUES (?, ?)', ['melodia40943', hash]);
+await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['melodia40943', hash]);
 console.log('Utilisateur créé.');
-conn.release();
 await pool.end();

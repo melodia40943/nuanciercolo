@@ -141,7 +141,10 @@ function sampleCircle(cx, cy, radius, imgData, natW, natH) {
   const aG=Math.round(corr.reduce((a,c)=>a+c.g,0)/4);
   const aB=Math.round(corr.reduce((a,c)=>a+c.b,0)/4);
 
-  return { r:aR, g:aG, b:aB, hex:toHexCore(aR,aG,aB) };
+  return {
+    r:aR, g:aG, b:aB, hex:toHexCore(aR,aG,aB),
+    quads: corr.map(c => ({ r:c.r, g:c.g, b:c.b, hex:toHexCore(c.r,c.g,c.b) }))
+  };
 }
 
 function toHexCore(r,g,b) {

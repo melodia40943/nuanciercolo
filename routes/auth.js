@@ -10,13 +10,11 @@ router.get('/login', (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  let conn;
   try {
-    conn = await pool.getConnection();
-    const rows = await conn.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (!rows.length) return res.redirect('/login?error=1');
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (!result.rows.length) return res.redirect('/login?error=1');
 
-    const user = rows[0];
+    const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.redirect('/login?error=1');
 
@@ -26,8 +24,6 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.redirect('/login?error=1');
-  } finally {
-    if (conn) conn.release();
   }
 });
 
