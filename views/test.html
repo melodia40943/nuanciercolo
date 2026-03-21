@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nuancier — Test reconnaissance</title>
+  <script src="/js/chroma.min.js"></script>
+  <script src="/js/sampler-core.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --accent: #4a6cf7;
+      --success: #27ae60;
+      --warn: #f0a500;
+      --danger: #e74c3c;
+      --sheet-peek: 0px; /* plus de peek en bas — tiroir sur la droite sur mobile */
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #333;
+      touch-action: none;
+    }
+
+    /* ── Canvas plein écran ── */
+    #canvas-panel {
+      position: fixed;
+      inset: 0;
+      bottom: var(--sheet-peek);
+    }
+
+    #drop-zone {
+      position: absolute;
+      inset: 20px;
+      border: 2px dashed #444;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #888;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    #drop-zone .ico { font-size: 48px; opacity: .5; }
+    #file-input { display: none; }
+
+    #canvas-wrap {
+      display: none;
+      position: absolute;
+      inset: 0;
+    }
+    #main-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* ── Toolbar flottante ── */
+    #toolbar {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 50;
+    }
+    .tb-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(0,0,0,.4);
+    }
+    #btn-open {
+      background: #fff;
+      color: #333;
+    }
+    #btn-wb {
+      background: #fff;
+      color: #888;
+      display: none;
+    }
+    #btn-wb.pending { background: var(--warn); color: #fff; }
+    #btn-wb.done    { background: var(--success); color: #fff; }
+
+    /* Indicateur WB — juste au-dessus du panneau d'ajustement */
+    #wb-indicator {
+      display: none;
+      position: fixed;
+      bottom: calc(var(--sheet-peek) + 96px); /* au-dessus du panneau adj */
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.82);
+      border-radius: 16px;
+      padding: 12px 18px;
+      color: #fff;
+      font-size: 0.78rem;
+      z-index: 56;
+      align-items: center;
+      gap: 14px;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(0,0,0,.5);
+    }
+    #wb-indicator.visible { display: flex; }
+    #wb-indicator { cursor: grab; user-select: none; }
+    /* Deux swatches côte à côte sans espace ni bordure — split view */
+    .wb-split { display: flex; flex-shrink: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
+    #wb-swatch-corr { width: 72px; height: 72px; flex-shrink: 0; }
+    #wb-swatch-white { width: 72px; height: 72px; flex-shrink: 0; background: #ffffff; }
+    #wb-label { font-size: 0.75rem; opacity: .85; max-width: 130px; white-space: normal; line-height: 1.4; }
+    .db-badge {
+      background: rgba(0,0,0,.55);
+      color: #ccc;
+      font-size: 0.7rem;
+      padding: 5px 10px;
+      border-radius: 20px;
+    }
+
+    /* Tip flottant */
+    #tip {
+      position: fixed;
+      bottom: calc(var(--sheet-peek) + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.65);
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 5px 14px;
+      border-radius: 20px;
+      pointer-events: none;
+      z-index: 40;
+      white-space: nowrap;
+      transition: opacity .3s;
+    }
+
+    /* ── Sheet résultats — tiroir droit sur mobile ── */
+    #sheet {
+      position: fixed;
+      right: 0; top: 0; bottom: 0;
+      left: auto;
+      width: 72%;
+      max-width: 280px;
+      height: 100%;
+      background: #fff;
+      border-radius: 16px 0 0 16px;
+      box-shadow: -4px 0 24px rgba(0,0,0,.18);
+      transform: translateX(105%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      touch-action: none;
+    }
+    #sheet.open { transform: translateX(0); }
+
+    /* Onglet visible sur le bord gauche du tiroir */
+    #sheet-tab {
+      position: absolute;
+      left: -53px; top: 50%;
+      transform: translateY(-50%);
+      width: 53px; height: 80px;
+      background: #fff;
+      border-radius: 12px 0 0 12px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      box-shadow: -2px 0 12px rgba(0,0,0,.14);
+      cursor: pointer;
+      z-index: 1;
+    }
+    #tab-swatch { width: 24px; height: 24px; border-radius: 5px; background: #ddd; flex-shrink: 0; }
+    #tab-ref    { font-size: 0.58rem; font-weight: 700; color: #555; line-height: 1.1; text-align: center; }
+
+    .sheet-handle { display: none; }
+
+    .sheet-peek-content {
+      padding: 10px 14px 4px;
+      flex-shrink: 0;
+    }
+    /* Ligne du haut : couleur échantillonnée */
+    .peek-sampled {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    #sampled-swatch-mini {
+      width: 32px; height: 32px;
+      border-radius: 7px;
+      border: 1px solid rgba(0,0,0,.1);
+      background: #eee;
+      flex-shrink: 0;
+    }
+    #sampled-hex-mini { font-family: monospace; font-weight: 700; font-size: 0.95rem; }
+    #sampled-rgb-mini { font-family: monospace; font-size: 0.68rem; color: #888; }
+    .sheet-peek-label { font-size: 0.7rem; color: #bbb; margin-left: auto; white-space: nowrap; }
+
+    /* Top 3 matchs en peek */
+    .top3-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .top3-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      border: 1.5px solid #eee;
+      background: #fafafa;
+      position: relative;
+    }
+    .top3-card.best { border-color: var(--accent); background: #f0f3ff; }
+    .top3-swatch {
+      width: 42px; height: 42px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #eee;
+    }
+    .top3-ref { font-weight: 700; font-size: 0.8rem; }
+    .top3-brand { font-size: 0.65rem; color: #999; }
+    .top3-de {
+      font-family: monospace; font-size: 0.65rem; font-weight: 700;
+      padding: 1px 5px; border-radius: 8px;
+    }
+    .de-great { background:#e8f8ee; color:var(--success); }
+    .de-good  { background:#fff8e6; color:var(--warn); }
+    .de-ok    { background:#fff0f0; color:var(--danger); }
+
+    .sheet-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 14px 20px;
+      overscroll-behavior: contain;
+    }
+    .sheet-body::-webkit-scrollbar { display: none; }
+
+    /* Résultats */
+    .result-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      margin-bottom: 6px;
+    }
+    .result-entry:first-child { border-color: var(--accent); background: #f5f7ff; }
+    .result-swatch {
+      width: 40px; height: 40px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,.08);
+      flex-shrink: 0;
+    }
+    .result-info { flex: 1; min-width: 0; }
+    .result-ref  { font-weight: 600; font-size: 0.9rem; }
+    .result-meta { font-size: 0.72rem; color: #888; font-family: monospace; }
+    .result-score {
+      font-family: monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 10px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .score-great { background: #e8f8ee; color: var(--success); }
+    .score-good  { background: #fff8e6; color: var(--warn); }
+    .score-ok    { background: #fff0f0; color: var(--danger); }
+
+    .empty-results {
+      text-align: center;
+      color: #bbb;
+      font-size: 0.85rem;
+      padding: 2rem 1rem;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--sheet-peek) + 16px);
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: #333; color: #fff;
+      font-size: 0.82rem; font-weight: 600;
+      padding: 8px 18px; border-radius: 20px;
+      transition: transform .28s cubic-bezier(.34,1.56,.64,1);
+      pointer-events: none; z-index: 200;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── WB Adjustment Panel ── */
+    #wb-adj-panel {
+      position: fixed;
+      left: 0; right: 53px;
+      bottom: var(--sheet-peek);
+      background: rgba(16,16,26,.93);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px 14px 0 0;
+      padding: 12px 16px 10px;
+      color: #fff;
+      z-index: 55;
+      overflow: hidden;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      touch-action: none;
+    }
+    #wb-adj-panel.visible { transform: translateY(0); }
+
+    .wbadj-compare {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .wbadj-swatch {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,.25);
+      flex-shrink: 0;
+    }
+    .wbadj-swatch.target {
+      border-color: rgba(255,255,255,.7);
+      background: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0/10px 10px; /* damier si vide */
+    }
+    .wbadj-info { flex: 1; font-size: 0.7rem; opacity: .65; line-height: 1.3; }
+    .wbadj-reset {
+      background: rgba(255,255,255,.12);
+      border: none;
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .wbadj-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    .wbadj-lbl { font-size: 0.7rem; width: 88px; flex-shrink: 0; opacity: .75; }
+    .wbadj-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,.2);
+      outline: none;
+      cursor: pointer;
+    }
+    .wbadj-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 5px rgba(0,0,0,.4);
+    }
+    .wbadj-slider::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      box-shadow: 0 1px 5px rgba(0,0,0,.4);
+    }
+
+    /* Desktop — on remet le layout côte à côte */
+    @media (min-width: 768px) {
+      #canvas-panel {
+        bottom: 0;
+        right: 340px;
+      }
+      #tip { bottom: 12px; }
+      #sheet {
+        width: 340px;
+        max-width: none;
+        border-radius: 0;
+        transform: none !important;
+        box-shadow: -2px 0 12px rgba(0,0,0,.08);
+      }
+      #sheet-tab { display: none; }
+      .sheet-peek-label { display: none; }
+      #toast { bottom: 20px; }
+      #wb-adj-panel { right: 340px; bottom: 0; border-radius: 14px 14px 0 0; }
+      #wb-indicator { bottom: 96px; left: auto; transform: none; right: calc(340px + 16px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Filtre SVG pour correction WB live sur le canvas -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="wb-filter" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
+      <feColorMatrix type="matrix" id="wb-matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- Toolbar flottante -->
+<div id="toolbar">
+  <a href="/tips" class="tb-btn" style="text-decoration:none;color:#fff;">← Retour</a>
+  <button class="tb-btn" id="btn-open">📷 Ouvrir photo</button>
+  <button class="tb-btn" id="btn-wb">⚪ Balance des blancs</button>
+  <span class="db-badge" id="db-badge">…</span>
+</div>
+
+<!-- Indicateur WB : photo corrigée | blanc cible -->
+<div id="wb-indicator">
+  <div class="wb-split">
+    <div id="wb-swatch-corr"></div>
+    <div id="wb-swatch-white"></div>
+  </div>
+  <span id="wb-label">tape sur le blanc de référence</span>
+</div>
+
+<!-- Canvas -->
+<div id="canvas-panel">
+  <div id="drop-zone">
+    <div class="ico">📷</div>
+    <p>Ouvre une photo ou un PDF du nuancier</p>
+    <span style="font-size:0.75rem;color:#888;margin-top:2px;">Images (jpg, png…) ou PDF couleurs</span>
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;align-items:center;">
+      <a href="/tips" style="font-size:0.78rem;color:#4a6cf7;text-decoration:none;" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
+      <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" style="font-size:0.78rem;color:#27ae60;text-decoration:none;" onclick="event.stopPropagation()">🎨 PDFs de référence par Jeremy Mariez →</a>
+    </div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="main-canvas"></canvas>
+  </div>
+  <!-- Navigation PDF (masquée par défaut) -->
+  <div id="pdf-nav" style="display:none;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:10px;background:rgba(0,0,0,.7);padding:6px 14px;border-radius:20px;z-index:50;">
+    <button id="pdf-prev" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px;">‹</button>
+    <span id="pdf-page-info" style="color:#fff;font-size:0.8rem;white-space:nowrap;">Page 1 / 1</span>
+    <button id="pdf-next" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px;">›</button>
+  </div>
+  <input type="file" id="file-input" accept="image/*,application/pdf">
+</div>
+
+<!-- Panneau ajustement WB -->
+<div id="wb-adj-panel">
+  <div class="wbadj-compare">
+    <div class="wb-split" style="border-radius:10px;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,.2);">
+      <div id="wbadj-corr" style="width:56px;height:56px;flex-shrink:0;"></div>
+      <div style="width:56px;height:56px;flex-shrink:0;background:#fff;"></div>
+    </div>
+    <div class="wbadj-info" id="wbadj-info">Ajuste jusqu'à ce que les deux carrés soient identiques</div>
+    <button class="wbadj-reset" id="wbadj-reset">↺ Reset</button>
+  </div>
+  <div class="wbadj-row">
+    <span class="wbadj-lbl">☀️ Luminosité</span>
+    <input type="range" class="wbadj-slider" id="sl-bright" min="-60" max="60" value="0">
+  </div>
+  <div class="wbadj-row">
+    <span class="wbadj-lbl">🌡 Température</span>
+    <input type="range" class="wbadj-slider" id="sl-temp" min="-60" max="60" value="0">
+  </div>
+</div>
+
+<div id="tip">Tap = échantillonner · Drag = naviguer · Pinch = zoom</div>
+
+<!-- Sheet résultats — tiroir droit -->
+<div id="sheet">
+  <div id="sheet-tab">
+    <div id="tab-swatch"></div>
+    <div id="tab-ref">—</div>
+  </div>
+  <div class="sheet-peek-content">
+    <div class="peek-sampled">
+      <div id="sampled-swatch-mini"></div>
+      <div>
+        <div id="sampled-hex-mini">—</div>
+        <div id="sampled-rgb-mini">Tape sur une couleur</div>
+      </div>
+      <span class="sheet-peek-label">↑ tous les matchs</span>
+    </div>
+    <div class="top3-row" id="top3-row">
+      <div class="top3-card" id="top3-0"><div class="top3-swatch"></div><div class="top3-ref">—</div><div class="top3-brand"></div></div>
+      <div class="top3-card" id="top3-1"><div class="top3-swatch"></div><div class="top3-ref">—</div><div class="top3-brand"></div></div>
+      <div class="top3-card" id="top3-2"><div class="top3-swatch"></div><div class="top3-ref">—</div><div class="top3-brand"></div></div>
+    </div>
+  </div>
+  <div class="sheet-body" id="sheet-body">
+    <div class="empty-results">Tape sur une couleur du nuancier pour voir les matchs</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Service Worker ────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let imgEl=null, imgData=null, natW=0, natH=0;
+let wbPending=false;
+let viewX=0, viewY=0, viewScale=1;
+let circleCenter=null, circleRadius=0;
+// Interaction unifiée : tap = échantillonner, drag = pan
+let pointerDown=false, pointerStart=null, pointerMoved=false;
+let pinching=false, pinchDist0=0, pinchScale0=1, pinchMidX=0, pinchMidY=0;
+let toastTm, dbColors=[];
+let sheetOpen=false, sheetDragY=null, sheetDragStart=null;
+
+// ── DOM ────────────────────────────────────────────────────────────────────────
+const panel   = document.getElementById('canvas-panel');
+const cv      = document.getElementById('main-canvas');
+const ctx     = cv.getContext('2d', { willReadFrequently: true });
+const sheet   = document.getElementById('sheet');
+const btnWb   = document.getElementById('btn-wb');
+
+// ── DB ─────────────────────────────────────────────────────────────────────────
+fetch('/api/couleurs/all').then(r=>r.json()).then(c=>{
+  dbColors=c;
+  document.getElementById('db-badge').textContent=`${c.length} couleurs`;
+});
+
+// ── Fichier ────────────────────────────────────────────────────────────────────
+document.getElementById('btn-open').addEventListener('click', ()=>document.getElementById('file-input').click());
+const dropZone=document.getElementById('drop-zone');
+dropZone.addEventListener('click', ()=>document.getElementById('file-input').click());
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.style.opacity='.7'; });
+dropZone.addEventListener('dragleave', ()=>{ dropZone.style.opacity=''; });
+dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.style.opacity=''; loadFile(e.dataTransfer.files[0]); });
+document.getElementById('file-input').addEventListener('change', e=>loadFile(e.target.files[0]));
+
+// ── PDF state ──────────────────────────────────────────────────────────────────
+let pdfDoc=null, pdfPage=1, pdfPages=1;
+
+function loadFile(f) {
+  if (!f) return;
+  if (f.type==='application/pdf') { loadPdf(f); return; }
+  if (!f.type.startsWith('image/')) return;
+  loadImage(f);
+}
+
+function loadImage(f) {
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      pdfDoc=null;
+      document.getElementById('pdf-nav').style.display='none';
+      applyImageEl(img);
+    };
+    img.src=ev.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+function loadPdf(f) {
+  if (!window.pdfjsLib) { toast('⚠️ PDF.js non chargé — recharge la page'); return; }
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    pdfjsLib.getDocument({ data: ev.target.result }).promise.then(pdf=>{
+      pdfDoc=pdf; pdfPages=pdf.numPages; pdfPage=1;
+      renderPdfPage(pdfPage);
+    }).catch(()=>toast('⚠️ Impossible de lire ce PDF'));
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+function renderPdfPage(num) {
+  pdfDoc.getPage(num).then(page=>{
+    const scale=2; // rendu haute résolution
+    const vp=page.getViewport({scale});
+    const oc=document.createElement('canvas');
+    oc.width=vp.width; oc.height=vp.height;
+    page.render({canvasContext:oc.getContext('2d'),viewport:vp}).promise.then(()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const nav=document.getElementById('pdf-nav');
+        nav.style.display='flex';
+        document.getElementById('pdf-page-info').textContent=`Page ${num} / ${pdfPages}`;
+        applyImageEl(img);
+      };
+      img.src=oc.toDataURL();
+    });
+  });
+}
+
+document.getElementById('pdf-prev').addEventListener('click', ()=>{
+  if (!pdfDoc||pdfPage<=1) return;
+  pdfPage--; renderPdfPage(pdfPage);
+});
+document.getElementById('pdf-next').addEventListener('click', ()=>{
+  if (!pdfDoc||pdfPage>=pdfPages) return;
+  pdfPage++; renderPdfPage(pdfPage);
+});
+
+function applyImageEl(img) {
+  imgEl=img; natW=img.naturalWidth; natH=img.naturalHeight;
+  const oc=document.createElement('canvas');
+  oc.width=natW; oc.height=natH;
+  oc.getContext('2d').drawImage(img,0,0);
+  imgData=oc.getContext('2d').getImageData(0,0,natW,natH);
+  document.getElementById('drop-zone').style.display='none';
+  document.getElementById('canvas-wrap').style.display='block';
+  btnWb.style.display='block';
+  resizeCanvas(); fitView(); render();
+  // WB automatique
+  const autoOk=autoDetectWB(imgData,natW,natH,({white,black})=>{
+    btnWb.textContent='✓ Blancs OK (auto)';
+    btnWb.className='tb-btn done';
+    const cast=Math.max(white.r,white.g,white.b)-Math.min(white.r,white.g,white.b);
+    const brightness=(white.r+white.g+white.b)/3;
+    document.getElementById('wb-swatch-corr').style.background=
+      toHex(Math.round(white.r),Math.round(white.g),Math.round(white.b));
+    document.getElementById('wb-swatch-corr').style.background='#ffffff';
+    const castTxt=cast<8?'Neutre ✓':cast<20?'Légère dominante':'Dominante marquée';
+    document.getElementById('wb-label').textContent=castTxt+(brightness<170?' · ⚠️ photo sombre · ajuste en bas':'· ajuste en bas');
+    document.getElementById('wb-indicator').classList.add('visible');
+    onWbSet(white, black);
+    if (brightness<170) toast('⚠️ Photo sombre — ajuste la luminosité en bas');
+    else toast('✓ Balance des blancs auto — ajuste si besoin');
+  });
+  if (!autoOk) toast('Image chargée — tape sur ⚪ sur la bande blanche du livre');
+}
+
+// ── Canvas ─────────────────────────────────────────────────────────────────────
+function resizeCanvas() {
+  cv.width=panel.clientWidth; cv.height=panel.clientHeight; render();
+}
+window.addEventListener('resize', ()=>{ if(imgEl) resizeCanvas(); });
+
+function fitView() {
+  const s=Math.min(panel.clientWidth/natW, panel.clientHeight/natH);
+  viewScale=s;
+  viewX=(panel.clientWidth-natW*s)/2;
+  viewY=(panel.clientHeight-natH*s)/2;
+}
+
+function render() {
+  if (!imgEl) return;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.save();
+  ctx.setTransform(viewScale,0,0,viewScale,viewX,viewY);
+  ctx.drawImage(imgEl,0,0);
+  if (circleCenter && circleRadius>0) {
+    ctx.beginPath();
+    ctx.arc(circleCenter.imgX,circleCenter.imgY,circleRadius,0,Math.PI*2);
+    ctx.strokeStyle='#4a6cf7'; ctx.lineWidth=2/viewScale; ctx.stroke();
+    ctx.fillStyle='rgba(74,108,247,0.18)'; ctx.fill();
+  }
+  ctx.restore();
+}
+
+function canvasToImg(cx,cy) { return {x:(cx-viewX)/viewScale, y:(cy-viewY)/viewScale}; }
+function evXY(e) {
+  const r=cv.getBoundingClientRect();
+  const src=e.touches?e.touches[0]:e;
+  return {x:src.clientX-r.left, y:src.clientY-r.top};
+}
+function touchDist(e) {
+  const dx=e.touches[0].clientX-e.touches[1].clientX;
+  const dy=e.touches[0].clientY-e.touches[1].clientY;
+  return Math.hypot(dx,dy);
+}
+function touchMid(e) {
+  return {
+    x:(e.touches[0].clientX+e.touches[1].clientX)/2,
+    y:(e.touches[0].clientY+e.touches[1].clientY)/2
+  };
+}
+
+// ── Zoom molette (desktop) ─────────────────────────────────────────────────────
+cv.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const {x,y}=evXY(e);
+  const f=e.deltaY<0?1.15:1/1.15;
+  const ns=Math.max(0.2,Math.min(30,viewScale*f));
+  viewX=x-(x-viewX)*(ns/viewScale); viewY=y-(y-viewY)*(ns/viewScale);
+  viewScale=ns; render();
+},{passive:false});
+
+// ── Mouse events (desktop) ─────────────────────────────────────────────────────
+// Mode WB  : drag/hover = prévisualisation live, relâcher = confirmer
+// Mode normal : drag = pan, clic = échantillonner
+cv.addEventListener('mousedown', e=>{
+  if (!imgEl) return; e.preventDefault();
+  const {x,y}=evXY(e);
+  if (e.button===1||e.button===2) { pointerDown=true; pointerStart={x,y}; pointerMoved=true; return; }
+  if (e.button!==0) return;
+  pointerDown=true; pointerStart={x,y}; pointerMoved=false;
+  if (wbPending) { livePreviewWB(x,y); cv.style.cursor='cell'; }
+  else cv.style.cursor='grabbing';
+});
+cv.addEventListener('mousemove', e=>{
+  if (!imgEl) return;
+  const {x,y}=evXY(e);
+  // En mode WB, aperçu en direct même sans clic (hover)
+  if (wbPending) { livePreviewWB(x,y); return; }
+  if (!pointerDown||!pointerStart) return;
+  if (!pointerMoved && Math.hypot(x-pointerStart.x, y-pointerStart.y)>5) pointerMoved=true;
+  if (pointerMoved) { viewX+=x-pointerStart.x; viewY+=y-pointerStart.y; render(); }
+  pointerStart={x,y};
+});
+cv.addEventListener('mouseup', e=>{
+  cv.style.cursor = wbPending ? 'cell' : 'crosshair';
+  if (!pointerDown) return;
+  const wasMoved=pointerMoved, pos=pointerStart;
+  pointerDown=false; pointerStart=null; pointerMoved=false;
+  if (e.button===1||e.button===2) return;
+  if (wbPending && pos) { doWB(pos.x,pos.y); resetWbBtn(); return; }
+  if (!wasMoved && pos) placeSampleCircle(pos.x,pos.y);
+});
+cv.addEventListener('mouseleave', ()=>{ pointerDown=false; pointerStart=null; if(!wbPending) cv.style.cursor='crosshair'; });
+cv.addEventListener('contextmenu', e=>e.preventDefault());
+
+// ── Touch events (mobile) ──────────────────────────────────────────────────────
+// Mode WB  : 1 doigt glisse = aperçu live, soulever = confirmer
+// Mode normal : tap = échantillonner, drag = pan, 2 doigts = zoom+pan
+cv.addEventListener('touchstart', e=>{
+  if (!imgEl) return; e.preventDefault();
+  if (e.touches.length>=2) {
+    pinching=true; pointerDown=false;
+    pinchDist0=touchDist(e); pinchScale0=viewScale;
+    const m=touchMid(e); const r=cv.getBoundingClientRect();
+    pinchMidX=m.x-r.left; pinchMidY=m.y-r.top;
+    return;
+  }
+  if (e.touches.length===1) {
+    const {x,y}=evXY(e);
+    pointerDown=true; pointerStart={x,y}; pointerMoved=false;
+    if (wbPending) livePreviewWB(x,y);
+  }
+},{passive:false});
+
+cv.addEventListener('touchmove', e=>{
+  if (!imgEl) return; e.preventDefault();
+  if (pinching && e.touches.length>=2) {
+    const nd=touchDist(e);
+    const m=touchMid(e); const r=cv.getBoundingClientRect();
+    const mx=m.x-r.left, my=m.y-r.top;
+    const ns=Math.max(0.2,Math.min(30,pinchScale0*(nd/pinchDist0)));
+    viewX=pinchMidX-(pinchMidX-viewX)*(ns/viewScale);
+    viewY=pinchMidY-(pinchMidY-viewY)*(ns/viewScale);
+    viewScale=ns;
+    viewX+=mx-pinchMidX; viewY+=my-pinchMidY;
+    pinchMidX=mx; pinchMidY=my;
+    render(); return;
+  }
+  if (pointerDown && e.touches.length===1) {
+    const {x,y}=evXY(e);
+    if (wbPending) {
+      // Mode WB : glissement = aperçu en direct (pas de pan)
+      pointerStart={x,y};
+      livePreviewWB(x,y);
+    } else {
+      const prev=pointerStart;
+      pointerStart={x,y};
+      if (prev && !pointerMoved && Math.hypot(x-prev.x, y-prev.y)>8) pointerMoved=true;
+      if (pointerMoved && prev) { viewX+=x-prev.x; viewY+=y-prev.y; render(); }
+    }
+  }
+},{passive:false});
+
+cv.addEventListener('touchend', e=>{
+  e.preventDefault();
+  if (pinching && e.touches.length<2) { pinching=false; pinchDist0=0; return; }
+  if (!pointerDown) return;
+  const wasMoved=pointerMoved, pos=pointerStart;
+  pointerDown=false; pointerStart=null; pointerMoved=false;
+  if (wbPending && pos) { doWB(pos.x,pos.y); resetWbBtn(); return; } // soulever = confirmer WB
+  if (!wasMoved && pos) placeSampleCircle(pos.x,pos.y);
+},{passive:false});
+
+// ── Placement cercle + sampling ────────────────────────────────────────────────
+// Le rayon s'adapte au zoom pour rester ~35px à l'écran
+function placeSampleCircle(cvX, cvY) {
+  const img=canvasToImg(cvX, cvY);
+  if (img.x<0||img.x>=natW||img.y<0||img.y>=natH) return;
+  circleCenter={imgX:img.x, imgY:img.y};
+  circleRadius=Math.round(natW/100); // ~40px pour 4000px, ~16px pour scanner
+  render();
+  doSample();
+}
+
+// ── WB ─────────────────────────────────────────────────────────────────────────
+const wbIndicator = document.getElementById('wb-indicator');
+
+// Base WB (snapshot au moment du clic/auto) — les sliders ajustent par rapport à ça
+let wbBaseWhite = null;
+
+btnWb.addEventListener('click', ()=>{
+  if (!imgEl) return;
+  wbPending=!wbPending;
+  if (wbPending) {
+    btnWb.textContent='⚠️ Tape sur le blanc de référence…';
+    btnWb.className='tb-btn pending';
+    wbIndicator.classList.add('visible');
+    document.getElementById('wb-label').textContent='tape sur un blanc de référence';
+  } else {
+    resetWbBtn();
+  }
+});
+
+function resetWbBtn() {
+  wbPending=false;
+  btnWb.textContent=wbSet?'✓ Blancs OK (retaper pour changer)':'⚪ Balance des blancs';
+  btnWb.className='tb-btn '+(wbSet?'done':'');
+  if (!wbSet) {
+    wbIndicator.classList.remove('visible');
+    document.getElementById('wb-adj-panel').classList.remove('visible');
+    cv.style.filter='none';
+  }
+}
+
+// Appelé après chaque changement de WB (clic ou auto) pour initialiser le panneau
+function onWbSet(white, black) {
+  wbBaseWhite = { r: white.r, g: white.g, b: white.b };
+  document.getElementById('sl-bright').value = 0;
+  document.getElementById('sl-temp').value   = 0;
+  applyWbSliders();
+  document.getElementById('wb-adj-panel').classList.add('visible');
+}
+
+// Recalcule wbWhite à partir des sliders et met à jour filtre + swatch
+function applyWbSliders() {
+  if (!wbBaseWhite) return;
+  const bright = parseFloat(document.getElementById('sl-bright').value); // -60..+60
+  const temp   = parseFloat(document.getElementById('sl-temp').value);   // -60..+60
+  // bright > 0 → éclaircir → abaisser le point blanc (diviseur plus petit)
+  const scale = 1 - bright * 0.006; // +60 → ×0.64, -60 → ×1.36
+  // temp > 0 → plus chaud → R diminue (moins de correction rouge), B augmente
+  const tShift = temp * 0.6;
+  wbWhite = {
+    r: Math.max(10, wbBaseWhite.r * scale - tShift),
+    g: Math.max(10, wbBaseWhite.g * scale),
+    b: Math.max(10, wbBaseWhite.b * scale + tShift),
+  };
+  wbSet = true;
+  // Swatch "après correction" : montrer ce que le blanc de base donnerait avec les réglages actuels
+  const corr = applyWB({ r: Math.round(wbBaseWhite.r), g: Math.round(wbBaseWhite.g), b: Math.round(wbBaseWhite.b) });
+  const corrHex = toHex(corr.r, corr.g, corr.b);
+  document.getElementById('wbadj-corr').style.background = corrHex;
+  // Mettre à jour l'indicateur flottant aussi (swatch droite + label)
+  document.getElementById('wb-swatch-corr').style.background = corrHex;
+  // Info qualité
+  const drift = Math.max(corr.r,corr.g,corr.b) - Math.min(corr.r,corr.g,corr.b);
+  const bri   = (corr.r+corr.g+corr.b)/3;
+  const qualityTxt =
+    bri > 220 && drift < 15 ? '✓ Blanc — tu peux échantillonner !'
+    : bri > 180 && drift < 30 ? '〜 Presque blanc — ajuste encore'
+    : '⚠️ Pas encore blanc — continue';
+  document.getElementById('wbadj-info').textContent = qualityTxt;
+  document.getElementById('wb-label').textContent    = qualityTxt;
+  updateWbFilter();
+  // Re-échantillonner si un cercle est déjà placé
+  if (circleCenter) doSample();
+}
+
+// Applique la correction via feColorMatrix sur le canvas (aperçu live)
+function updateWbFilter() {
+  if (!wbSet) { cv.style.filter='none'; return; }
+  const f = (w, b) => {
+    const range = Math.max(1, w - b);
+    return { m: 255/range, o: -b/range };
+  };
+  const R = f(wbWhite.r, wbBlack.r);
+  const G = f(wbWhite.g, wbBlack.g);
+  const B = f(wbWhite.b, wbBlack.b);
+  document.getElementById('wb-matrix').setAttribute('values',
+    `${R.m} 0 0 0 ${R.o}  0 ${G.m} 0 0 ${G.o}  0 0 ${B.m} 0 ${B.o}  0 0 0 1 0`);
+  cv.style.filter = 'url(#wb-filter)';
+}
+
+document.getElementById('sl-bright').addEventListener('input', applyWbSliders);
+document.getElementById('sl-temp').addEventListener('input', applyWbSliders);
+document.getElementById('wbadj-reset').addEventListener('click', ()=>{
+  // Retour à la photo originale : plus aucune correction
+  wbBaseWhite = null;
+  wbWhite = { r:255, g:255, b:255 };
+  wbBlack = { r:0,   g:0,   b:0   };
+  wbSet   = false;
+  document.getElementById('sl-bright').value = 0;
+  document.getElementById('sl-temp').value   = 0;
+  cv.style.filter = 'none';
+  document.getElementById('wb-adj-panel').classList.remove('visible');
+  wbIndicator.classList.remove('visible');
+  btnWb.textContent = '⚪ Balance des blancs';
+  btnWb.className   = 'tb-btn';
+  toast('Photo originale restaurée');
+});
+
+function doWB(cvX,cvY) {
+  const img=canvasToImg(cvX,cvY);
+  const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
+    const rawHex=toHex(Math.round(white.r),Math.round(white.g),Math.round(white.b));
+    document.getElementById('wb-swatch-corr').style.background=rawHex;
+    document.getElementById('wb-swatch-corr').style.background='#ffffff';
+    const cast=Math.max(white.r,white.g,white.b)-Math.min(white.r,white.g,white.b);
+    document.getElementById('wb-label').textContent=(cast<8?'Neutre ✓':cast<20?'Légère dominante':'Dominante marquée')+' · ajuste en bas';
+    wbIndicator.classList.add('visible');
+    onWbSet(white, black);
+    toast('✓ Balance définie — ajuste avec les curseurs si besoin');
+  });
+  if (!ok) toast('⚠️ Zone trop sombre — tape sur le blanc de référence');
+}
+
+// ── Live WB preview ────────────────────────────────────────────────────────────
+// Appelé pendant le glissement en mode WB — montre la couleur brute + neutralité
+function livePreviewWB(cvX, cvY) {
+  if (!imgData) return;
+  const img=canvasToImg(cvX, cvY);
+  if (img.x<0||img.x>=natW||img.y<0||img.y>=natH) return;
+
+  // Moyenne sur un petit carré autour du pointeur
+  const d=imgData.data;
+  let sR=0,sG=0,sB=0,n=0;
+  const R=Math.max(5, Math.round(natW/500));
+  for (let dy=-R;dy<=R;dy++) for (let dx=-R;dx<=R;dx++) {
+    const px=Math.round(img.x+dx),py=Math.round(img.y+dy);
+    if (px<0||px>=natW||py<0||py>=natH) continue;
+    const i=(py*natW+px)*4; sR+=d[i];sG+=d[i+1];sB+=d[i+2];n++;
+  }
+  if (!n) return;
+  const rawR=sR/n, rawG=sG/n, rawB=sB/n;
+
+  document.getElementById('wb-swatch-corr').style.background=toHex(Math.round(rawR),Math.round(rawG),Math.round(rawB));
+  document.getElementById('wb-swatch-corr').style.background='#ffffff'; // cible = blanc parfait
+
+  const br=(rawR+rawG+rawB)/3;
+  const cast=Math.max(rawR,rawG,rawB)-Math.min(rawR,rawG,rawB);
+  let lbl;
+  if      (br<100)   lbl='⚠️ Trop sombre — cherche du blanc';
+  else if (br<150)   lbl='⚠️ Gris moyen — pas assez clair';
+  else if (cast>30)  lbl='⚠️ Zone colorée — cherche du blanc neutre';
+  else if (cast>15)  lbl='〜 Légère dominante';
+  else               lbl='✓ Bon blanc — soulève pour confirmer';
+  document.getElementById('wb-label').textContent=lbl;
+  wbIndicator.classList.add('visible');
+}
+
+// ── Sampling ───────────────────────────────────────────────────────────────────
+function doSample() {
+  if (!circleCenter||circleRadius<1) return;
+  const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
+  if (!result) { toast('⚠️ Zone invalide — réessaie'); return; }
+
+  document.getElementById('sampled-swatch-mini').style.background=result.hex;
+  document.getElementById('sampled-hex-mini').textContent=result.hex.toUpperCase();
+  document.getElementById('sampled-rgb-mini').textContent=`RGB(${result.r}, ${result.g}, ${result.b})`;
+
+  matchColors(result.r,result.g,result.b);
+  openSheet();
+  // Sur mobile, fermer auto après 4s pour libérer la vue
+  if (window.innerWidth<768) { clearTimeout(window._sheetAutoClose); window._sheetAutoClose=setTimeout(closeSheet,4000); }
+}
+
+// ── Matching ───────────────────────────────────────────────────────────────────
+function matchColors(r,g,b) {
+  if (!dbColors.length) { toast('⚠️ Aucune couleur en base'); return; }
+  const sampled=chroma(r,g,b);
+  const scores=dbColors.map(c=>{
+    const dScanner = chroma.deltaE(sampled, chroma(Number(c.r), Number(c.g), Number(c.b)));
+    const dPhoto   = (c.r_photo != null)
+      ? chroma.deltaE(sampled, chroma(Number(c.r_photo), Number(c.g_photo), Number(c.b_photo)))
+      : Infinity;
+    return { ...c, delta: Math.min(dScanner, dPhoto) };
+  }).sort((a,b)=>a.delta-b.delta);
+
+  // Mettre à jour l'onglet du tiroir (mobile)
+  if (scores[0]) {
+    document.getElementById('tab-swatch').style.background=scores[0].hex;
+    document.getElementById('tab-ref').textContent=scores[0].reference;
+  }
+
+  // Top 3 dans le peek (toujours visible)
+  scores.slice(0,3).forEach((c,i)=>{
+    const card=document.getElementById(`top3-${i}`);
+    const deCls=c.delta<5?'de-great':c.delta<15?'de-good':'de-ok';
+    card.className='top3-card'+(i===0?' best':'');
+    card.innerHTML=`
+      <div class="top3-swatch" style="background:${c.hex}"></div>
+      <div class="top3-ref">${c.reference}</div>
+      <div class="top3-brand">${c.marque}</div>
+      <div class="top3-de ${deCls}">ΔE ${c.delta.toFixed(1)}</div>`;
+  });
+
+  // Liste complète dans le sheet body
+  document.getElementById('sheet-body').innerHTML=scores.slice(0,8).map((c,i)=>{
+    const cls=c.delta<5?'score-great':c.delta<15?'score-good':'score-ok';
+    const lbl=c.delta<5?'Excellent':c.delta<15?'Proche':'Éloigné';
+    return `<div class="result-entry">
+      <div class="result-swatch" style="background:${c.hex}"></div>
+      <div class="result-info">
+        <div class="result-ref">${c.marque} ${c.reference}</div>
+        <div class="result-meta">${c.hex.toUpperCase()} · ΔE ${c.delta.toFixed(1)}</div>
+      </div>
+      <div class="result-score ${cls}">${lbl}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Sheet résultats ────────────────────────────────────────────────────────────
+function openSheet()  { sheet.classList.add('open');    sheetOpen=true;  }
+function closeSheet() { sheet.classList.remove('open'); sheetOpen=false; }
+
+// Onglet : tap = ouvrir/fermer (mobile)
+document.getElementById('sheet-tab').addEventListener('click', ()=>{
+  sheetOpen ? closeSheet() : openSheet();
+});
+
+// Swipe droite sur le sheet = fermer (mobile)
+let sheetSwipeX0=null;
+sheet.addEventListener('touchstart', e=>{
+  if (window.innerWidth>=768) return;
+  sheetSwipeX0=e.touches[0].clientX;
+},{passive:true});
+sheet.addEventListener('touchend', e=>{
+  if (window.innerWidth>=768||sheetSwipeX0===null) return;
+  if (e.changedTouches[0].clientX - sheetSwipeX0 > 60) closeSheet();
+  sheetSwipeX0=null;
+},{passive:true});
+
+// Desktop : clic sur le header peek = toggle
+document.querySelector('.sheet-peek-content').addEventListener('click', ()=>{
+  if (window.innerWidth<768) return;
+  sheetOpen ? closeSheet() : openSheet();
+});
+
+// ── Wb-indicator draggable ─────────────────────────────────────────────────────
+let wbDrag=null;
+function wbDragStart(clientX, clientY) {
+  const rect=wbIndicator.getBoundingClientRect();
+  wbIndicator.style.top=rect.top+'px'; wbIndicator.style.left=rect.left+'px';
+  wbIndicator.style.bottom='auto'; wbIndicator.style.transform='none';
+  wbIndicator.style.cursor='grabbing';
+  wbDrag={sx:clientX,sy:clientY,ox:rect.left,oy:rect.top};
+}
+function wbDragMove(clientX, clientY) {
+  if (!wbDrag) return;
+  wbIndicator.style.left=(wbDrag.ox+clientX-wbDrag.sx)+'px';
+  wbIndicator.style.top =(wbDrag.oy+clientY-wbDrag.sy)+'px';
+}
+function wbDragEnd() { if(wbDrag){wbDrag=null;wbIndicator.style.cursor='grab';} }
+
+wbIndicator.addEventListener('mousedown', e=>{ e.stopPropagation(); wbDragStart(e.clientX,e.clientY); });
+window.addEventListener('mousemove', e=>wbDragMove(e.clientX,e.clientY));
+window.addEventListener('mouseup',   wbDragEnd);
+wbIndicator.addEventListener('touchstart', e=>{ e.stopPropagation(); wbDragStart(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
+wbIndicator.addEventListener('touchmove',  e=>wbDragMove(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+wbIndicator.addEventListener('touchend',   wbDragEnd,{passive:true});
+
+// ── Utils ──────────────────────────────────────────────────────────────────────
+function toHex(r,g,b) {
+  return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0')).join('');
+}
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTm);
+  toastTm=setTimeout(()=>el.classList.remove('show'),2400);
+}
+</script>
+</body>
+</html>

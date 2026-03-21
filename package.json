@@ -1,0 +1,29 @@
+{
+  "name": "nuanciercolo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melodia40943/nuanciercolo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/melodia40943/nuanciercolo/issues"
+  },
+  "homepage": "https://github.com/melodia40943/nuanciercolo#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "mariadb": "^3.5.2"
+  }
+}

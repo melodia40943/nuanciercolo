@@ -1,0 +1,209 @@
+// Module sampling intégré au formulaire couleur
+// Utilise sampler-core.js pour la logique WB + sampling
+
+let imgEl     = null;
+let imgData   = null;
+let natW = 0, natH = 0;
+let wbPending = false;
+let sampledColor = null;
+let toastTm;
+
+// Viewport
+let viewX = 0, viewY = 0, viewScale = 1;
+
+// Cercle
+let circleCenter = null, circleRadius = 0;
+let drawing = false, drawStartCanvas = null;
+let panning = false, panStart = null;
+
+const canvasPanel = document.getElementById('sampling-canvas-panel');
+const cv          = document.getElementById('sampling-canvas');
+const ctx         = cv.getContext('2d', { willReadFrequently: true });
+const dropZone    = document.getElementById('sampling-drop');
+const canvasWrap  = document.getElementById('sampling-canvas-wrap');
+const lens        = document.getElementById('sampling-lens');
+const lensC       = document.getElementById('sampling-lens-c');
+const lc          = lensC.getContext('2d');
+
+// Chargement image
+document.getElementById('sampling-file').addEventListener('change', e => loadFile(e.target.files[0]));
+dropZone.addEventListener('click', () => document.getElementById('sampling-file').click());
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over'); loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(f) {
+  if (!f || !f.type.startsWith('image/')) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      imgEl = img; natW = img.naturalWidth; natH = img.naturalHeight;
+      const oc = document.createElement('canvas');
+      oc.width = natW; oc.height = natH;
+      oc.getContext('2d').drawImage(img, 0, 0);
+      imgData = oc.getContext('2d').getImageData(0, 0, natW, natH);
+      dropZone.style.display   = 'none';
+      canvasWrap.style.display = 'block';
+      resizeCanvas(); fitView(); render();
+      document.getElementById('btn-wb').disabled = false;
+      document.getElementById('sampling-controls').style.display = 'block';
+      setWbStatus('pending');
+    };
+    img.src = ev.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+function resizeCanvas() {
+  cv.width = canvasPanel.clientWidth; cv.height = canvasPanel.clientHeight; render();
+}
+window.addEventListener('resize', () => { if (imgEl) resizeCanvas(); });
+
+function fitView() {
+  const s = Math.min(canvasPanel.clientWidth/natW, canvasPanel.clientHeight/natH);
+  viewScale=s; viewX=(canvasPanel.clientWidth-natW*s)/2; viewY=(canvasPanel.clientHeight-natH*s)/2;
+}
+
+function render() {
+  if (!imgEl) return;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.save();
+  ctx.setTransform(viewScale,0,0,viewScale,viewX,viewY);
+  ctx.drawImage(imgEl,0,0);
+  if (circleCenter && circleRadius>0) {
+    ctx.beginPath();
+    ctx.arc(circleCenter.imgX,circleCenter.imgY,circleRadius,0,Math.PI*2);
+    ctx.strokeStyle='#4a6cf7'; ctx.lineWidth=2/viewScale; ctx.stroke();
+    ctx.fillStyle='rgba(74,108,247,0.15)'; ctx.fill();
+  }
+  ctx.restore();
+}
+
+function canvasToImg(cx,cy) { return {x:(cx-viewX)/viewScale, y:(cy-viewY)/viewScale}; }
+function cvXY(e) { const r=cv.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+
+// Zoom
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const {x,y}=cvXY(e);
+  const ns=Math.max(0.5,Math.min(30,viewScale*(e.deltaY<0?1.15:1/1.15)));
+  viewX=x-(x-viewX)*(ns/viewScale); viewY=y-(y-viewY)*(ns/viewScale);
+  viewScale=ns; render();
+},{passive:false});
+
+// Loupe + interactions
+cv.addEventListener('mousemove', e => {
+  const {x,y}=cvXY(e);
+  const img=canvasToImg(x,y);
+  if (imgEl && img.x>=0 && img.x<natW && img.y>=0 && img.y<natH) {
+    lens.style.display='block';
+    let lx=x+18,ly=y-128;
+    const pr=canvasPanel.getBoundingClientRect();
+    if (ly<4) ly=y+18; if (lx+110>pr.width) lx=x-128;
+    lens.style.left=lx+'px'; lens.style.top=ly+'px';
+    lc.imageSmoothingEnabled=false; lc.clearRect(0,0,110,110);
+    lc.drawImage(imgEl,img.x-9,img.y-9,18,18,0,0,110,110);
+    lc.strokeStyle='rgba(255,255,255,.6)'; lc.lineWidth=1;
+    lc.beginPath(); lc.moveTo(55,0); lc.lineTo(55,110); lc.stroke();
+    lc.beginPath(); lc.moveTo(0,55); lc.lineTo(110,55); lc.stroke();
+  } else { lens.style.display='none'; }
+
+  if (panning&&panStart) { viewX+=x-panStart.x; viewY+=y-panStart.y; panStart={x,y}; render(); return; }
+  if (drawing&&drawStartCanvas) {
+    const s=canvasToImg(drawStartCanvas.x,drawStartCanvas.y),c=canvasToImg(x,y);
+    circleCenter={imgX:s.x,imgY:s.y}; circleRadius=Math.hypot(c.x-s.x,c.y-s.y); render();
+  }
+});
+
+cv.addEventListener('mouseleave', ()=>{ lens.style.display='none'; });
+cv.addEventListener('mousedown', e => {
+  if (!imgEl) return; e.preventDefault();
+  const {x,y}=cvXY(e);
+  if (e.button===1||e.button===2) { panning=true; panStart={x,y}; cv.style.cursor='grabbing'; return; }
+  if (e.button!==0) return;
+  if (wbPending) { triggerWB(x,y); return; }
+  drawing=true; drawStartCanvas={x,y}; circleCenter=null; circleRadius=0;
+});
+cv.addEventListener('mouseup', e => {
+  cv.style.cursor='crosshair';
+  if (e.button===1||e.button===2) { panning=false; panStart=null; return; }
+  if (!drawing) return; drawing=false;
+  if (circleRadius<3/viewScale) {
+    const img=canvasToImg(cvXY(e).x,cvXY(e).y);
+    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=20; render();
+  }
+  doSample();
+});
+cv.addEventListener('contextmenu', e=>e.preventDefault());
+
+// WB
+document.getElementById('btn-wb').addEventListener('click', ()=>{
+  if (!imgEl) return;
+  wbPending=!wbPending;
+  const btn=document.getElementById('btn-wb');
+  if (wbPending) { btn.textContent='⚠️ Clique sur zone blanche…'; btn.classList.add('active'); cv.style.cursor='cell'; }
+  else resetWbBtn();
+});
+
+function triggerWB(cvX, cvY) {
+  const img=canvasToImg(cvX,cvY);
+  const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
+    const el=document.getElementById('wb-status');
+    el.textContent=`Blanc RGB(${Math.round(white.r)},${Math.round(white.g)},${Math.round(white.b)}) · Noir RGB(${black.r},${black.g},${black.b})`;
+    setWbStatus('ok');
+    showToast('✓ Balance des blancs définie');
+  });
+  if (!ok) showToast('⚠️ Zone trop sombre — clique sur une zone blanche');
+  resetWbBtn();
+}
+
+function resetWbBtn() {
+  wbPending=false;
+  const btn=document.getElementById('btn-wb');
+  btn.textContent=wbSet?'✓ Redéfinir les blancs':'Cliquer sur zone blanche';
+  btn.classList.toggle('active',false); btn.classList.toggle('done',wbSet);
+  cv.style.cursor='crosshair';
+}
+function setWbStatus(state) {
+  const el=document.getElementById('wb-status');
+  if (state==='pending'){el.textContent='Non définie';el.className='wb-status pending';}
+  if (state==='ok'){el.className='wb-status ok';}
+}
+
+// Sampling
+function doSample() {
+  if (!circleCenter||circleRadius<1) return;
+  const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
+  if (!result) { showToast('⚠️ Zone invalide — réessaie'); return; }
+  sampledColor=result;
+
+  document.getElementById('sample-preview').style.background=result.hex;
+  document.getElementById('sample-hex').textContent=result.hex.toUpperCase();
+  document.getElementById('sample-rgb').textContent=`RGB(${result.r}, ${result.g}, ${result.b})`;
+  document.getElementById('step-sample').style.display='block';
+  document.getElementById('btn-apply').disabled=false;
+  const btnPhoto = document.getElementById('btn-apply-photo');
+  if (btnPhoto) btnPhoto.disabled=false;
+}
+
+// Appliquer au formulaire
+document.getElementById('btn-apply').addEventListener('click', ()=>{
+  if (!sampledColor) return;
+  document.getElementById('hex-input').value    = sampledColor.hex;
+  document.getElementById('r-input').value      = sampledColor.r;
+  document.getElementById('g-input').value      = sampledColor.g;
+  document.getElementById('b-input').value      = sampledColor.b;
+  document.getElementById('color-picker').value = sampledColor.hex;
+  showToast('✓ Couleur appliquée au formulaire');
+});
+
+function showToast(msg) {
+  const el=document.getElementById('sampling-toast');
+  if (!el) return;
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTm);
+  toastTm=setTimeout(()=>el.classList.remove('show'),2400);
+}

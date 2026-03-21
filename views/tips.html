@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conseils — Nuancier Couleurs</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #e8e8f0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    header p  { font-size: 0.85rem; color: #888; }
+
+    .tips {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .tip {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .tip-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .tip-body h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .tip-body p {
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: #aaa;
+    }
+
+    .tip-body strong { color: #e8e8f0; }
+
+    .tip-body .step {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: #aaa;
+    }
+    .step-num {
+      background: #4a6cf7;
+      color: #fff;
+      border-radius: 50%;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .tip.highlight {
+      border-color: rgba(74,108,247,.4);
+      background: rgba(74,108,247,.08);
+    }
+
+    .cta {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .btn-start {
+      display: block;
+      width: 100%;
+      background: #4a6cf7;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .btn-start:hover { background: #3a5ce0; }
+
+    .skip {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: #555;
+    }
+    .skip a { color: #666; text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Avant de commencer</h1>
+  <p>Quelques conseils pour des résultats fiables</p>
+</header>
+
+<div class="tips">
+
+  <div class="tip highlight">
+    <div class="tip-icon">💡</div>
+    <div class="tip-body">
+      <h2>Éclairage</h2>
+      <p>Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.<br>
+      Le flash crée des reflets qui faussent les couleurs.</p>
+    </div>
+  </div>
+
+  <div class="tip highlight">
+    <div class="tip-icon">⚪</div>
+    <div class="tip-body">
+      <h2>Balance des blancs — la clé de tout</h2>
+      <p>Les livres Hachette ont une <strong>bande blanche naturelle</strong> juste au-dessus de chaque case colorée — c'est ta référence parfaite.</p>
+      <div class="step"><span class="step-num">1</span> Tape sur le bouton balance des blancs (⚪)</div>
+      <div class="step"><span class="step-num">2</span> Clique sur la <strong>bande blanche au-dessus</strong> de la couleur que tu veux identifier</div>
+      <div class="step"><span class="step-num">3</span> Échantillonne la couleur en dessinant un cercle dessus</div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-icon">🔄</div>
+    <div class="tip-body">
+      <h2>Refais la balance pour chaque couleur</h2>
+      <p>La lumière n'est <strong>jamais parfaitement uniforme</strong> sur toute la page. Pour les meilleurs résultats, recalibre la balance des blancs à chaque nouvelle couleur en cliquant juste au-dessus d'elle.</p>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-icon">📐</div>
+    <div class="tip-body">
+      <h2>Cadre bien ta photo</h2>
+      <p>Essaie d'avoir la <strong>légende bien à plat</strong>, sans angle prononcé. Un léger angle ne pose pas de problème.</p>
+    </div>
+  </div>
+
+  <div class="tip highlight">
+    <div class="tip-icon">📄</div>
+    <div class="tip-body">
+      <h2>Les PDFs de référence : la meilleure source</h2>
+      <p>Certains artistes publient des PDFs avec les <strong>couleurs exactes</strong> qu'ils avaient en tête pour leur livre. Ces fichiers donnent des résultats bien meilleurs qu'une photo.</p>
+      <p style="margin-top:8px;">
+        <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener"
+           style="color:#4a6cf7;font-weight:600;text-decoration:none;">
+          🎨 Palettes de référence par Jeremy Mariez →
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-icon">🎯</div>
+    <div class="tip-body">
+      <h2>Le résultat n'est qu'un point de départ</h2>
+      <p>L'algorithme donne les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="cta">
+  <a href="/test" class="btn-start">C'est parti →</a>
+  <p class="skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
+</div>
+
+</body>
+</html>

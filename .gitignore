@@ -25,3 +25,13 @@ Thumbs.db
 .claude/
 .agents/
 skills-lock.json
+
+# Environnement de développement local
+.ddev/
+
+# Fichiers de test / échantillons locaux
+echantillon/
+echantillon/*
+
+# Backups DB (contiennent potentiellement des données sensibles)
+*.sql
