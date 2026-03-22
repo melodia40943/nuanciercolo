@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Liste des couleurs
 router.get('/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, ref } = req.query;
+  const { marque_id, ref, active } = req.query;
   try {
     const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
 
@@ -18,13 +18,15 @@ router.get('/couleurs', requireAuth, async (req, res) => {
     `;
     const params = [];
     let paramCount = 0;
-    if (marque_id) { sql += ` AND c.marque_id = $${++paramCount}`; params.push(marque_id); }
-    if (ref)       { sql += ` AND c.reference LIKE $${++paramCount}`; params.push(`%${ref}%`); }
+    if (marque_id)        { sql += ` AND c.marque_id = $${++paramCount}`; params.push(marque_id); }
+    if (ref)              { sql += ` AND c.reference LIKE $${++paramCount}`; params.push(`%${ref}%`); }
+    if (active === '1')   { sql += ` AND c.active = TRUE`; }
+    if (active === '0')   { sql += ` AND c.active = FALSE`; }
     sql += ' ORDER BY m.nom, c.reference';
 
     const resCouleurs = await pool.query(sql, params);
 
-    res.send(renderCouleurs(resCouleurs.rows, resMarques.rows, { marque_id, ref }));
+    res.send(renderCouleurs(resCouleurs.rows, resMarques.rows, { marque_id, ref, active }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -92,13 +94,24 @@ router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
 
 // UPDATE couleur
 router.post('/couleurs/:id', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
+  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, active } = req.body;
   try {
     await pool.query(
-      'UPDATE couleurs SET marque_id=$1, reference=$2, hex=$3, r=$4, g=$5, b=$6, hex_photo=$7, r_photo=$8, g_photo=$9, b_photo=$10, medium=$11, pointe_id=$12, pack_min_id=$13 WHERE id=$14',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null, req.params.id]
+      'UPDATE couleurs SET marque_id=$1, reference=$2, hex=$3, r=$4, g=$5, b=$6, hex_photo=$7, r_photo=$8, g_photo=$9, b_photo=$10, medium=$11, pointe_id=$12, pack_min_id=$13, active=$14 WHERE id=$15',
+      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null, active === '1', req.params.id]
     );
     res.redirect('/couleurs');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+// TOGGLE active
+router.post('/couleurs/:id/toggle-active', requireAuth, async (req, res) => {
+  try {
+    await pool.query('UPDATE couleurs SET active = NOT active WHERE id = $1', [req.params.id]);
+    res.redirect(req.get('Referer') || '/couleurs');
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -194,12 +207,19 @@ function renderCouleurs(couleurs, marques, filters) {
   ).join('');
 
   const rows = couleurs.map(c => `
-    <tr>
+    <tr style="${!c.active ? 'opacity:0.45' : ''}">
       <td><span class="color-swatch" style="background:${c.hex}"></span></td>
       <td>${c.marque_nom}</td>
       <td>${c.reference}</td>
       <td>${c.hex}</td>
       <td>${c.r} / ${c.g} / ${c.b}</td>
+      <td>
+        <form method="POST" action="/couleurs/${c.id}/toggle-active" style="display:inline">
+          <button type="submit" style="background:${c.active ? '#e8f8ee;color:#27ae60' : '#fff0f0;color:#e74c3c'}">
+            ${c.active ? '✓ Publiée' : '✗ Masquée'}
+          </button>
+        </form>
+      </td>
       <td>
         <a href="/couleurs/${c.id}/edit">Modifier</a>
         <form method="POST" action="/couleurs/${c.id}/delete" style="display:inline" onsubmit="return confirm('Supprimer cette couleur ?')">
@@ -233,6 +253,11 @@ function renderCouleurs(couleurs, marques, filters) {
         ${options}
       </select>
       <input type="text" name="ref" placeholder="Référence..." value="${filters.ref || ''}">
+      <select name="active">
+        <option value="">Toutes</option>
+        <option value="1" ${filters.active === '1' ? 'selected' : ''}>Publiées</option>
+        <option value="0" ${filters.active === '0' ? 'selected' : ''}>Dépubliées</option>
+      </select>
       <button type="submit">Filtrer</button>
       <a href="/couleurs">Réinitialiser</a>
     </form>
@@ -245,11 +270,12 @@ function renderCouleurs(couleurs, marques, filters) {
           <th>Référence</th>
           <th>Hex</th>
           <th>R / G / B</th>
+          <th>Statut</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        ${rows || '<tr><td colspan="6">Aucune couleur enregistrée.</td></tr>'}
+        ${rows || '<tr><td colspan="7">Aucune couleur enregistrée.</td></tr>'}
       </tbody>
     </table>
   </main>
@@ -421,11 +447,19 @@ function renderForm({ marques, pointes, packs, couleur }) {
           </div>
 
           <div class="form-group">
-            <label>Pack minimum</label>
+            <label>Pack contenant la référence</label>
             <div class="select-with-add">
               <select name="pack_min_id" id="select-pack">${optPacks}</select>
               <button type="button" class="btn-add-inline" onclick="openModal('modal-pack')">+</button>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label>Publication</label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:normal;cursor:pointer;">
+              <input type="checkbox" name="active" value="1" ${!edit || v.active ? 'checked' : ''}>
+              Couleur visible dans le test
+            </label>
           </div>
 
           <div class="form-actions">
@@ -770,7 +804,7 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
       <div class="sep"></div>
       <label>Pointe</label>
       <select id="bulk-pointe">${optPointes}</select>
-      <label>Pack minimum</label>
+      <label>Pack contenant la référence</label>
       <select id="bulk-pack">${optPacks}</select>
       <button type="button" id="btn-apply-bulk" class="btn-primary" disabled>Appliquer</button>
       <div class="sep"></div>

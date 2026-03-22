@@ -29,6 +29,9 @@ skills-lock.json
 # Environnement de développement local
 .ddev/
 
+# Documentation locale (dev solo)
+*.md
+
 # Fichiers de test / échantillons locaux
 echantillon/
 echantillon/*
