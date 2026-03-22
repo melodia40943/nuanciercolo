@@ -14,6 +14,11 @@ router.get('/test', (req, res) => {
   res.sendFile('test.html', { root: './views' });
 });
 
+// API — statut session (pour affichage conditionnel des outils dev)
+router.get('/api/me', (req, res) => {
+  res.json({ loggedIn: !!req.session.userId });
+});
+
 // API — toutes les couleurs pour le matching client — publique
 router.get('/api/couleurs/all', async (req, res) => {
   try {

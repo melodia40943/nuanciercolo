@@ -22,13 +22,14 @@ d'une légende de livre.
 - **ddev** avec PostgreSQL 16 (port local : 33772)
 - App Node lancée séparément avec `npm run dev` (port 3000)
 - **Ne pas utiliser** `ddev exec node` — Node tourne hors ddev
-- Export DB : `ddev export-db --file=nuancier.sql --gzip=false`
+- Export DB : `ddev exec pg_dump -U db -h db db --clean --if-exists --no-owner --no-privileges > nuancier.sql`
 - Import DB local : `ddev exec psql -U db -d db < nuancier.sql`
 
 ## Déploiement (Railway)
 - App Node.js auto-déployée depuis GitHub (branche main)
 - PostgreSQL Railway : `centerbeam.proxy.rlwy.net:47079` / db `railway`
 - Import DB vers prod : `ddev exec psql "<DATABASE_PUBLIC_URL>" < nuancier.sql`
+  (le dump généré avec `--clean --if-exists --no-owner` est directement compatible, pas besoin de TRUNCATE préalable)
 - Variables d'env Railway (sans guillemets) :
   ```
   DB_HOST     = ${{Postgres.PGHOST}}

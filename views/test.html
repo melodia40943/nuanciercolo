@@ -289,6 +289,137 @@
       padding: 2rem 1rem;
     }
 
+    /* ── Bouton Enregistrer dans le sheet ── */
+    #btn-save {
+      display: block;
+      width: calc(100% - 16px);
+      margin: 6px 8px 4px;
+      padding: 7px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    #btn-save.active { opacity: 1; pointer-events: auto; }
+
+    /* ── Panel liste des recherches sauvegardées ── */
+    #saved-panel {
+      position: fixed;
+      inset: 0;
+      background: #f5f5f7;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+    }
+    #saved-panel.open { transform: translateY(0); }
+    #saved-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 10px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    #saved-header h2 { flex: 1; font-size: 1rem; }
+    .saved-action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #btn-export-jpeg { background: var(--accent); color: #fff; }
+    #btn-close-saved { background: #eee; color: #333; }
+    #saved-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .saved-empty { text-align:center; color:#bbb; font-size:0.85rem; padding:3rem 1rem; }
+    .saved-entry {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .saved-num {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #bbb;
+      width: 26px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .saved-sampled {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,.08);
+      flex-shrink: 0;
+    }
+    .saved-arrow { color: #ccc; font-size: 1rem; flex-shrink: 0; }
+    .saved-matches { display: flex; gap: 6px; flex: 1; }
+    .saved-match {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+    }
+    .saved-match-swatch {
+      width: 36px; height: 36px;
+      border-radius: 7px;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+    .saved-match-ref { font-size: 0.65rem; font-weight: 700; color: #444; }
+    .saved-match-de  { font-size: 0.58rem; color: #aaa; font-family: monospace; }
+    .saved-del {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #ddd;
+      padding: 4px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .saved-del:hover { color: var(--danger); }
+    .saved-chosen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .saved-chosen-label { font-size: 0.58rem; color: #bbb; }
+    .saved-chosen-input {
+      width: 52px;
+      padding: 3px 5px;
+      border: 1.5px solid #eee;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+      color: #333;
+      outline: none;
+    }
+    .saved-chosen-input:focus { border-color: var(--accent); }
+    .saved-chosen-input.filled { border-color: var(--success); color: var(--success); }
+
     /* Toast */
     #toast {
       position: fixed;
@@ -422,6 +553,7 @@
   <a href="/tips" class="tb-btn" style="text-decoration:none;color:#fff;">← Retour</a>
   <button class="tb-btn" id="btn-open">📷 Ouvrir photo</button>
   <button class="tb-btn" id="btn-wb">⚪ Balance des blancs</button>
+  <button class="tb-btn" id="btn-saved" style="background:#fff;color:#333;display:none;">📋 <span id="saved-count">0</span></button>
   <span class="db-badge" id="db-badge">…</span>
 </div>
 
@@ -499,6 +631,7 @@
       <div class="top3-card" id="top3-1"><div class="top3-swatch"></div><div class="top3-ref">—</div><div class="top3-brand"></div></div>
       <div class="top3-card" id="top3-2"><div class="top3-swatch"></div><div class="top3-ref">—</div><div class="top3-brand"></div></div>
     </div>
+    <button id="btn-save">+ Enregistrer ce résultat</button>
   </div>
   <div class="sheet-body" id="sheet-body">
     <div class="empty-results">Tape sur une couleur du nuancier pour voir les matchs</div>
@@ -506,6 +639,20 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- Panel recherches sauvegardées -->
+<div id="saved-panel">
+  <div id="saved-header">
+    <h2>Recherches enregistrées</h2>
+    <button class="saved-action-btn" id="btn-export-json" style="background:#27ae60;color:#fff;display:none;">⬇ JSON</button>
+    <button class="saved-action-btn" id="btn-export-jpeg">⬇ JPEG</button>
+    <button class="saved-action-btn" id="btn-clear-saved" style="background:#ffeaea;color:var(--danger);">🗑 Vider</button>
+    <button class="saved-action-btn" id="btn-close-saved">✕ Fermer</button>
+  </div>
+  <div id="saved-list">
+    <div class="saved-empty">Aucune recherche enregistrée</div>
+  </div>
+</div>
 
 <script>
 // ── Service Worker ────────────────────────────────────────────────────────────
@@ -794,7 +941,7 @@ function placeSampleCircle(cvX, cvY) {
   const img=canvasToImg(cvX, cvY);
   if (img.x<0||img.x>=natW||img.y<0||img.y>=natH) return;
   circleCenter={imgX:img.x, imgY:img.y};
-  circleRadius=Math.round(natW/100); // ~40px pour 4000px, ~16px pour scanner
+  circleRadius=Math.max(18, Math.round(natW/100)); // min 18px natifs, ~40px pour 4000px
   render();
   doSample();
 }
@@ -971,15 +1118,104 @@ function doSample() {
   if (window.innerWidth<768) { clearTimeout(window._sheetAutoClose); window._sheetAutoClose=setTimeout(closeSheet,4000); }
 }
 
+// ── Pénalité angle de teinte ───────────────────────────────────────────────────
+// Poids appliqué à la distance circulaire de teinte (LAB hue angle).
+// Évite les confusions inter-familles (ex: brun suggéré à la place d'aubergine).
+// Mis à 0 pour les couleurs peu saturées (chroma < 8) car leur teinte est instable.
+const HUE_PENALTY_WEIGHT = 0.18;
+
+function huePenalty(lab1, lab2) {
+  const [, a1, b1] = lab1;
+  const [, a2, b2] = lab2;
+  const c1 = Math.sqrt(a1*a1 + b1*b1);
+  const c2 = Math.sqrt(a2*a2 + b2*b2);
+  const minC = Math.min(c1, c2);
+  if (minC < 8) return 0; // couleurs trop neutres — teinte non fiable
+  let h1 = Math.atan2(b1, a1) * 180 / Math.PI; if (h1 < 0) h1 += 360;
+  let h2 = Math.atan2(b2, a2) * 180 / Math.PI; if (h2 < 0) h2 += 360;
+  const diff = Math.abs(h1 - h2);
+  const dist = Math.min(diff, 360 - diff); // distance circulaire 0–180°
+  const chromaFactor = Math.min(1, minC / 25); // pleine pénalité dès chroma≥25
+  return dist * chromaFactor * HUE_PENALTY_WEIGHT;
+}
+
+// ── CIEDE2000 ──────────────────────────────────────────────────────────────────
+// Formule Sharma et al. 2005 — meilleure uniformité perceptuelle que CIE76
+function deltaE2000(lab1, lab2) {
+  const [L1, a1, b1] = lab1;
+  const [L2, a2, b2] = lab2;
+  const kL = 1, kC = 1, kH = 1;
+
+  const C1ab = Math.sqrt(a1*a1 + b1*b1);
+  const C2ab = Math.sqrt(a2*a2 + b2*b2);
+  const Cab_avg7 = Math.pow((C1ab + C2ab) / 2, 7);
+  const G = 0.5 * (1 - Math.sqrt(Cab_avg7 / (Cab_avg7 + 6103515625))); // 25^7
+
+  const a1p = a1 * (1 + G), a2p = a2 * (1 + G);
+  const C1p = Math.sqrt(a1p*a1p + b1*b1);
+  const C2p = Math.sqrt(a2p*a2p + b2*b2);
+
+  let h1p = Math.atan2(b1, a1p) * 180 / Math.PI; if (h1p < 0) h1p += 360;
+  let h2p = Math.atan2(b2, a2p) * 180 / Math.PI; if (h2p < 0) h2p += 360;
+
+  const dLp = L2 - L1;
+  const dCp = C2p - C1p;
+  const C1pC2p = C1p * C2p;
+  let dhp = 0;
+  if (C1pC2p !== 0) {
+    dhp = Math.abs(h2p - h1p) <= 180 ? h2p - h1p
+        : h2p - h1p > 180           ? h2p - h1p - 360
+                                     : h2p - h1p + 360;
+  }
+  const dHp = 2 * Math.sqrt(C1pC2p) * Math.sin(dhp * Math.PI / 360);
+
+  const Lp_avg = (L1 + L2) / 2;
+  const Cp_avg = (C1p + C2p) / 2;
+  let hp_avg = h1p + h2p;
+  if (C1pC2p !== 0) {
+    hp_avg = Math.abs(h1p - h2p) <= 180 ? (h1p + h2p) / 2
+           : h1p + h2p < 360            ? (h1p + h2p + 360) / 2
+                                         : (h1p + h2p - 360) / 2;
+  }
+
+  const T = 1
+    - 0.17 * Math.cos((hp_avg - 30)  * Math.PI / 180)
+    + 0.24 * Math.cos( hp_avg * 2    * Math.PI / 180)
+    + 0.32 * Math.cos((hp_avg * 3 + 6)  * Math.PI / 180)
+    - 0.20 * Math.cos((hp_avg * 4 - 63) * Math.PI / 180);
+
+  const SL = 1 + 0.015 * Math.pow(Lp_avg - 50, 2) / Math.sqrt(20 + Math.pow(Lp_avg - 50, 2));
+  const SC = 1 + 0.045 * Cp_avg;
+  const SH = 1 + 0.015 * Cp_avg * T;
+
+  const Cp_avg7 = Math.pow(Cp_avg, 7);
+  const RC = 2 * Math.sqrt(Cp_avg7 / (Cp_avg7 + 6103515625));
+  const RT = -Math.sin(60 * Math.exp(-Math.pow((hp_avg - 275) / 25, 2)) * Math.PI / 180) * RC;
+
+  return Math.sqrt(
+    Math.pow(dLp / (kL * SL), 2) +
+    Math.pow(dCp / (kC * SC), 2) +
+    Math.pow(dHp / (kH * SH), 2) +
+    RT * (dCp / (kC * SC)) * (dHp / (kH * SH))
+  );
+}
+
 // ── Matching ───────────────────────────────────────────────────────────────────
+let currentSampled = null;
+let currentTop3    = [];
+
 function matchColors(r,g,b) {
   if (!dbColors.length) { toast('⚠️ Aucune couleur en base'); return; }
-  const sampled=chroma(r,g,b);
+  currentSampled = { hex: toHexCore(r,g,b), r, g, b };
+  const sampledLab = chroma(r,g,b).lab();
   const scores=dbColors.map(c=>{
-    const dScanner = chroma.deltaE(sampled, chroma(Number(c.r), Number(c.g), Number(c.b)));
-    const dPhoto   = (c.r_photo != null)
-      ? chroma.deltaE(sampled, chroma(Number(c.r_photo), Number(c.g_photo), Number(c.b_photo)))
-      : Infinity;
+    const labScanner = chroma(Number(c.r), Number(c.g), Number(c.b)).lab();
+    const dScanner   = deltaE2000(sampledLab, labScanner) + huePenalty(sampledLab, labScanner);
+    let dPhoto = Infinity;
+    if (c.r_photo != null) {
+      const labPhoto = chroma(Number(c.r_photo), Number(c.g_photo), Number(c.b_photo)).lab();
+      dPhoto = deltaE2000(sampledLab, labPhoto) + huePenalty(sampledLab, labPhoto);
+    }
     return { ...c, delta: Math.min(dScanner, dPhoto) };
   }).sort((a,b)=>a.delta-b.delta);
 
@@ -988,6 +1224,12 @@ function matchColors(r,g,b) {
     document.getElementById('tab-swatch').style.background=scores[0].hex;
     document.getElementById('tab-ref').textContent=scores[0].reference;
   }
+
+  // Mémoriser top3 pour la sauvegarde
+  currentTop3 = scores.slice(0,3).map(c => ({
+    reference: c.reference, marque: c.marque, hex: c.hex, delta: c.delta
+  }));
+  document.getElementById('btn-save').classList.add('active');
 
   // Top 3 dans le peek (toujours visible)
   scores.slice(0,3).forEach((c,i)=>{
@@ -1065,6 +1307,247 @@ window.addEventListener('mouseup',   wbDragEnd);
 wbIndicator.addEventListener('touchstart', e=>{ e.stopPropagation(); wbDragStart(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
 wbIndicator.addEventListener('touchmove',  e=>wbDragMove(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
 wbIndicator.addEventListener('touchend',   wbDragEnd,{passive:true});
+
+// ── Recherches sauvegardées ────────────────────────────────────────────────────
+const LS_KEY = 'nuancier_searches';
+let savedSearches = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+
+const savedPanel = document.getElementById('saved-panel');
+const savedList  = document.getElementById('saved-list');
+const btnSaved   = document.getElementById('btn-saved');
+const savedCount = document.getElementById('saved-count');
+
+function updateSavedBadge() {
+  savedCount.textContent = savedSearches.length;
+  btnSaved.style.display = savedSearches.length > 0 ? '' : 'none';
+}
+
+function persistSearches() {
+  localStorage.setItem(LS_KEY, JSON.stringify(savedSearches));
+  updateSavedBadge();
+}
+
+function renderSavedList() {
+  if (!savedSearches.length) {
+    savedList.innerHTML = '<div class="saved-empty">Aucune recherche enregistrée</div>';
+    return;
+  }
+  savedList.innerHTML = savedSearches.map((s, idx) => `
+    <div class="saved-entry">
+      <div class="saved-num">${idx + 1}</div>
+      <div class="saved-sampled" style="background:${s.sampled.hex}" title="${s.sampled.hex}"></div>
+      <div class="saved-arrow">→</div>
+      <div class="saved-matches">
+        ${s.top3.map(m => `
+          <div class="saved-match">
+            <div class="saved-match-swatch" style="background:${m.hex}"></div>
+            <div class="saved-match-ref">${m.reference}</div>
+            <div class="saved-match-de">ΔE ${m.delta.toFixed(1)}</div>
+          </div>`).join('')}
+      </div>
+      <div class="saved-chosen">
+        <span class="saved-chosen-label">choisi</span>
+        <input class="saved-chosen-input${s.chosen ? ' filled' : ''}"
+               data-idx="${idx}"
+               type="text"
+               placeholder="réf."
+               maxlength="10"
+               value="${s.chosen || ''}">
+      </div>
+      <button class="saved-del" data-idx="${idx}" title="Supprimer">✕</button>
+    </div>`).join('');
+
+  savedList.querySelectorAll('.saved-chosen-input').forEach(input => {
+    input.addEventListener('change', e => {
+      const i = Number(e.currentTarget.dataset.idx);
+      const val = e.currentTarget.value.trim();
+      savedSearches[i].chosen = val || null;
+      e.currentTarget.classList.toggle('filled', !!val);
+      persistSearches();
+    });
+  });
+
+  savedList.querySelectorAll('.saved-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const i = Number(e.currentTarget.dataset.idx);
+      savedSearches.splice(i, 1);
+      persistSearches();
+      renderSavedList();
+    });
+  });
+}
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  if (!currentSampled || !currentTop3.length) return;
+  savedSearches.push({ sampled: currentSampled, top3: currentTop3 });
+  persistSearches();
+  toast('✓ Résultat enregistré (' + savedSearches.length + ')');
+});
+
+btnSaved.addEventListener('click', () => {
+  renderSavedList();
+  savedPanel.classList.add('open');
+});
+
+document.getElementById('btn-close-saved').addEventListener('click', () => {
+  savedPanel.classList.remove('open');
+});
+
+document.getElementById('btn-clear-saved').addEventListener('click', () => {
+  if (!savedSearches.length) return;
+  if (!confirm('Vider toutes les recherches enregistrées ?')) return;
+  savedSearches = [];
+  persistSearches();
+  renderSavedList();
+  toast('Liste vidée');
+});
+
+// ── Export JSON ────────────────────────────────────────────────────────────────
+document.getElementById('btn-export-json').addEventListener('click', () => {
+  if (!savedSearches.length) { toast('Aucune recherche à exporter'); return; }
+
+  const payload = {
+    date: new Date().toISOString().slice(0, 10),
+    algorithm: 'CIEDE2000 + hue_penalty',
+    entries: savedSearches.map((s, idx) => ({
+      n: idx + 1,
+      sampled: {
+        hex: s.sampled.hex,
+        r: s.sampled.r,
+        g: s.sampled.g,
+        b: s.sampled.b
+      },
+      top3: s.top3.map(m => ({
+        reference: m.reference,
+        marque: m.marque,
+        hex: m.hex,
+        delta: parseFloat(m.delta.toFixed(2))
+      })),
+      chosen: null  // à remplir manuellement : référence que tu aurais choisie à l'oeil
+    }))
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.download = `nuancier-${payload.date}.json`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  toast('✓ Export JSON téléchargé');
+});
+
+// ── Export JPEG ────────────────────────────────────────────────────────────────
+document.getElementById('btn-export-jpeg').addEventListener('click', () => {
+  if (!savedSearches.length) { toast('Aucune recherche à exporter'); return; }
+
+  const W       = 620;
+  const PAD     = 24;
+  const ROW_H   = 80;
+  const HDR_H   = 60;
+  const SW      = 44;  // swatch size
+  const GAP     = 10;
+  const H = HDR_H + savedSearches.length * ROW_H + PAD;
+
+  const cv2 = document.createElement('canvas');
+  cv2.width  = W;
+  cv2.height = H;
+  const ctx2 = cv2.getContext('2d');
+
+  // Fond blanc
+  ctx2.fillStyle = '#ffffff';
+  ctx2.fillRect(0, 0, W, H);
+
+  // Header
+  ctx2.fillStyle = '#4a6cf7';
+  ctx2.fillRect(0, 0, W, HDR_H);
+  ctx2.fillStyle = '#ffffff';
+  ctx2.font = 'bold 18px system-ui, sans-serif';
+  ctx2.textBaseline = 'middle';
+  ctx2.fillText('Nuancier — Résultats', PAD, HDR_H / 2);
+
+  // Chaque entrée
+  savedSearches.forEach((s, idx) => {
+    const y = HDR_H + idx * ROW_H;
+
+    // Fond alterné
+    ctx2.fillStyle = idx % 2 === 0 ? '#f8f8f8' : '#ffffff';
+    ctx2.fillRect(0, y, W, ROW_H);
+
+    // Numéro
+    ctx2.fillStyle = '#bbbbbb';
+    ctx2.font = 'bold 20px system-ui, sans-serif';
+    ctx2.textBaseline = 'middle';
+    ctx2.textAlign = 'center';
+    ctx2.fillText(String(idx + 1), PAD, y + ROW_H / 2);
+
+    // Swatch couleur samplée
+    const sx = PAD + 24;
+    roundRect(ctx2, sx, y + (ROW_H - SW) / 2, SW, SW, 8, s.sampled.hex);
+
+    // Flèche
+    ctx2.fillStyle = '#cccccc';
+    ctx2.font = '18px system-ui, sans-serif';
+    ctx2.textAlign = 'center';
+    ctx2.fillText('→', sx + SW + 22, y + ROW_H / 2);
+
+    // Top 3 matchs
+    const matchStartX = sx + SW + 48;
+    const matchW = (W - matchStartX - PAD) / 3;
+    s.top3.forEach((m, mi) => {
+      const mx = matchStartX + mi * matchW + matchW / 2;
+      const my = y + (ROW_H - SW) / 2;
+      roundRect(ctx2, mx - SW / 2, my, SW, SW, 8, m.hex);
+      ctx2.fillStyle = '#333333';
+      ctx2.font = 'bold 11px system-ui, sans-serif';
+      ctx2.textAlign = 'center';
+      ctx2.fillText(m.reference, mx, my + SW + 12);
+      ctx2.fillStyle = '#aaaaaa';
+      ctx2.font = '9px monospace';
+      ctx2.fillText('ΔE ' + m.delta.toFixed(1), mx, my + SW + 23);
+    });
+  });
+
+  // Pied de page
+  ctx2.fillStyle = '#eeeeee';
+  ctx2.fillRect(0, H - PAD, W, PAD);
+  ctx2.fillStyle = '#aaaaaa';
+  ctx2.font = '10px system-ui, sans-serif';
+  ctx2.textAlign = 'center';
+  ctx2.fillText('nuanciercolo · généré le ' + new Date().toLocaleDateString('fr-FR'), W / 2, H - 8);
+
+  const link = document.createElement('a');
+  link.download = 'nuancier-resultats.jpg';
+  link.href = cv2.toDataURL('image/jpeg', 0.92);
+  link.click();
+  toast('✓ Export JPEG téléchargé');
+});
+
+function roundRect(ctx2, x, y, w, h, r, fill) {
+  ctx2.beginPath();
+  ctx2.moveTo(x + r, y);
+  ctx2.lineTo(x + w - r, y);
+  ctx2.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx2.lineTo(x + w, y + h - r);
+  ctx2.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx2.lineTo(x + r, y + h);
+  ctx2.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx2.lineTo(x, y + r);
+  ctx2.quadraticCurveTo(x, y, x + r, y);
+  ctx2.closePath();
+  ctx2.fillStyle = fill;
+  ctx2.fill();
+  ctx2.strokeStyle = 'rgba(0,0,0,0.08)';
+  ctx2.lineWidth = 1;
+  ctx2.stroke();
+}
+
+// Init badge au chargement
+updateSavedBadge();
+
+// Afficher le bouton JSON uniquement si connecté
+fetch('/api/me').then(r => r.json()).then(({ loggedIn }) => {
+  if (loggedIn) document.getElementById('btn-export-json').style.display = '';
+});
 
 // ── Utils ──────────────────────────────────────────────────────────────────────
 function toHex(r,g,b) {
