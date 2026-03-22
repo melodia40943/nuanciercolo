@@ -70,9 +70,12 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       align-items: center;
+      justify-content: center;
       z-index: 50;
+      max-width: calc(100vw - 24px);
     }
     .tb-btn {
       padding: 8px 14px;
@@ -96,31 +99,6 @@
     #btn-wb.pending { background: var(--warn); color: #fff; }
     #btn-wb.done    { background: var(--success); color: #fff; }
 
-    /* Indicateur WB — juste au-dessus du panneau d'ajustement */
-    #wb-indicator {
-      display: none;
-      position: fixed;
-      bottom: calc(var(--sheet-peek) + 96px); /* au-dessus du panneau adj */
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.82);
-      border-radius: 16px;
-      padding: 12px 18px;
-      color: #fff;
-      font-size: 0.78rem;
-      z-index: 56;
-      align-items: center;
-      gap: 14px;
-      white-space: nowrap;
-      box-shadow: 0 4px 18px rgba(0,0,0,.5);
-    }
-    #wb-indicator.visible { display: flex; }
-    #wb-indicator { cursor: grab; user-select: none; }
-    /* Deux swatches côte à côte sans espace ni bordure — split view */
-    .wb-split { display: flex; flex-shrink: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
-    #wb-swatch-corr { width: 72px; height: 72px; flex-shrink: 0; }
-    #wb-swatch-white { width: 72px; height: 72px; flex-shrink: 0; background: #ffffff; }
-    #wb-label { font-size: 0.75rem; opacity: .85; max-width: 130px; white-space: normal; line-height: 1.4; }
     .db-badge {
       background: rgba(0,0,0,.55);
       color: #ccc;
@@ -551,14 +529,14 @@
     /* ── WB Adjustment Panel ── */
     #wb-adj-panel {
       position: fixed;
-      left: 0; right: 53px;
+      left: 0; right: 0;
       bottom: var(--sheet-peek);
       background: rgba(16,16,26,.93);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid rgba(255,255,255,.1);
       border-radius: 14px 14px 0 0;
-      padding: 12px 16px 10px;
+      padding: 10px 16px;
       color: #fff;
       z-index: 55;
       overflow: hidden;
@@ -568,29 +546,26 @@
     }
     #wb-adj-panel.visible { transform: translateY(0); }
 
-    .wbadj-compare {
+    .wbadj-inner {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 12px;
     }
-    .wbadj-swatch {
-      width: 34px; height: 34px;
-      border-radius: 8px;
-      border: 1.5px solid rgba(255,255,255,.25);
+    .wbadj-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
       flex-shrink: 0;
     }
-    .wbadj-swatch.target {
-      border-color: rgba(255,255,255,.7);
-      background: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0/10px 10px; /* damier si vide */
-    }
-    .wbadj-info { flex: 1; font-size: 0.7rem; opacity: .65; line-height: 1.3; }
+    .wbadj-info { font-size: 0.65rem; opacity: .65; line-height: 1.3; text-align: center; max-width: 80px; }
+    .wbadj-right { flex: 1; display: flex; flex-direction: column; gap: 5px; }
     .wbadj-reset {
       background: rgba(255,255,255,.12);
       border: none;
       color: #fff;
-      font-size: 0.72rem;
-      padding: 5px 10px;
+      font-size: 0.85rem;
+      padding: 6px 10px;
       border-radius: 10px;
       cursor: pointer;
       flex-shrink: 0;
@@ -598,10 +573,9 @@
     .wbadj-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 5px;
+      gap: 8px;
     }
-    .wbadj-lbl { font-size: 0.7rem; width: 88px; flex-shrink: 0; opacity: .75; }
+    .wbadj-lbl { font-size: 0.7rem; width: 80px; flex-shrink: 0; opacity: .75; }
     .wbadj-slider {
       flex: 1;
       -webkit-appearance: none;
@@ -645,7 +619,6 @@
       .sheet-peek-label { display: none; }
       #toast { bottom: 20px; }
       #wb-adj-panel { right: 340px; bottom: 0; border-radius: 14px 14px 0 0; }
-      #wb-indicator { bottom: 96px; left: auto; transform: none; right: calc(340px + 16px); }
     }
   </style>
 </head>
@@ -671,14 +644,6 @@
   <span class="db-badge" id="db-badge">…</span>
 </div>
 
-<!-- Indicateur WB : photo corrigée | blanc cible -->
-<div id="wb-indicator">
-  <div class="wb-split">
-    <div id="wb-swatch-corr"></div>
-    <div id="wb-swatch-white"></div>
-  </div>
-  <span id="wb-label">tape sur le blanc de référence</span>
-</div>
 
 <!-- Canvas -->
 <div id="canvas-panel">
@@ -705,21 +670,25 @@
 
 <!-- Panneau ajustement WB -->
 <div id="wb-adj-panel">
-  <div class="wbadj-compare">
-    <div class="wb-split" style="border-radius:10px;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,.2);">
-      <div id="wbadj-corr" style="width:56px;height:56px;flex-shrink:0;"></div>
-      <div style="width:56px;height:56px;flex-shrink:0;background:#fff;"></div>
+  <div class="wbadj-inner">
+    <div class="wbadj-left">
+      <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,.2);flex-shrink:0;">
+        <div id="wbadj-corr" style="width:36px;height:36px;flex-shrink:0;"></div>
+        <div style="width:36px;height:36px;flex-shrink:0;background:#fff;"></div>
+      </div>
+      <div class="wbadj-info" id="wbadj-info">Ajuste jusqu'à ce que les deux carrés soient identiques</div>
     </div>
-    <div class="wbadj-info" id="wbadj-info">Ajuste jusqu'à ce que les deux carrés soient identiques</div>
-    <button class="wbadj-reset" id="wbadj-reset">↺ Reset</button>
-  </div>
-  <div class="wbadj-row">
-    <span class="wbadj-lbl">☀️ Luminosité</span>
-    <input type="range" class="wbadj-slider" id="sl-bright" min="-60" max="60" value="0">
-  </div>
-  <div class="wbadj-row">
-    <span class="wbadj-lbl">🌡 Température</span>
-    <input type="range" class="wbadj-slider" id="sl-temp" min="-60" max="60" value="0">
+    <div class="wbadj-right">
+      <div class="wbadj-row">
+        <span class="wbadj-lbl">☀️ Luminosité</span>
+        <input type="range" class="wbadj-slider" id="sl-bright" min="-60" max="60" value="0">
+      </div>
+      <div class="wbadj-row">
+        <span class="wbadj-lbl">🌡 Température</span>
+        <input type="range" class="wbadj-slider" id="sl-temp" min="-60" max="60" value="0">
+      </div>
+    </div>
+    <button class="wbadj-reset" id="wbadj-reset">↺</button>
   </div>
 </div>
 
@@ -930,14 +899,7 @@ function applyImageEl(img) {
   const autoOk=autoDetectWB(imgData,natW,natH,({white,black})=>{
     btnWb.textContent='✓ Blancs OK (auto)';
     btnWb.className='tb-btn done';
-    const cast=Math.max(white.r,white.g,white.b)-Math.min(white.r,white.g,white.b);
     const brightness=(white.r+white.g+white.b)/3;
-    document.getElementById('wb-swatch-corr').style.background=
-      toHex(Math.round(white.r),Math.round(white.g),Math.round(white.b));
-    document.getElementById('wb-swatch-corr').style.background='#ffffff';
-    const castTxt=cast<8?'Neutre ✓':cast<20?'Légère dominante':'Dominante marquée';
-    document.getElementById('wb-label').textContent=castTxt+(brightness<170?' · ⚠️ photo sombre · ajuste en bas':'· ajuste en bas');
-    document.getElementById('wb-indicator').classList.add('visible');
     onWbSet(white, black);
     if (brightness<170) toast('⚠️ Photo sombre — ajuste la luminosité en bas');
     else toast('✓ Balance des blancs auto — ajuste si besoin');
@@ -1010,14 +972,12 @@ cv.addEventListener('mousedown', e=>{
   if (e.button===1||e.button===2) { pointerDown=true; pointerStart={x,y}; pointerMoved=true; return; }
   if (e.button!==0) return;
   pointerDown=true; pointerStart={x,y}; pointerMoved=false;
-  if (wbPending) { livePreviewWB(x,y); cv.style.cursor='cell'; }
-  else cv.style.cursor='grabbing';
+  cv.style.cursor = wbPending ? 'cell' : 'grabbing';
 });
 cv.addEventListener('mousemove', e=>{
   if (!imgEl) return;
   const {x,y}=evXY(e);
-  // En mode WB, aperçu en direct même sans clic (hover)
-  if (wbPending) { livePreviewWB(x,y); return; }
+  if (wbPending) return;
   if (!pointerDown||!pointerStart) return;
   if (!pointerMoved && Math.hypot(x-pointerStart.x, y-pointerStart.y)>5) pointerMoved=true;
   if (pointerMoved) { viewX+=x-pointerStart.x; viewY+=y-pointerStart.y; render(); }
@@ -1050,7 +1010,6 @@ cv.addEventListener('touchstart', e=>{
   if (e.touches.length===1) {
     const {x,y}=evXY(e);
     pointerDown=true; pointerStart={x,y}; pointerMoved=false;
-    if (wbPending) livePreviewWB(x,y);
   }
 },{passive:false});
 
@@ -1071,9 +1030,7 @@ cv.addEventListener('touchmove', e=>{
   if (pointerDown && e.touches.length===1) {
     const {x,y}=evXY(e);
     if (wbPending) {
-      // Mode WB : glissement = aperçu en direct (pas de pan)
       pointerStart={x,y};
-      livePreviewWB(x,y);
     } else {
       const prev=pointerStart;
       pointerStart={x,y};
@@ -1105,7 +1062,6 @@ function placeSampleCircle(cvX, cvY) {
 }
 
 // ── WB ─────────────────────────────────────────────────────────────────────────
-const wbIndicator = document.getElementById('wb-indicator');
 
 // Base WB (snapshot au moment du clic/auto) — les sliders ajustent par rapport à ça
 let wbBaseWhite = null;
@@ -1116,8 +1072,6 @@ btnWb.addEventListener('click', ()=>{
   if (wbPending) {
     btnWb.textContent='⚠️ Tape sur le blanc de référence…';
     btnWb.className='tb-btn pending';
-    wbIndicator.classList.add('visible');
-    document.getElementById('wb-label').textContent='tape sur un blanc de référence';
   } else {
     resetWbBtn();
   }
@@ -1128,7 +1082,6 @@ function resetWbBtn() {
   btnWb.textContent=wbSet?'✓ Blancs OK (retaper pour changer)':'⚪ Balance des blancs';
   btnWb.className='tb-btn '+(wbSet?'done':'');
   if (!wbSet) {
-    wbIndicator.classList.remove('visible');
     document.getElementById('wb-adj-panel').classList.remove('visible');
     cv.style.filter='none';
   }
@@ -1148,9 +1101,7 @@ function applyWbSliders() {
   if (!wbBaseWhite) return;
   const bright = parseFloat(document.getElementById('sl-bright').value); // -60..+60
   const temp   = parseFloat(document.getElementById('sl-temp').value);   // -60..+60
-  // bright > 0 → éclaircir → abaisser le point blanc (diviseur plus petit)
-  const scale = 1 - bright * 0.006; // +60 → ×0.64, -60 → ×1.36
-  // temp > 0 → plus chaud → R diminue (moins de correction rouge), B augmente
+  const scale = 1 - bright * 0.006;
   const tShift = temp * 0.6;
   wbWhite = {
     r: Math.max(10, wbBaseWhite.r * scale - tShift),
@@ -1158,24 +1109,16 @@ function applyWbSliders() {
     b: Math.max(10, wbBaseWhite.b * scale + tShift),
   };
   wbSet = true;
-  // Swatch "après correction" : montrer ce que le blanc de base donnerait avec les réglages actuels
   const corr = applyWB({ r: Math.round(wbBaseWhite.r), g: Math.round(wbBaseWhite.g), b: Math.round(wbBaseWhite.b) });
-  const corrHex = toHex(corr.r, corr.g, corr.b);
-  document.getElementById('wbadj-corr').style.background = corrHex;
-  // Mettre à jour l'indicateur flottant aussi (swatch droite + label)
-  document.getElementById('wb-swatch-corr').style.background = corrHex;
-  // Info qualité
+  document.getElementById('wbadj-corr').style.background = toHex(corr.r, corr.g, corr.b);
   const drift = Math.max(corr.r,corr.g,corr.b) - Math.min(corr.r,corr.g,corr.b);
   const bri   = (corr.r+corr.g+corr.b)/3;
-  const qualityTxt =
+  document.getElementById('wbadj-info').textContent =
     bri > 220 && drift < 15 ? '✓ Blanc — tu peux échantillonner !'
     : bri > 180 && drift < 30 ? '〜 Presque blanc — ajuste encore'
     : '⚠️ Pas encore blanc — continue';
-  document.getElementById('wbadj-info').textContent = qualityTxt;
-  document.getElementById('wb-label').textContent    = qualityTxt;
   updateWbFilter();
-  // Re-échantillonner si un cercle est déjà placé
-  if (circleCenter) doSample();
+  if (circleCenter) doSample(true);
 }
 
 // Applique la correction via feColorMatrix sur le canvas (aperçu live)
@@ -1214,54 +1157,14 @@ document.getElementById('wbadj-reset').addEventListener('click', ()=>{
 function doWB(cvX,cvY) {
   const img=canvasToImg(cvX,cvY);
   const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
-    const rawHex=toHex(Math.round(white.r),Math.round(white.g),Math.round(white.b));
-    document.getElementById('wb-swatch-corr').style.background=rawHex;
-    document.getElementById('wb-swatch-corr').style.background='#ffffff';
-    const cast=Math.max(white.r,white.g,white.b)-Math.min(white.r,white.g,white.b);
-    document.getElementById('wb-label').textContent=(cast<8?'Neutre ✓':cast<20?'Légère dominante':'Dominante marquée')+' · ajuste en bas';
-    wbIndicator.classList.add('visible');
     onWbSet(white, black);
     toast('✓ Balance définie — ajuste avec les curseurs si besoin');
   });
   if (!ok) toast('⚠️ Zone trop sombre — tape sur le blanc de référence');
 }
 
-// ── Live WB preview ────────────────────────────────────────────────────────────
-// Appelé pendant le glissement en mode WB — montre la couleur brute + neutralité
-function livePreviewWB(cvX, cvY) {
-  if (!imgData) return;
-  const img=canvasToImg(cvX, cvY);
-  if (img.x<0||img.x>=natW||img.y<0||img.y>=natH) return;
-
-  // Moyenne sur un petit carré autour du pointeur
-  const d=imgData.data;
-  let sR=0,sG=0,sB=0,n=0;
-  const R=Math.max(5, Math.round(natW/500));
-  for (let dy=-R;dy<=R;dy++) for (let dx=-R;dx<=R;dx++) {
-    const px=Math.round(img.x+dx),py=Math.round(img.y+dy);
-    if (px<0||px>=natW||py<0||py>=natH) continue;
-    const i=(py*natW+px)*4; sR+=d[i];sG+=d[i+1];sB+=d[i+2];n++;
-  }
-  if (!n) return;
-  const rawR=sR/n, rawG=sG/n, rawB=sB/n;
-
-  document.getElementById('wb-swatch-corr').style.background=toHex(Math.round(rawR),Math.round(rawG),Math.round(rawB));
-  document.getElementById('wb-swatch-corr').style.background='#ffffff'; // cible = blanc parfait
-
-  const br=(rawR+rawG+rawB)/3;
-  const cast=Math.max(rawR,rawG,rawB)-Math.min(rawR,rawG,rawB);
-  let lbl;
-  if      (br<100)   lbl='⚠️ Trop sombre — cherche du blanc';
-  else if (br<150)   lbl='⚠️ Gris moyen — pas assez clair';
-  else if (cast>30)  lbl='⚠️ Zone colorée — cherche du blanc neutre';
-  else if (cast>15)  lbl='〜 Légère dominante';
-  else               lbl='✓ Bon blanc — soulève pour confirmer';
-  document.getElementById('wb-label').textContent=lbl;
-  wbIndicator.classList.add('visible');
-}
-
 // ── Sampling ───────────────────────────────────────────────────────────────────
-function doSample() {
+function doSample(fromWB = false) {
   if (!circleCenter||circleRadius<1) return;
   const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
   if (!result) { toast('⚠️ Zone invalide — réessaie'); return; }
@@ -1271,9 +1174,11 @@ function doSample() {
   document.getElementById('sampled-rgb-mini').textContent=`RGB(${result.r}, ${result.g}, ${result.b})`;
 
   matchColors(result.r,result.g,result.b);
-  openSheet();
-  // Sur mobile, fermer auto après 4s pour libérer la vue
-  if (window.innerWidth<768) { clearTimeout(window._sheetAutoClose); window._sheetAutoClose=setTimeout(closeSheet,4000); }
+  if (!fromWB) {
+    openSheet();
+    // Sur mobile, fermer auto après 4s pour libérer la vue
+    if (window.innerWidth<768) { clearTimeout(window._sheetAutoClose); window._sheetAutoClose=setTimeout(closeSheet,4000); }
+  }
 }
 
 // ── Pénalité angle de teinte ───────────────────────────────────────────────────
@@ -1447,29 +1352,6 @@ document.querySelector('.sheet-peek-content').addEventListener('click', ()=>{
   sheetOpen ? closeSheet() : openSheet();
 });
 
-// ── Wb-indicator draggable ─────────────────────────────────────────────────────
-let wbDrag=null;
-function wbDragStart(clientX, clientY) {
-  const rect=wbIndicator.getBoundingClientRect();
-  wbIndicator.style.top=rect.top+'px'; wbIndicator.style.left=rect.left+'px';
-  wbIndicator.style.bottom='auto'; wbIndicator.style.transform='none';
-  wbIndicator.style.cursor='grabbing';
-  wbDrag={sx:clientX,sy:clientY,ox:rect.left,oy:rect.top};
-}
-function wbDragMove(clientX, clientY) {
-  if (!wbDrag) return;
-  wbIndicator.style.left=(wbDrag.ox+clientX-wbDrag.sx)+'px';
-  wbIndicator.style.top =(wbDrag.oy+clientY-wbDrag.sy)+'px';
-}
-function wbDragEnd() { if(wbDrag){wbDrag=null;wbIndicator.style.cursor='grab';} }
-
-wbIndicator.addEventListener('mousedown', e=>{ e.stopPropagation(); wbDragStart(e.clientX,e.clientY); });
-window.addEventListener('mousemove', e=>wbDragMove(e.clientX,e.clientY));
-window.addEventListener('mouseup',   wbDragEnd);
-wbIndicator.addEventListener('touchstart', e=>{ e.stopPropagation(); wbDragStart(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
-wbIndicator.addEventListener('touchmove',  e=>wbDragMove(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
-wbIndicator.addEventListener('touchend',   wbDragEnd,{passive:true});
-
 // ── Recherches sauvegardées ────────────────────────────────────────────────────
 const LS_KEY = 'nuancier_searches';
 let savedSearches = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
@@ -1535,6 +1417,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
   savedSearches.push({ sampled: currentSampled, top3: currentTop3 });
   persistSearches();
   toast('✓ Résultat enregistré (' + savedSearches.length + ')');
+  if (window.innerWidth < 768) closeSheet();
 });
 
 btnSaved.addEventListener('click', () => {
