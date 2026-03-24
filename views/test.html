@@ -202,7 +202,9 @@
       background: #fafafa;
       position: relative;
     }
-    .top3-card.best { border-color: var(--accent); background: #f0f3ff; }
+    .top3-card.match-great { border-color: var(--success); background: #f0fdf4; }
+    .top3-card.match-good  { border-color: var(--warn);    background: #fffbeb; }
+    .top3-card.match-ok    { border-color: var(--danger);  background: #fff5f5; }
     .top3-swatch {
       width: 42px; height: 42px;
       border-radius: 8px;
@@ -831,6 +833,15 @@
   </div>
 </div>
 
+<div id="pdf-modal">
+  <div class="pdf-modal-overlay" id="pdf-modal-overlay"></div>
+  <div class="pdf-modal-box">
+    <p class="pdf-modal-title" id="pdf-modal-title"></p>
+    <div class="pdf-modal-thumbs" id="pdf-modal-thumbs"></div>
+    <button class="pdf-modal-cancel" id="pdf-modal-cancel">Annuler</button>
+  </div>
+</div>
+
 <script>
 // ── Service Worker ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
@@ -842,6 +853,7 @@ let imgEl=null, imgData=null, natW=0, natH=0;
 let wbPending=false;
 let viewX=0, viewY=0, viewScale=1;
 let circleCenter=null, circleRadius=0;
+const CIRCLE_SCREEN_PX = 18; // taille du cercle de sélection à l'écran (px)
 // Interaction unifiée : tap = échantillonner, drag = pan
 let pointerDown=false, pointerStart=null, pointerMoved=false;
 let pinching=false, pinchDist0=0, pinchScale0=1, pinchMidX=0, pinchMidY=0;
@@ -1141,12 +1153,11 @@ cv.addEventListener('touchend', e=>{
 },{passive:false});
 
 // ── Placement cercle + sampling ────────────────────────────────────────────────
-// Le rayon s'adapte au zoom pour rester ~35px à l'écran
 function placeSampleCircle(cvX, cvY) {
   const img=canvasToImg(cvX, cvY);
   if (img.x<0||img.x>=natW||img.y<0||img.y>=natH) return;
   circleCenter={imgX:img.x, imgY:img.y};
-  circleRadius=Math.max(18, Math.round(natW/100)); // min 18px natifs, ~40px pour 4000px
+  circleRadius=CIRCLE_SCREEN_PX / viewScale; // taille constante à l'écran quel que soit le zoom
   render();
   doSample();
 }
@@ -1378,9 +1389,8 @@ function matchColors(r,g,b) {
     document.getElementById('tab-ref').textContent=scores[0].reference;
   }
 
-  // Top : toutes les correspondances excellentes (ΔE < 5), sinon top 3
-  const excellent = scores.filter(c => c.delta < 5);
-  const topMatches = excellent.length > 0 ? excellent : scores.slice(0, 3);
+  // Toujours les 3 plus proches
+  const topMatches = scores.slice(0, 3);
 
   // Mémoriser pour la sauvegarde
   currentTop3 = topMatches.map(c => ({
@@ -1390,13 +1400,13 @@ function matchColors(r,g,b) {
 
   // Top row dynamique
   const topRow = document.getElementById('top3-row');
-  topRow.innerHTML = topMatches.map((c, i) => {
-    const deCls = c.delta < 5 ? 'de-great' : c.delta < 15 ? 'de-good' : 'de-ok';
-    return `<div class="top3-card${i===0?' best':''}">
+  topRow.innerHTML = topMatches.map((c) => {
+    const cls = c.delta < 5 ? 'great' : c.delta < 15 ? 'good' : 'ok';
+    return `<div class="top3-card match-${cls}">
       <div class="top3-swatch" style="background:${c.hex}"></div>
       <div class="top3-ref">${c.reference}</div>
       <div class="top3-brand">${c.marque}</div>
-      <div class="top3-de ${deCls}">ΔE ${c.delta.toFixed(1)}</div>
+      <div class="top3-de de-${cls}">ΔE ${c.delta.toFixed(1)}</div>
     </div>`;
   }).join('');
 
@@ -1855,13 +1865,5 @@ function toast(msg) {
   toastTm=setTimeout(()=>el.classList.remove('show'),2400);
 }
 </script>
-<div id="pdf-modal">
-  <div class="pdf-modal-overlay" id="pdf-modal-overlay"></div>
-  <div class="pdf-modal-box">
-    <p class="pdf-modal-title" id="pdf-modal-title"></p>
-    <div class="pdf-modal-thumbs" id="pdf-modal-thumbs"></div>
-    <button class="pdf-modal-cancel" id="pdf-modal-cancel">Annuler</button>
-  </div>
-</div>
 </body>
 </html>
