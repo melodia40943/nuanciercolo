@@ -135,7 +135,7 @@
 
   #lens {
     position: absolute;
-    width: 110px; height: 110px;
+    width: 55px; height: 55px;
     border-radius: 50%;
     border: 2px solid rgba(108,143,255,.6);
     overflow: hidden;
@@ -520,20 +520,20 @@ cv.addEventListener('mousemove', e => {
   // Loupe
   if (imgEl && img.x >= 0 && img.x < natW && img.y >= 0 && img.y < natH) {
     lens.style.display = 'block';
-    let lx = x + 18, ly = y - 128;
+    let lx = x + 18, ly = y - 73;
     const pr = panel.getBoundingClientRect();
     if (ly < 8) ly = y + 18;
-    if (lx + 110 > pr.width) lx = x - 128;
+    if (lx + 55 > pr.width) lx = x - 73;
     lens.style.left = lx + 'px';
     lens.style.top  = ly + 'px';
 
     lc.imageSmoothingEnabled = false;
-    lc.clearRect(0, 0, 110, 110);
-    lc.drawImage(imgEl, img.x - 9, img.y - 9, 18, 18, 0, 0, 110, 110);
+    lc.clearRect(0, 0, 55, 55);
+    lc.drawImage(imgEl, img.x - 9, img.y - 9, 18, 18, 0, 0, 55, 55);
     lc.strokeStyle = 'rgba(255,255,255,.6)';
     lc.lineWidth = 1;
-    lc.beginPath(); lc.moveTo(55,0); lc.lineTo(55,110); lc.stroke();
-    lc.beginPath(); lc.moveTo(0,55); lc.lineTo(110,55); lc.stroke();
+    lc.beginPath(); lc.moveTo(27.5,0); lc.lineTo(27.5,55); lc.stroke();
+    lc.beginPath(); lc.moveTo(0,27.5); lc.lineTo(55,27.5); lc.stroke();
   } else {
     lens.style.display = 'none';
   }

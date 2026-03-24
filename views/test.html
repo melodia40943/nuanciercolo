@@ -647,6 +647,65 @@
       #wb-adj-panel { right: 340px; bottom: 0; border-radius: 14px 14px 0 0; }
       #wb-indicator { bottom: 96px; left: auto; transform: none; right: calc(340px + 16px); }
     }
+
+    /* Modal PDF */
+    #pdf-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+    }
+    .pdf-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+    }
+    .pdf-modal-box {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: min(94vw, 560px);
+      max-height: 82vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 50px rgba(0,0,0,.7);
+      z-index: 1;
+    }
+    .pdf-modal-title {
+      color: #eee;
+      font-size: 0.9rem;
+      margin: 0 0 1rem;
+    }
+    .pdf-modal-thumbs {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    .pdf-modal-thumb {
+      cursor: pointer;
+      border: 2px solid #444;
+      border-radius: 6px;
+      overflow: hidden;
+      text-align: center;
+      transition: border-color .15s;
+    }
+    .pdf-modal-thumb:hover { border-color: #4a6cf7; }
+    .pdf-modal-thumb canvas { width: 100%; display: block; }
+    .pdf-modal-thumb span { font-size: 0.7rem; color: #aaa; padding: 3px 0; display: block; }
+    .pdf-modal-cancel {
+      display: block;
+      margin: 0 auto;
+      padding: 0.4rem 1.2rem;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background: transparent;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
@@ -694,10 +753,10 @@
   <div id="canvas-wrap">
     <canvas id="main-canvas"></canvas>
   </div>
-  <!-- Navigation PDF (masquée par défaut) -->
-  <div id="pdf-nav" style="display:none;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:10px;background:rgba(0,0,0,.7);padding:6px 14px;border-radius:20px;z-index:50;">
+  <!-- Navigation PDF -->
+  <div id="pdf-nav" style="display:none;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);align-items:center;gap:10px;background:rgba(0,0,0,.7);padding:6px 14px;border-radius:20px;z-index:50;">
     <button id="pdf-prev" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px;">‹</button>
-    <span id="pdf-page-info" style="color:#fff;font-size:0.8rem;white-space:nowrap;">Page 1 / 1</span>
+    <span id="pdf-page-info" style="color:#fff;font-size:0.8rem;white-space:nowrap;cursor:pointer;" id="pdf-page-info" title="Changer de page">Page 1 / 1</span>
     <button id="pdf-next" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px;">›</button>
   </div>
   <input type="file" id="file-input" accept="image/*,application/pdf">
@@ -882,15 +941,40 @@ function loadPdf(f) {
   rd.onload=ev=>{
     pdfjsLib.getDocument({ data: ev.target.result }).promise.then(pdf=>{
       pdfDoc=pdf; pdfPages=pdf.numPages; pdfPage=1;
-      renderPdfPage(pdfPage);
+      if (pdfPages===1) { renderPdfPage(1); return; }
+      showPdfModal(pdf);
     }).catch(()=>toast('⚠️ Impossible de lire ce PDF'));
   };
   rd.readAsArrayBuffer(f);
 }
 
+async function showPdfModal(pdf) {
+  const modal   = document.getElementById('pdf-modal');
+  const thumbsEl= document.getElementById('pdf-modal-thumbs');
+  const titleEl = document.getElementById('pdf-modal-title');
+  titleEl.textContent = pdf.numPages + ' pages — choisir une page';
+  thumbsEl.innerHTML  = '';
+  modal.style.display = 'block';
+  for (let i=1; i<=pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const vp   = page.getViewport({scale: 0.4});
+    const c    = document.createElement('canvas');
+    c.width=vp.width; c.height=vp.height;
+    await page.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
+    const div  = document.createElement('div');
+    div.className='pdf-modal-thumb';
+    const lbl  = document.createElement('span');
+    lbl.textContent='Page '+i;
+    div.appendChild(c); div.appendChild(lbl);
+    const num=i;
+    div.addEventListener('click', ()=>{ modal.style.display='none'; pdfPage=num; renderPdfPage(num); });
+    thumbsEl.appendChild(div);
+  }
+}
+
 function renderPdfPage(num) {
   pdfDoc.getPage(num).then(page=>{
-    const scale=2; // rendu haute résolution
+    const scale=2;
     const vp=page.getViewport({scale});
     const oc=document.createElement('canvas');
     oc.width=vp.width; oc.height=vp.height;
@@ -914,6 +998,12 @@ document.getElementById('pdf-prev').addEventListener('click', ()=>{
 document.getElementById('pdf-next').addEventListener('click', ()=>{
   if (!pdfDoc||pdfPage>=pdfPages) return;
   pdfPage++; renderPdfPage(pdfPage);
+});
+document.getElementById('pdf-modal-cancel').addEventListener('click', ()=>{
+  document.getElementById('pdf-modal').style.display='none';
+});
+document.getElementById('pdf-modal-overlay').addEventListener('click', ()=>{
+  document.getElementById('pdf-modal').style.display='none';
 });
 
 function applyImageEl(img) {
@@ -1882,5 +1972,13 @@ function toast(msg) {
   toastTm=setTimeout(()=>el.classList.remove('show'),2400);
 }
 </script>
+<div id="pdf-modal">
+  <div class="pdf-modal-overlay" id="pdf-modal-overlay"></div>
+  <div class="pdf-modal-box">
+    <p class="pdf-modal-title" id="pdf-modal-title"></p>
+    <div class="pdf-modal-thumbs" id="pdf-modal-thumbs"></div>
+    <button class="pdf-modal-cancel" id="pdf-modal-cancel">Annuler</button>
+  </div>
+</div>
 </body>
 </html>

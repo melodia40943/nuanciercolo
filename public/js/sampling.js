@@ -7,6 +7,7 @@ let natW = 0, natH = 0;
 let wbPending = false;
 let sampledColor = null;
 let toastTm;
+let lensSize  = 55;
 
 // Viewport
 let viewX = 0, viewY = 0, viewScale = 1;
@@ -35,27 +36,91 @@ dropZone.addEventListener('drop', e => {
 });
 
 function loadFile(f) {
-  if (!f || !f.type.startsWith('image/')) return;
+  if (!f) return;
+  if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
+    loadPdf(f); return;
+  }
+  if (!f.type.startsWith('image/')) return;
   const rd = new FileReader();
   rd.onload = ev => {
     const img = new Image();
-    img.onload = () => {
-      imgEl = img; natW = img.naturalWidth; natH = img.naturalHeight;
-      const oc = document.createElement('canvas');
-      oc.width = natW; oc.height = natH;
-      oc.getContext('2d').drawImage(img, 0, 0);
-      imgData = oc.getContext('2d').getImageData(0, 0, natW, natH);
-      dropZone.style.display   = 'none';
-      canvasWrap.style.display = 'block';
-      resizeCanvas(); fitView(); render();
-      document.getElementById('btn-wb').disabled = false;
-      document.getElementById('sampling-controls').style.display = 'block';
-      setWbStatus('pending');
-    };
+    img.onload = () => { mountImage(img); };
     img.src = ev.target.result;
   };
   rd.readAsDataURL(f);
 }
+
+function mountImage(img) {
+  imgEl = img; natW = img.naturalWidth; natH = img.naturalHeight;
+  const oc = document.createElement('canvas');
+  oc.width = natW; oc.height = natH;
+  oc.getContext('2d').drawImage(img, 0, 0);
+  imgData = oc.getContext('2d').getImageData(0, 0, natW, natH);
+  dropZone.style.display   = 'none';
+  canvasWrap.style.display = 'block';
+  resizeCanvas(); fitView(); render();
+  document.getElementById('btn-wb').disabled = false;
+  document.getElementById('sampling-controls').style.display = 'block';
+  setWbStatus('pending');
+}
+
+async function loadPdf(f) {
+  if (typeof pdfjsLib === 'undefined') { showToast('⚠️ PDF.js non chargé — recharge la page'); return; }
+  try {
+    const ab  = await f.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: ab}).promise;
+    if (pdf.numPages === 1) { await renderPdfPage(pdf, 1); return; }
+    showPdfModal(pdf);
+  } catch(err) {
+    showToast('⚠️ Erreur lecture PDF : ' + err.message);
+  }
+}
+
+async function showPdfModal(pdf) {
+  const modal   = document.getElementById('pdf-page-modal');
+  const thumbsEl= document.getElementById('pdf-thumbs');
+  const titleEl = document.getElementById('pdf-modal-title');
+  titleEl.textContent = pdf.numPages + ' pages — cliquer sur une page pour l\'ouvrir';
+  thumbsEl.innerHTML  = '';
+  modal.style.display = 'block';
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page     = await pdf.getPage(i);
+    const vp       = page.getViewport({scale: 0.3});
+    const c        = document.createElement('canvas');
+    c.width = vp.width; c.height = vp.height;
+    await page.render({canvasContext: c.getContext('2d'), viewport: vp}).promise;
+    const div = document.createElement('div');
+    div.className = 'pdf-thumb';
+    const lbl = document.createElement('span');
+    lbl.textContent = 'Page ' + i;
+    div.appendChild(c); div.appendChild(lbl);
+    const pageNum = i;
+    div.addEventListener('click', async () => {
+      modal.style.display = 'none';
+      await renderPdfPage(pdf, pageNum);
+    });
+    thumbsEl.appendChild(div);
+  }
+}
+
+async function renderPdfPage(pdf, pageNum) {
+  const page = await pdf.getPage(pageNum);
+  const vp   = page.getViewport({scale: 2});
+  const c    = document.createElement('canvas');
+  c.width = vp.width; c.height = vp.height;
+  await page.render({canvasContext: c.getContext('2d'), viewport: vp}).promise;
+  const img = new Image();
+  img.onload = () => mountImage(img);
+  img.src = c.toDataURL();
+}
+
+document.getElementById('pdf-cancel').addEventListener('click', () => {
+  document.getElementById('pdf-page-modal').style.display = 'none';
+});
+document.getElementById('pdf-cancel-overlay').addEventListener('click', () => {
+  document.getElementById('pdf-page-modal').style.display = 'none';
+});
 
 function resizeCanvas() {
   cv.width = canvasPanel.clientWidth; cv.height = canvasPanel.clientHeight; render();
@@ -94,21 +159,35 @@ cv.addEventListener('wheel', e => {
   viewScale=ns; render();
 },{passive:false});
 
+// Loupe — taille dynamique
+function applyLensSize(size) {
+  lensSize = Math.max(25, Math.min(110, size));
+  lens.style.width = lensSize+'px'; lens.style.height = lensSize+'px';
+  lensC.width = lensSize; lensC.height = lensSize;
+  const el = document.getElementById('lens-size-val');
+  if (el) el.textContent = lensSize;
+}
+const btnLensMinus = document.getElementById('btn-lens-minus');
+const btnLensPlus  = document.getElementById('btn-lens-plus');
+if (btnLensMinus) btnLensMinus.addEventListener('click', () => applyLensSize(lensSize - 10));
+if (btnLensPlus)  btnLensPlus.addEventListener('click',  () => applyLensSize(lensSize + 10));
+
 // Loupe + interactions
 cv.addEventListener('mousemove', e => {
   const {x,y}=cvXY(e);
   const img=canvasToImg(x,y);
   if (imgEl && img.x>=0 && img.x<natW && img.y>=0 && img.y<natH) {
     lens.style.display='block';
-    let lx=x+18,ly=y-128;
+    const half=lensSize/2, offset=lensSize+18;
+    let lx=x+18,ly=y-offset;
     const pr=canvasPanel.getBoundingClientRect();
-    if (ly<4) ly=y+18; if (lx+110>pr.width) lx=x-128;
+    if (ly<4) ly=y+18; if (lx+lensSize>pr.width) lx=x-offset;
     lens.style.left=lx+'px'; lens.style.top=ly+'px';
-    lc.imageSmoothingEnabled=false; lc.clearRect(0,0,110,110);
-    lc.drawImage(imgEl,img.x-9,img.y-9,18,18,0,0,110,110);
+    lc.imageSmoothingEnabled=false; lc.clearRect(0,0,lensSize,lensSize);
+    lc.drawImage(imgEl,img.x-9,img.y-9,18,18,0,0,lensSize,lensSize);
     lc.strokeStyle='rgba(255,255,255,.6)'; lc.lineWidth=1;
-    lc.beginPath(); lc.moveTo(55,0); lc.lineTo(55,110); lc.stroke();
-    lc.beginPath(); lc.moveTo(0,55); lc.lineTo(110,55); lc.stroke();
+    lc.beginPath(); lc.moveTo(half,0); lc.lineTo(half,lensSize); lc.stroke();
+    lc.beginPath(); lc.moveTo(0,half); lc.lineTo(lensSize,half); lc.stroke();
   } else { lens.style.display='none'; }
 
   if (panning&&panStart) { viewX+=x-panStart.x; viewY+=y-panStart.y; panStart={x,y}; render(); return; }
@@ -135,7 +214,7 @@ cv.addEventListener('mouseup', e => {
   if (!drawing) return; drawing=false;
   if (circleRadius<3/viewScale) {
     const img=canvasToImg(cvXY(e).x,cvXY(e).y);
-    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=20; render();
+    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=10; render();
   }
   doSample();
 });

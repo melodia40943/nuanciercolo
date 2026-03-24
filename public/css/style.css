@@ -344,7 +344,7 @@ tr:hover td { background: #fafafa; }
 }
 #sampling-lens {
   position: absolute;
-  width: 110px; height: 110px;
+  width: 55px; height: 55px;
   border-radius: 50%;
   border: 2px solid rgba(74,108,247,.6);
   overflow: hidden;
@@ -376,6 +376,27 @@ tr:hover td { background: #fafafa; }
 .sampling-wb button.done   { border-color: #27ae60; color: #27ae60; }
 .sampling-wb button:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.lens-size-ctrl {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+@media (min-width: 768px) {
+  .lens-size-ctrl { display: flex; }
+}
+.lens-size-ctrl button {
+  width: 22px; height: 22px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
 .wb-status { font-size: 0.75rem; color: #888; }
 .wb-status.ok { color: #27ae60; }
 .wb-status.pending { color: #f0a500; }
@@ -434,6 +455,63 @@ tr:hover td { background: #fafafa; }
   pointer-events: none; z-index: 999;
 }
 #sampling-toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Modal PDF page picker */
+#pdf-page-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.pdf-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+}
+.pdf-modal-box {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  width: min(92vw, 600px);
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,.4);
+  z-index: 1;
+}
+.pdf-modal-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #333;
+}
+.pdf-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.pdf-thumb {
+  cursor: pointer;
+  border: 2px solid #eee;
+  border-radius: 6px;
+  overflow: hidden;
+  text-align: center;
+  transition: border-color .15s;
+}
+.pdf-thumb:hover { border-color: #4a6cf7; }
+.pdf-thumb canvas { width: 100%; display: block; }
+.pdf-thumb span { font-size: 0.7rem; color: #666; padding: 3px 0; display: block; }
+.pdf-modal-footer { text-align: center; }
+.pdf-modal-footer button {
+  padding: 0.4rem 1.2rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
 
 /* Select avec bouton + inline */
 .select-with-add {

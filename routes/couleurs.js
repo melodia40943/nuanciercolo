@@ -325,7 +325,7 @@ function renderForm({ marques, pointes, packs, couleur }) {
       <section class="sampling-panel">
         <div class="sampling-header">
           <h2>Sampling couleur</h2>
-          <input type="file" id="sampling-file" accept="image/*" style="display:none">
+          <input type="file" id="sampling-file" accept="image/*,application/pdf" style="display:none">
           <button type="button" class="btn-secondary" onclick="document.getElementById('sampling-file').click()">Ouvrir image</button>
         </div>
 
@@ -338,7 +338,7 @@ function renderForm({ marques, pointes, packs, couleur }) {
           <div id="sampling-canvas-wrap" style="display:none">
             <canvas id="sampling-canvas"></canvas>
             <div id="sampling-drag-rect"></div>
-            <div id="sampling-lens"><canvas id="sampling-lens-c" width="110" height="110"></canvas></div>
+            <div id="sampling-lens"><canvas id="sampling-lens-c" width="55" height="55"></canvas></div>
           </div>
         </div>
 
@@ -346,6 +346,12 @@ function renderForm({ marques, pointes, packs, couleur }) {
           <div class="sampling-wb">
             <button type="button" id="btn-wb" disabled>Cliquer sur zone blanche</button>
             <span id="wb-status" class="wb-status pending">Non définie</span>
+          </div>
+          <div class="lens-size-ctrl">
+            <span>Loupe&nbsp;:</span>
+            <button type="button" id="btn-lens-minus">−</button>
+            <span id="lens-size-val">55</span>px
+            <button type="button" id="btn-lens-plus">+</button>
           </div>
 
           <div class="four-grid">
@@ -372,6 +378,17 @@ function renderForm({ marques, pointes, packs, couleur }) {
 
         <div id="sampling-toast"></div>
       </section>
+
+      <div id="pdf-page-modal" style="display:none">
+        <div class="pdf-modal-overlay" id="pdf-cancel-overlay"></div>
+        <div class="pdf-modal-box">
+          <p class="pdf-modal-title" id="pdf-modal-title"></p>
+          <div id="pdf-thumbs" class="pdf-thumbs"></div>
+          <div class="pdf-modal-footer">
+            <button type="button" id="pdf-cancel">Annuler</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Formulaire -->
       <section class="form-panel">
@@ -538,6 +555,8 @@ function renderForm({ marques, pointes, packs, couleur }) {
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
   <script src="/js/sampler-core.js"></script>
   <script src="/js/sampling.js"></script>
   <script src="/js/couleur-form.js"></script>
