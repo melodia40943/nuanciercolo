@@ -3,123 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conseils — Nuancier Couleurs</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f0f1a;
-      color: #e8e8f0;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 40px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-    header p  { font-size: 0.85rem; color: #888; }
-
-    .tips {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .tip {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 16px;
-      padding: 18px 20px;
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
-
-    .tip-icon {
-      font-size: 1.8rem;
-      flex-shrink: 0;
-      line-height: 1;
-      margin-top: 2px;
-    }
-
-    .tip-body h2 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #fff;
-    }
-
-    .tip-body p {
-      font-size: 0.82rem;
-      line-height: 1.55;
-      color: #aaa;
-    }
-
-    .tip-body strong { color: #e8e8f0; }
-
-    .tip-body .step {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-top: 6px;
-      font-size: 0.82rem;
-      color: #aaa;
-    }
-    .step-num {
-      background: #4a6cf7;
-      color: #fff;
-      border-radius: 50%;
-      width: 18px; height: 18px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .tip.highlight {
-      border-color: rgba(74,108,247,.4);
-      background: rgba(74,108,247,.08);
-    }
-
-    .cta {
-      margin-top: 32px;
-      width: 100%;
-      max-width: 480px;
-    }
-
-    .btn-start {
-      display: block;
-      width: 100%;
-      background: #4a6cf7;
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      transition: background .2s;
-    }
-    .btn-start:hover { background: #3a5ce0; }
-
-    .skip {
-      text-align: center;
-      margin-top: 14px;
-      font-size: 0.78rem;
-      color: #555;
-    }
-    .skip a { color: #666; text-decoration: underline; }
-  </style>
+  <title>Conseils — Révélo</title>
+  <link rel="stylesheet" href="/css/tips.css">
 </head>
 <body>
 
@@ -134,7 +19,20 @@
     <div class="tip-icon">🎯</div>
     <div class="tip-body">
       <h2>Le résultat n'est qu'un point de départ</h2>
-      <p>L'algorithme donne les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
+      <p>L'application a été conçu de manière tout à fait non officiel.</p>
+      <p>Je me suis servie des marqueurs que j'avais en ma possession pour créer le nuancier numérique le plus proche possible de la vérité.</p>
+      <p>Mais l'application ne donne que les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
+    </div>
+  </div>
+
+  <div class="tip highlight">
+    <div class="tip-icon">📄</div>
+    <div class="tip-body">
+      <h2>Les PDFs de référence : la meilleure source</h2>
+      <p>Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu'une photo — et <strong>pas besoin de balance des blancs</strong> : clique directement sur la case colorée.</p>
+      <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref">
+        🎨 Palettes de référence par Jeremy Mariez →
+      </a>
     </div>
   </div>
 
@@ -160,43 +58,6 @@
   </div>
 
   <div class="tip">
-    <div class="tip-icon">📐</div>
-    <div class="tip-body">
-      <h2>Cadre bien ta photo</h2>
-      <p>Essaie d'avoir la <strong>légende bien à plat</strong>, sans angle prononcé. Un léger angle ne pose pas de problème.</p>
-    </div>
-  </div>
-
-  <div class="tip highlight">
-    <div class="tip-icon">📄</div>
-    <div class="tip-body">
-      <h2>Les PDFs de référence : la meilleure source</h2>
-      <p>Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu'une photo — et <strong>pas besoin de balance des blancs</strong> : clique directement sur la case colorée.</p>
-      <p style="margin-top:8px;">
-        <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener"
-           style="color:#4a6cf7;font-weight:600;text-decoration:none;">
-          🎨 Palettes de référence par Jeremy Mariez →
-        </a>
-      </p>
-    </div>
-  </div>
-
-
-  <div class="tip">
-    <div class="tip-icon">🖥️</div>
-    <div class="tip-body">
-      <h2>L'interface en un coup d'œil</h2>
-      <div class="step"><span class="step-num">1</span> <span><strong>Ouvre</strong> une photo ou un PDF du nuancier — glisse-le ou tape pour choisir un fichier</span></div>
-      <div class="step"><span class="step-num">2</span> <span><strong>⚪ Balance des blancs</strong> — active ce bouton puis clique sur une zone blanche pour calibrer (photos uniquement)</span></div>
-      <div class="step"><span class="step-num">3</span> <span><strong>Dessine un cercle</strong> sur la case colorée à identifier — maintiens et glisse pour ajuster la taille</span></div>
-      <div class="step"><span class="step-num">4</span> <span>Les <strong>meilleures correspondances</strong> apparaissent en haut — les résultats détaillés sont dans le tiroir</span></div>
-      <div class="step"><span class="step-num">5</span> <span><strong>🎨 Pack</strong> — filtre les résultats selon les feutres que tu possèdes</span></div>
-      <div class="step"><span class="step-num">6</span> <span><strong>+ Enregistrer</strong> — sauvegarde un résultat, clique sur un swatch pour marquer ton choix final</span></div>
-      <div class="step"><span class="step-num">7</span> <span><strong>📋</strong> — retrouve toutes tes recherches enregistrées et exporte-les</span></div>
-    </div>
-  </div>
-
-  <div class="tip">
     <div class="tip-icon">📸</div>
     <div class="tip-body">
       <h2>Continue à partager tes colos !</h2>
@@ -209,6 +70,7 @@
 <div class="cta">
   <a href="/recherche" class="btn-start">C'est parti →</a>
   <p class="skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
+  <p class="kofi"><a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener">☕ Soutenir le projet sur Tipeee</a></p>
 </div>
 
 </body>

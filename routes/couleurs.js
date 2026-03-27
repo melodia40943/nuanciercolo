@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/couleurs', requireAuth, async (req, res) => {
   const { marque_id, ref, active } = req.query;
   try {
-    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
 
     let sql = `
       SELECT c.*, m.nom AS marque_nom
@@ -17,16 +17,15 @@ router.get('/couleurs', requireAuth, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    let paramCount = 0;
-    if (marque_id)        { sql += ` AND c.marque_id = $${++paramCount}`; params.push(marque_id); }
-    if (ref)              { sql += ` AND c.reference LIKE $${++paramCount}`; params.push(`%${ref}%`); }
+    if (marque_id)        { sql += ` AND c.marque_id = ?`; params.push(marque_id); }
+    if (ref)              { sql += ` AND c.reference LIKE ?`; params.push(`%${ref}%`); }
     if (active === '1')   { sql += ` AND c.active = TRUE`; }
     if (active === '0')   { sql += ` AND c.active = FALSE`; }
     sql += ' ORDER BY m.nom, c.reference';
 
-    const resCouleurs = await pool.query(sql, params);
+    const [resCouleurs] = await pool.query(sql, params);
 
-    res.send(renderCouleurs(resCouleurs.rows, resMarques.rows, { marque_id, ref, active }));
+    res.send(renderCouleurs(resCouleurs, resMarques, { marque_id, ref, active }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -36,10 +35,10 @@ router.get('/couleurs', requireAuth, async (req, res) => {
 // Formulaire ajout
 router.get('/couleurs/new', requireAuth, async (req, res) => {
   try {
-    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
-    const resPointes = await pool.query('SELECT * FROM pointes ORDER BY nom');
-    const resPacks   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
-    res.send(renderForm({ marques: resMarques.rows, pointes: resPointes.rows, packs: resPacks.rows, couleur: null }));
+    const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const [resPacks]   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, couleur: null }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -51,7 +50,7 @@ router.post('/couleurs', requireAuth, async (req, res) => {
   const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
   try {
     await pool.query(
-      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null]
     );
     res.redirect('/couleurs');
@@ -66,11 +65,11 @@ router.post('/api/couleurs', requireAuth, async (req, res) => {
   const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
   if (!marque_id || !reference || !hex) return res.status(400).json({ error: 'Champs manquants' });
   try {
-    const result = await pool.query(
-      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
+    const [result] = await pool.query(
+      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null]
     );
-    res.json({ id: result.rows[0].id, reference, hex, r, g, b });
+    res.json({ id: result.insertId, reference, hex, r, g, b });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -80,12 +79,12 @@ router.post('/api/couleurs', requireAuth, async (req, res) => {
 // Formulaire édition
 router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
   try {
-    const resCouleur = await pool.query('SELECT * FROM couleurs WHERE id = $1', [req.params.id]);
-    if (!resCouleur.rows.length) return res.redirect('/couleurs');
-    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
-    const resPointes = await pool.query('SELECT * FROM pointes ORDER BY nom');
-    const resPacks   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
-    res.send(renderForm({ marques: resMarques.rows, pointes: resPointes.rows, packs: resPacks.rows, couleur: resCouleur.rows[0] }));
+    const [resCouleur] = await pool.query('SELECT * FROM couleurs WHERE id = ?', [req.params.id]);
+    if (!resCouleur.length) return res.redirect('/couleurs');
+    const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const [resPacks]   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, couleur: resCouleur[0] }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -97,7 +96,7 @@ router.post('/couleurs/:id', requireAuth, async (req, res) => {
   const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, active } = req.body;
   try {
     await pool.query(
-      'UPDATE couleurs SET marque_id=$1, reference=$2, hex=$3, r=$4, g=$5, b=$6, hex_photo=$7, r_photo=$8, g_photo=$9, b_photo=$10, medium=$11, pointe_id=$12, pack_min_id=$13, active=$14 WHERE id=$15',
+      'UPDATE couleurs SET marque_id=?, reference=?, hex=?, r=?, g=?, b=?, hex_photo=?, r_photo=?, g_photo=?, b_photo=?, medium=?, pointe_id=?, pack_min_id=?, active=? WHERE id=?',
       [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'acrylique', pointe_id || null, pack_min_id || null, active === '1', req.params.id]
     );
     res.redirect('/couleurs');
@@ -110,7 +109,7 @@ router.post('/couleurs/:id', requireAuth, async (req, res) => {
 // TOGGLE active
 router.post('/couleurs/:id/toggle-active', requireAuth, async (req, res) => {
   try {
-    await pool.query('UPDATE couleurs SET active = NOT active WHERE id = $1', [req.params.id]);
+    await pool.query('UPDATE couleurs SET active = NOT active WHERE id = ?', [req.params.id]);
     res.redirect(req.get('Referer') || '/couleurs');
   } catch (err) {
     console.error(err);
@@ -121,7 +120,7 @@ router.post('/couleurs/:id/toggle-active', requireAuth, async (req, res) => {
 // DELETE couleur
 router.post('/couleurs/:id/delete', requireAuth, async (req, res) => {
   try {
-    await pool.query('DELETE FROM couleurs WHERE id = $1', [req.params.id]);
+    await pool.query('DELETE FROM couleurs WHERE id = ?', [req.params.id]);
     res.redirect('/couleurs');
   } catch (err) {
     console.error(err);
@@ -133,9 +132,9 @@ router.post('/couleurs/:id/delete', requireAuth, async (req, res) => {
 router.get('/couleurs/bulk', requireAuth, async (req, res) => {
   const { marque_id } = req.query;
   try {
-    const resMarques = await pool.query('SELECT * FROM marques ORDER BY nom');
-    const resPointes = await pool.query('SELECT * FROM pointes ORDER BY nom');
-    const resPacks   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const [resPacks]   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
 
     let sql = `
       SELECT c.*, m.nom AS marque_nom,
@@ -148,11 +147,11 @@ router.get('/couleurs/bulk', requireAuth, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    if (marque_id) { sql += ` AND c.marque_id = $1`; params.push(marque_id); }
+    if (marque_id) { sql += ` AND c.marque_id = ?`; params.push(marque_id); }
     sql += ' ORDER BY m.nom, c.reference';
 
-    const resCouleurs = await pool.query(sql, params);
-    res.send(renderBulkEdit(resCouleurs.rows, resMarques.rows, resPointes.rows, resPacks.rows, { marque_id }));
+    const [resCouleurs] = await pool.query(sql, params);
+    res.send(renderBulkEdit(resCouleurs, resMarques, resPointes, resPacks, { marque_id }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -166,18 +165,17 @@ router.post('/api/couleurs/bulk', requireAuth, async (req, res) => {
 
   const fields = [];
   const params = [];
-  let i = 1;
-  if (pointe_id !== undefined) { fields.push(`pointe_id = $${i++}`); params.push(pointe_id || null); }
-  if (pack_min_id !== undefined) { fields.push(`pack_min_id = $${i++}`); params.push(pack_min_id || null); }
+  if (pointe_id !== undefined) { fields.push(`pointe_id = ?`); params.push(pointe_id || null); }
+  if (pack_min_id !== undefined) { fields.push(`pack_min_id = ?`); params.push(pack_min_id || null); }
   if (!fields.length) return res.status(400).json({ error: 'Rien à mettre à jour' });
 
   params.push(ids);
   try {
-    const result = await pool.query(
-      `UPDATE couleurs SET ${fields.join(', ')} WHERE id = ANY($${i}) RETURNING id`,
+    const [result] = await pool.query(
+      `UPDATE couleurs SET ${fields.join(', ')} WHERE id IN (?)`,
       params
     );
-    res.json({ updated: result.rowCount });
+    res.json({ updated: result.affectedRows });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
