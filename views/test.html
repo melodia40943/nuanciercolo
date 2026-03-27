@@ -905,12 +905,7 @@ fetch('/api/couleurs/all').then(r=>r.json()).then(c=>{
 });
 
 function updateDbBadge() {
-  const filtered = getFilteredColors();
-  const total    = dbColors.length;
-  const badge    = document.getElementById('db-badge');
-  badge.textContent = filtered.length < total
-    ? `${filtered.length} / ${total} couleurs`
-    : `${total} couleurs`;
+  // badge supprimé
 }
 
 // ── Fichier ────────────────────────────────────────────────────────────────────
