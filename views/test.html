@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Révélo</title>
+  <title>Révélo — Trouve tes feutres par la couleur</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Révélo">
+  <meta name="description" content="Trouve les feutres Languo ou Guangna pour tes coloriages mystères. Photographie une couleur et Révélo t'indique les références les plus proches par analyse colorimétrique.">
+  <meta property="og:title" content="Révélo — Trouve tes feutres par la couleur">
+  <meta property="og:description" content="Outil gratuit pour coloristes : ouvre la photo d'un coloriage mystère ou d'un nuancier, clique sur une couleur, et Révélo trouve les feutres Languo et Guangna les plus proches.">
+  <meta property="og:url" content="https://revelo.studio/recherche">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://revelo.studio/recherche">
   <script src="/js/chroma.min.js"></script>
   <script src="/js/sampler-core.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -902,7 +913,7 @@ const btnWb   = document.getElementById('btn-wb');
 fetch('/api/couleurs/all').then(r=>r.json()).then(c=>{
   dbColors=c;
   updateDbBadge();
-});
+}).catch(() => toast('⚠️ Impossible de charger les couleurs — recharge la page'));
 
 function updateDbBadge() {
   // badge supprimé
@@ -1793,8 +1804,9 @@ document.getElementById('btn-export-jpeg').addEventListener('click', () => {
   ctx2.textAlign = 'center';
   ctx2.fillText('révélo · généré le ' + new Date().toLocaleDateString('fr-FR'), W / 2, H - 8);
 
+  const nomFichier = prompt('Nom du fichier (sans extension) :', 'tome_page') || 'tome_page';
   const link = document.createElement('a');
-  link.download = 'revelo-resultats.jpg';
+  link.download = nomFichier.replace(/\.jpg$/i, '') + '.jpg';
   link.href = cv2.toDataURL('image/jpeg', 0.92);
   link.click();
   toast('✓ Export JPEG téléchargé');
@@ -1888,7 +1900,7 @@ fetch('/api/marques-packs').then(r => r.json()).then(data => {
     renderCollDraft();
     document.getElementById('collection-panel').classList.add('open');
   }
-});
+}).catch(() => toast('⚠️ Impossible de charger les collections — recharge la page'));
 
 // Marque sélectionnée → remplir les packs
 document.getElementById('coll-select-marque').addEventListener('change', function() {
@@ -1973,7 +1985,7 @@ updateSavedBadge();
 // Afficher le bouton JSON uniquement si connecté
 fetch('/api/me').then(r => r.json()).then(({ loggedIn }) => {
   if (loggedIn) document.getElementById('btn-export-json').style.display = '';
-});
+}).catch(() => {});
 
 // ── Utils ──────────────────────────────────────────────────────────────────────
 function toHex(r,g,b) {

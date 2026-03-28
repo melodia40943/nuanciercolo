@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /coulisses
+Disallow: /api/
+
+Sitemap: https://revelo.studio/sitemap.xml

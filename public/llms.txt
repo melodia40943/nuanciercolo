@@ -1,0 +1,33 @@
+# Révélo
+
+> Révélo est une application web gratuite qui aide les dessinateurs et coloristes à trouver les feutres Languo ou Guangna les plus proches d'une couleur photographiée.
+
+## Ce que fait l'app
+
+L'utilisateur ouvre une photo ou un PDF (nuancier, coloriage mystère, page de manga colorisée…), clique sur une couleur, et Révélo analyse la teinte pour proposer les meilleures correspondances parmi une base de données de feutres référencés (Languo et Guangna). Les résultats sont triés par proximité perceptuelle (delta E).
+
+Révélo est particulièrement utile pour les personnes qui font des coloriages mystères et cherchent à identifier ou remplacer une couleur précise par un feutre disponible dans leur collection.
+
+## Fonctionnalités principales
+
+- Analyse couleur par photo ou PDF
+- Matching perceptuel (delta E) sur base de feutres Languo et Guangna
+- Correction de balance des blancs pour une analyse plus précise
+- Sauvegarde des recherches en local
+- Export des résultats en JPEG ou CSV
+- Application gratuite, sans compte nécessaire pour la recherche
+
+## Pages publiques
+
+- https://revelo.studio/ — conseils d'utilisation
+- https://revelo.studio/recherche — outil de recherche couleurs
+- https://revelo.studio/conseils — conseils pour de meilleurs résultats
+
+## Public cible
+
+Artistes, illustrateurs, coloristes et amateurs de coloriages mystères qui travaillent avec des feutres acryliques (Languo, Guangna) et souhaitent retrouver ou compléter leur palette à partir d'une référence visuelle.
+
+## Créateur
+
+Application créée par Mélodie, artiste et développeuse indépendante française.
+Soutien possible via https://fr.tipeee.com/revelo/

@@ -115,6 +115,22 @@ header p  { font-size: 0.85rem; color: #888; }
 }
 .btn-start:hover { background: #3a5ce0; }
 
+#btn-install {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: transparent;
+  color: #4a6cf7;
+  border: 2px solid #4a6cf7;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+#btn-install:hover { background: #4a6cf7; color: #fff; }
+
 .skip {
   text-align: center;
   margin-top: 14px;

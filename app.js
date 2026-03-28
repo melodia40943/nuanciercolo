@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express     from 'express';
 import session     from 'express-session';
+import helmet      from 'helmet';
+import rateLimit   from 'express-rate-limit';
 import { requireAuth } from './middleware/auth.js';
 import authRoutes    from './routes/auth.js';
 import couleursRoutes from './routes/couleurs.js';
@@ -10,6 +12,25 @@ import testRoutes     from './routes/test.js';
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(helmet({
+  contentSecurityPolicy: false, // désactivé car CDN externes (pdf.js, fonts Google)
+}));
+
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Trop de tentatives, réessaie dans 15 minutes.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -25,6 +46,7 @@ app.use(session({
   }
 }));
 
+app.post('/coulisses', loginLimiter);
 app.use('/', authRoutes);
 app.use('/', couleursRoutes);
 app.use('/', marquesRoutes);
@@ -33,6 +55,21 @@ app.use('/', testRoutes);
 
 app.get('/dashboard', requireAuth, (req, res) => {
   res.sendFile('dashboard.html', { root: './views' });
+});
+
+// 403 et 404 → redirection vers /conseils
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  if (status === 403 || status === 404) {
+    return res.redirect('/conseils');
+  }
+  next(err);
 });
 
 app.listen(PORT, () => {
