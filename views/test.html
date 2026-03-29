@@ -15,713 +15,12 @@
   <meta property="og:url" content="https://revelo.studio/recherche">
   <meta property="og:type" content="website">
   <link rel="canonical" href="https://revelo.studio/recherche">
+  <link rel="stylesheet" href="/css/test.css">
+  <script src="/js/i18n.js"></script>
   <script src="/js/chroma.min.js"></script>
   <script src="/js/sampler-core.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    :root {
-      --accent: #4a6cf7;
-      --success: #27ae60;
-      --warn: #f0a500;
-      --danger: #e74c3c;
-      --sheet-peek: 0px; /* plus de peek en bas — tiroir sur la droite sur mobile */
-    }
-
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: system-ui, sans-serif;
-      background: #111;
-      color: #333;
-      touch-action: none;
-    }
-
-    /* ── Canvas plein écran ── */
-    #canvas-panel {
-      position: fixed;
-      inset: 0;
-      bottom: var(--sheet-peek);
-    }
-
-    #drop-zone {
-      position: absolute;
-      inset: 20px;
-      border: 2px dashed #444;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      color: #888;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-    #drop-zone .ico { font-size: 48px; opacity: .5; }
-    #file-input { display: none; }
-
-    #canvas-wrap {
-      display: none;
-      position: absolute;
-      inset: 0;
-    }
-    #main-canvas {
-      position: absolute;
-      top: 0; left: 0;
-      cursor: crosshair;
-      touch-action: none;
-    }
-
-    /* ── Toolbar flottante ── */
-    #toolbar {
-      position: fixed;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      max-width: calc(100vw - 24px);
-    }
-    .tb-btn {
-      padding: 8px 14px;
-      border-radius: 20px;
-      border: none;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 2px 10px rgba(0,0,0,.4);
-    }
-    #btn-open {
-      background: #fff;
-      color: #333;
-    }
-    #btn-wb {
-      background: #fff;
-      color: #888;
-      display: none;
-    }
-    #btn-wb.pending { background: var(--warn); color: #fff; }
-    #btn-wb.done    { background: var(--success); color: #fff; }
-
-    .db-badge {
-      background: rgba(0,0,0,.55);
-      color: #ccc;
-      font-size: 0.7rem;
-      padding: 5px 10px;
-      border-radius: 20px;
-    }
-
-    /* Tip flottant */
-    #tip {
-      position: fixed;
-      bottom: calc(var(--sheet-peek) + 10px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.65);
-      color: #fff;
-      font-size: 0.72rem;
-      padding: 5px 14px;
-      border-radius: 20px;
-      pointer-events: none;
-      z-index: 40;
-      white-space: nowrap;
-      transition: opacity .3s;
-    }
-
-    /* ── Sheet résultats — tiroir droit sur mobile ── */
-    #sheet {
-      position: fixed;
-      right: 0; top: 0; bottom: 0;
-      left: auto;
-      width: 72%;
-      max-width: 280px;
-      height: 100%;
-      background: #fff;
-      border-radius: 16px 0 0 16px;
-      box-shadow: -4px 0 24px rgba(0,0,0,.18);
-      transform: translateX(105%);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
-      z-index: 60;
-      display: flex;
-      flex-direction: column;
-      touch-action: none;
-    }
-    #sheet.open { transform: translateX(0); }
-
-    /* Onglet visible sur le bord gauche du tiroir */
-    #sheet-tab {
-      position: absolute;
-      left: -53px; top: 50%;
-      transform: translateY(-50%);
-      width: 53px; height: 80px;
-      background: #fff;
-      border-radius: 12px 0 0 12px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 4px;
-      box-shadow: -2px 0 12px rgba(0,0,0,.14);
-      cursor: pointer;
-      z-index: 1;
-    }
-    #tab-swatch { width: 24px; height: 24px; border-radius: 5px; background: #ddd; flex-shrink: 0; }
-    #tab-ref    { font-size: 0.58rem; font-weight: 700; color: #555; line-height: 1.1; text-align: center; }
-
-    .sheet-handle { display: none; }
-
-    .sheet-peek-content {
-      padding: 10px 14px 4px;
-      flex-shrink: 0;
-    }
-    /* Ligne du haut : couleur échantillonnée */
-    .peek-sampled {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    #sampled-swatch-mini {
-      width: 32px; height: 32px;
-      border-radius: 7px;
-      border: 1px solid rgba(0,0,0,.1);
-      background: #eee;
-      flex-shrink: 0;
-    }
-    #sampled-hex-mini { font-family: monospace; font-weight: 700; font-size: 0.95rem; }
-    #sampled-rgb-mini { font-family: monospace; font-size: 0.68rem; color: #888; }
-    .sheet-peek-label { font-size: 0.7rem; color: #bbb; margin-left: auto; white-space: nowrap; }
-
-    /* Top matchs en peek — dynamique (tous les "excellent" + min 3) */
-    .top3-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .top3-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 4px;
-      border-radius: 10px;
-      border: 1.5px solid #eee;
-      background: #fafafa;
-      position: relative;
-      flex: 1 1 calc(33% - 4px);
-      min-width: 70px;
-    }
-    .top3-card.match-great { border-color: var(--success); background: #f0fdf4; }
-    .top3-card.match-good  { border-color: var(--warn);    background: #fffbeb; }
-    .top3-card.match-ok    { border-color: var(--danger);  background: #fff5f5; }
-    .top3-swatch {
-      width: 42px; height: 42px;
-      border-radius: 8px;
-      border: 1px solid rgba(0,0,0,.08);
-      background: #eee;
-    }
-    .top3-ref { font-weight: 700; font-size: 0.8rem; }
-    .top3-brand { font-size: 0.65rem; color: #999; }
-    .top3-equiv {
-      width: 100%;
-      border-top: 1px solid rgba(0,0,0,.07);
-      margin-top: 2px;
-      padding-top: 2px;
-      text-align: center;
-    }
-    .top3-equiv .top3-ref  { font-size: 0.8rem; font-weight: 700; }
-    .top3-equiv .top3-brand { font-size: 0.65rem; color: #999; }
-    .top3-de {
-      font-family: monospace; font-size: 0.65rem; font-weight: 700;
-      padding: 1px 5px; border-radius: 8px;
-    }
-    .de-great { background:#e8f8ee; color:var(--success); }
-    .de-good  { background:#fff8e6; color:var(--warn); }
-    .de-ok    { background:#fff0f0; color:var(--danger); }
-
-    .sheet-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 6px 14px 10px;
-      overscroll-behavior: contain;
-    }
-    .sheet-body::-webkit-scrollbar { display: none; }
-
-    .sheet-kofi {
-      flex-shrink: 0;
-      padding: 10px 14px 14px;
-      border-top: 1px solid #e8e8e8;
-    }
-    .sheet-kofi a {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #fff;
-      text-decoration: none;
-      background: #ff5e5b;
-      border-radius: 12px;
-      padding: 10px 14px;
-      text-align: center;
-    }
-    .sheet-kofi a:hover { background: #e54e4b; }
-
-    /* Résultats */
-    .result-entry {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #eee;
-      margin-bottom: 6px;
-    }
-    .result-entry:first-child { border-color: var(--accent); background: #f5f7ff; }
-    .result-swatch {
-      width: 40px; height: 40px;
-      border-radius: 6px;
-      border: 1px solid rgba(0,0,0,.08);
-      flex-shrink: 0;
-    }
-    .result-info { flex: 1; min-width: 0; }
-    .result-ref  { font-weight: 600; font-size: 0.9rem; }
-    .result-meta { font-size: 0.72rem; color: #888; font-family: monospace; }
-    .result-score {
-      font-family: monospace;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 10px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-    .score-great { background: #e8f8ee; color: var(--success); }
-    .score-good  { background: #fff8e6; color: var(--warn); }
-    .score-ok    { background: #fff0f0; color: var(--danger); }
-
-    .empty-results {
-      text-align: center;
-      color: #bbb;
-      font-size: 0.85rem;
-      padding: 2rem 1rem;
-    }
-
-    /* ── Panel collection ── */
-    #collection-panel {
-      position: fixed;
-      inset: 0;
-      background: #f5f5f7;
-      z-index: 120;
-      display: flex;
-      flex-direction: column;
-      transform: translateY(100%);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
-    }
-    #collection-panel.open { transform: translateY(0); }
-    #collection-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 16px 10px;
-      background: #fff;
-      border-bottom: 1px solid #eee;
-      flex-shrink: 0;
-    }
-    #collection-header h2 { flex: 1; font-size: 1rem; }
-    #collection-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .coll-option-tous {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #fff;
-      border-radius: 12px;
-      padding: 12px 16px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-      cursor: pointer;
-    }
-    .coll-option-tous input[type=radio] { accent-color: var(--accent); width: 18px; height: 18px; }
-    .coll-option-tous label { font-weight: 600; font-size: 0.9rem; cursor: pointer; flex: 1; }
-    .coll-option-tous small { color: #aaa; font-size: 0.75rem; }
-    #coll-selected-list { display: flex; flex-direction: column; gap: 8px; }
-    .coll-entry {
-      background: #fff;
-      border-radius: 12px;
-      padding: 12px 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .coll-entry-info { flex: 1; }
-    .coll-entry-marque { font-weight: 700; font-size: 0.88rem; }
-    .coll-entry-pack   { font-size: 0.78rem; color: #888; margin-top: 2px; }
-    .coll-entry-del {
-      background: none; border: none;
-      font-size: 1rem; cursor: pointer;
-      color: #ddd; padding: 4px;
-    }
-    .coll-entry-del:hover { color: var(--danger); }
-    #coll-add-zone {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .coll-add-label { font-size: 0.8rem; font-weight: 600; color: #555; }
-    .coll-select {
-      width: 100%;
-      padding: 8px 10px;
-      border: 1.5px solid #eee;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      background: #fafafa;
-      outline: none;
-      cursor: pointer;
-    }
-    .coll-select:focus { border-color: var(--accent); }
-    #btn-coll-add-entry {
-      padding: 8px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    #btn-coll-add-entry:disabled { opacity: 0.4; cursor: default; }
-    #coll-no-packs {
-      font-size: 0.78rem;
-      color: #f0a500;
-      display: none;
-      padding: 4px 0;
-    }
-    #collection-footer {
-      padding: 12px 16px;
-      background: #fff;
-      border-top: 1px solid #eee;
-      display: flex;
-      gap: 10px;
-    }
-    #btn-coll-apply {
-      flex: 1;
-      padding: 10px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    #btn-coll-cancel {
-      padding: 10px 18px;
-      background: #eee;
-      color: #333;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      cursor: pointer;
-    }
-
-    /* ── Bouton Enregistrer dans le sheet ── */
-    #btn-save {
-      display: block;
-      width: calc(100% - 16px);
-      margin: 6px 8px 4px;
-      padding: 7px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      opacity: 0.4;
-      pointer-events: none;
-    }
-    #btn-save.active { opacity: 1; pointer-events: auto; }
-
-    /* ── Panel liste des recherches sauvegardées ── */
-    #saved-panel {
-      position: fixed;
-      inset: 0;
-      background: #f5f5f7;
-      z-index: 120;
-      display: flex;
-      flex-direction: column;
-      transform: translateY(100%);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
-    }
-    #saved-panel.open { transform: translateY(0); }
-    #saved-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 16px 10px;
-      background: #fff;
-      border-bottom: 1px solid #eee;
-      flex-shrink: 0;
-    }
-    #saved-header h2 { flex: 1; font-size: 1rem; }
-    .saved-action-btn {
-      padding: 6px 14px;
-      border: none;
-      border-radius: 16px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    #btn-export-jpeg { background: var(--accent); color: #fff; }
-    #btn-close-saved { background: #eee; color: #333; }
-    #saved-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .saved-empty { text-align:center; color:#bbb; font-size:0.85rem; padding:3rem 1rem; }
-    .saved-entry {
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-    }
-    .saved-num {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #bbb;
-      width: 26px;
-      flex-shrink: 0;
-      text-align: center;
-    }
-    .saved-sampled {
-      width: 38px; height: 38px;
-      border-radius: 8px;
-      border: 1px solid rgba(0,0,0,.08);
-      flex-shrink: 0;
-    }
-    .saved-arrow { color: #ccc; font-size: 1rem; flex-shrink: 0; }
-    .saved-matches { display: flex; gap: 6px; flex: 1; }
-    .saved-match {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      flex: 1;
-    }
-    .saved-match-swatch {
-      width: 36px; height: 36px;
-      border-radius: 7px;
-      border: 1px solid rgba(0,0,0,.08);
-    }
-    .saved-match-ref { font-size: 0.65rem; font-weight: 700; color: #444; }
-    .saved-match-de  { font-size: 0.58rem; color: #aaa; font-family: monospace; }
-    .saved-del {
-      background: none;
-      border: none;
-      font-size: 1.1rem;
-      cursor: pointer;
-      color: #ddd;
-      padding: 4px;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .saved-del:hover { color: var(--danger); }
-    .saved-match { cursor: pointer; }
-    .saved-match-swatch.chosen {
-      outline: 3px solid var(--success);
-      outline-offset: 2px;
-    }
-    .saved-match-ref.chosen { color: var(--success); }
-
-    /* Toast */
-    #toast {
-      position: fixed;
-      bottom: calc(var(--sheet-peek) + 16px);
-      left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      background: #333; color: #fff;
-      font-size: 0.82rem; font-weight: 600;
-      padding: 8px 18px; border-radius: 20px;
-      transition: transform .28s cubic-bezier(.34,1.56,.64,1);
-      pointer-events: none; z-index: 200;
-      white-space: nowrap;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── WB Adjustment Panel ── */
-    #wb-adj-panel {
-      position: fixed;
-      left: 0; right: 0;
-      bottom: var(--sheet-peek);
-      background: rgba(16,16,26,.93);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-top: 1px solid rgba(255,255,255,.1);
-      border-radius: 14px 14px 0 0;
-      padding: 10px 16px;
-      color: #fff;
-      z-index: 55;
-      overflow: hidden;
-      transform: translateY(100%);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
-      touch-action: none;
-    }
-    #wb-adj-panel.visible { transform: translateY(0); }
-
-    .wbadj-inner {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .wbadj-left {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-    .wbadj-info { font-size: 0.65rem; opacity: .65; line-height: 1.3; text-align: center; max-width: 80px; }
-    .wbadj-right { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-    .wbadj-reset {
-      background: rgba(255,255,255,.12);
-      border: none;
-      color: #fff;
-      font-size: 0.85rem;
-      padding: 6px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .wbadj-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .wbadj-lbl { font-size: 0.7rem; width: 80px; flex-shrink: 0; opacity: .75; }
-    .wbadj-slider {
-      flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255,255,255,.2);
-      outline: none;
-      cursor: pointer;
-    }
-    .wbadj-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 5px rgba(0,0,0,.4);
-    }
-    .wbadj-slider::-moz-range-thumb {
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      border: none;
-      box-shadow: 0 1px 5px rgba(0,0,0,.4);
-    }
-
-    /* Desktop — on remet le layout côte à côte */
-    @media (min-width: 768px) {
-      #canvas-panel {
-        bottom: 0;
-        right: 340px;
-      }
-      #tip { bottom: 12px; }
-      #sheet {
-        width: 340px;
-        max-width: none;
-        border-radius: 0;
-        transform: none !important;
-        box-shadow: -2px 0 12px rgba(0,0,0,.08);
-      }
-      #sheet-tab { display: none; }
-      .sheet-peek-label { display: none; }
-      #toast { bottom: 20px; }
-      #wb-adj-panel { right: 340px; bottom: 0; border-radius: 14px 14px 0 0; }
-    }
-
-    /* Modal PDF */
-    #pdf-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      display: none;
-    }
-    .pdf-modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.65);
-    }
-    .pdf-modal-box {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1a1a2e;
-      border-radius: 12px;
-      padding: 1.25rem;
-      width: min(94vw, 560px);
-      max-height: 82vh;
-      overflow-y: auto;
-      box-shadow: 0 10px 50px rgba(0,0,0,.7);
-      z-index: 1;
-    }
-    .pdf-modal-title {
-      color: #eee;
-      font-size: 0.9rem;
-      margin: 0 0 1rem;
-    }
-    .pdf-modal-thumbs {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 0.6rem;
-      margin-bottom: 1rem;
-    }
-    .pdf-modal-thumb {
-      cursor: pointer;
-      border: 2px solid #444;
-      border-radius: 6px;
-      overflow: hidden;
-      text-align: center;
-      transition: border-color .15s;
-    }
-    .pdf-modal-thumb:hover { border-color: #4a6cf7; }
-    .pdf-modal-thumb canvas { width: 100%; display: block; }
-    .pdf-modal-thumb span { font-size: 0.7rem; color: #aaa; padding: 3px 0; display: block; }
-    .pdf-modal-cancel {
-      display: block;
-      margin: 0 auto;
-      padding: 0.4rem 1.2rem;
-      border: 1px solid #555;
-      border-radius: 6px;
-      background: transparent;
-      color: #ccc;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-  </style>
 </head>
 <body>
 
@@ -737,11 +36,16 @@
 
 <!-- Toolbar flottante -->
 <div id="toolbar">
-  <a href="/conseils" class="tb-btn" style="text-decoration:none;background:rgba(30,30,30,.75);color:#fff;">← Retour</a>
-  <button class="tb-btn" id="btn-collection" style="background:#fff;color:#333;display:none;">🎨 Pack</button>
-  <button class="tb-btn" id="btn-open">📷 Photo</button>
-  <button class="tb-btn" id="btn-wb">⚪ Balance des blancs</button>
+  <a href="/conseils" class="tb-btn" data-i18n="app.back" style="text-decoration:none;background:rgba(30,30,30,.75);color:#fff;">← Retour</a>
+  <button class="tb-btn" id="btn-collection" data-i18n="app.pack" style="background:#fff;color:#333;display:none;">🎨 Pack</button>
+  <button class="tb-btn" id="btn-open" data-i18n="app.photo">📷 Photo</button>
+  <button class="tb-btn" id="btn-wb" data-i18n="app.wb">⚪ Balance des blancs</button>
   <button class="tb-btn" id="btn-saved" style="background:#fff;color:#333;display:none;">📋 <span id="saved-count">0</span></button>
+  <select class="lang-select" onchange="setLang(this.value)">
+    <option value="fr">🇫🇷 FR</option>
+    <option value="en">🇬🇧 EN</option>
+    <option value="es">🇪🇸 ES</option>
+  </select>
 </div>
 
 
@@ -749,10 +53,10 @@
 <div id="canvas-panel">
   <div id="drop-zone">
     <div class="ico">📷</div>
-    <p>Ouvre une photo ou un PDF du nuancier</p>
-    <span style="font-size:0.75rem;color:#888;margin-top:2px;">Images (jpg, png…) ou PDF couleurs</span>
+    <p data-i18n="drop.text">Ouvre une photo ou un PDF du nuancier</p>
+    <span data-i18n="drop.sub" style="font-size:0.75rem;color:#888;margin-top:2px;">Images (jpg, png…) ou PDF couleurs</span>
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;align-items:center;">
-      <a href="/conseils" style="font-size:0.78rem;color:#4a6cf7;text-decoration:none;" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
+      <a href="/conseils" data-i18n="drop.tips" style="font-size:0.78rem;color:#4a6cf7;text-decoration:none;" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
       <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" style="font-size:0.78rem;color:#27ae60;text-decoration:none;" onclick="event.stopPropagation()">🎨 PDFs de référence par Jeremy Mariez →</a>
     </div>
   </div>
@@ -805,18 +109,18 @@
       <div id="sampled-swatch-mini"></div>
       <div>
         <div id="sampled-hex-mini">—</div>
-        <div id="sampled-rgb-mini">Tape sur une couleur</div>
+        <div id="sampled-rgb-mini" data-i18n="sheet.tap">Tape sur une couleur</div>
       </div>
-      <span class="sheet-peek-label">↑ tous les matchs</span>
+      <span class="sheet-peek-label" data-i18n="sheet.all">↑ tous les matchs</span>
     </div>
     <div class="top3-row" id="top3-row"></div>
-    <button id="btn-save">+ Enregistrer ce résultat</button>
+    <button id="btn-save" data-i18n="sheet.save">+ Enregistrer ce résultat</button>
   </div>
   <div class="sheet-body" id="sheet-body">
-    <div class="empty-results">Tape sur une couleur du nuancier pour voir les matchs</div>
+    <div class="empty-results" data-i18n="sheet.empty">Tape sur une couleur du nuancier pour voir les matchs</div>
   </div>
   <div class="sheet-kofi">
-    <a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener">☕ Soutenir le projet</a>
+    <a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener" data-i18n="sheet.kofi">☕ Soutenir le projet</a>
   </div>
 </div>
 
@@ -825,19 +129,19 @@
 <!-- Panel sélection collection -->
 <div id="collection-panel">
   <div id="collection-header">
-    <h2>Ma collection</h2>
-    <button class="saved-action-btn" id="btn-coll-cancel" style="background:#eee;color:#333;">✕ Fermer</button>
+    <h2 data-i18n="coll.title">Ma collection</h2>
+    <button class="saved-action-btn" id="btn-coll-cancel" data-i18n="coll.close" style="background:#eee;color:#333;">✕ Fermer</button>
   </div>
   <div id="collection-body">
     <!-- Option "Tous" -->
     <div class="coll-option-tous">
       <input type="radio" name="coll-mode" id="radio-tous" value="tous" checked>
-      <label for="radio-tous">Toutes les couleurs</label>
+      <label for="radio-tous" data-i18n="coll.all">Toutes les couleurs</label>
       <small>mode dev</small>
     </div>
     <div class="coll-option-tous" style="cursor:default;">
       <input type="radio" name="coll-mode" id="radio-custom" value="custom">
-      <label for="radio-custom" style="cursor:pointer;">Ma sélection</label>
+      <label for="radio-custom" data-i18n="coll.custom" style="cursor:pointer;">Ma sélection</label>
     </div>
 
     <!-- Liste des marques/packs sélectionnés -->
@@ -845,33 +149,33 @@
 
     <!-- Ajout d'une marque+pack -->
     <div id="coll-add-zone">
-      <span class="coll-add-label">Ajouter une marque</span>
+      <span class="coll-add-label" data-i18n="coll.add.label">Ajouter une marque</span>
       <select class="coll-select" id="coll-select-marque">
-        <option value="">— Choisir une marque —</option>
+        <option value="" data-i18n="coll.add.marque">— Choisir une marque —</option>
       </select>
       <select class="coll-select" id="coll-select-pack" disabled>
-        <option value="">— Choisir un pack —</option>
+        <option value="" data-i18n="coll.add.pack">— Choisir un pack —</option>
       </select>
-      <div id="coll-no-packs">⚠️ Aucun pack enregistré pour cette marque</div>
-      <button id="btn-coll-add-entry" disabled>+ Ajouter à ma collection</button>
+      <div id="coll-no-packs" data-i18n="coll.nopacks">⚠️ Aucun pack enregistré pour cette marque</div>
+      <button id="btn-coll-add-entry" data-i18n="coll.add.btn" disabled>+ Ajouter à ma collection</button>
     </div>
   </div>
   <div id="collection-footer">
-    <button id="btn-coll-apply">✓ Appliquer</button>
+    <button id="btn-coll-apply" data-i18n="coll.apply">✓ Appliquer</button>
   </div>
 </div>
 
 <!-- Panel recherches sauvegardées -->
 <div id="saved-panel">
   <div id="saved-header">
-    <h2>Recherches enregistrées</h2>
-    <button class="saved-action-btn" id="btn-export-json" style="background:#27ae60;color:#fff;display:none;">⬇ JSON</button>
-    <button class="saved-action-btn" id="btn-export-jpeg">⬇ JPEG</button>
-    <button class="saved-action-btn" id="btn-clear-saved" style="background:#ffeaea;color:var(--danger);">🗑 Vider</button>
-    <button class="saved-action-btn" id="btn-close-saved">✕ Fermer</button>
+    <h2 data-i18n="saved.title">Recherches enregistrées</h2>
+    <button class="saved-action-btn" id="btn-export-json" data-i18n="saved.json" style="background:#27ae60;color:#fff;display:none;">⬇ JSON</button>
+    <button class="saved-action-btn" id="btn-export-jpeg" data-i18n="saved.jpeg">⬇ JPEG</button>
+    <button class="saved-action-btn" id="btn-clear-saved" data-i18n="saved.clear" style="background:#ffeaea;color:var(--danger);">🗑 Vider</button>
+    <button class="saved-action-btn" id="btn-close-saved" data-i18n="saved.close">✕ Fermer</button>
   </div>
   <div id="saved-list">
-    <div class="saved-empty">Aucune recherche enregistrée</div>
+    <div class="saved-empty" data-i18n="saved.empty">Aucune recherche enregistrée</div>
   </div>
 </div>
 
@@ -913,7 +217,7 @@ const btnWb   = document.getElementById('btn-wb');
 fetch('/api/couleurs/all').then(r=>r.json()).then(c=>{
   dbColors=c;
   updateDbBadge();
-}).catch(() => toast('⚠️ Impossible de charger les couleurs — recharge la page'));
+}).catch(() => toast(t('toast.colors.fail')));
 
 function updateDbBadge() {
   // badge supprimé
@@ -953,7 +257,7 @@ function loadImage(f) {
 }
 
 function loadPdf(f) {
-  if (!window.pdfjsLib) { toast('⚠️ PDF.js non chargé — recharge la page'); return; }
+  if (!window.pdfjsLib) { toast(t('toast.pdf.fail')); return; }
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const rd=new FileReader();
   rd.onload=ev=>{
@@ -961,7 +265,7 @@ function loadPdf(f) {
       pdfDoc=pdf; pdfPages=pdf.numPages; pdfPage=1;
       if (pdfPages===1) { renderPdfPage(1); return; }
       showPdfModal(pdf);
-    }).catch(()=>toast('⚠️ Impossible de lire ce PDF'));
+    }).catch(()=>toast(t('toast.pdf.fail')));
   };
   rd.readAsArrayBuffer(f);
 }
@@ -970,7 +274,7 @@ async function showPdfModal(pdf) {
   const modal   = document.getElementById('pdf-modal');
   const thumbsEl= document.getElementById('pdf-modal-thumbs');
   const titleEl = document.getElementById('pdf-modal-title');
-  titleEl.textContent = pdf.numPages + ' pages — choisir une page';
+  titleEl.textContent = pdf.numPages + t('pdf.pages');
   thumbsEl.innerHTML  = '';
   modal.style.display = 'block';
   for (let i=1; i<=pdf.numPages; i++) {
@@ -1036,14 +340,14 @@ function applyImageEl(img) {
   resizeCanvas(); fitView(); render();
   // WB automatique
   const autoOk=autoDetectWB(imgData,natW,natH,({white,black})=>{
-    btnWb.textContent='✓ Blancs OK (auto)';
+    btnWb.textContent=t('app.wb.auto');
     btnWb.className='tb-btn done';
     const brightness=(white.r+white.g+white.b)/3;
     onWbSet(white, black);
-    if (brightness<170) toast('⚠️ Photo sombre — ajuste la luminosité en bas');
-    else toast('✓ Balance des blancs auto — ajuste si besoin');
+    if (brightness<170) toast(t('toast.wb.auto.dark'));
+    else toast(t('toast.wb.auto.ok'));
   });
-  if (!autoOk) toast('Image chargée — tape sur ⚪ sur la bande blanche du livre');
+  if (!autoOk) toast(t('toast.wb.auto.no'));
 }
 
 // ── Canvas ─────────────────────────────────────────────────────────────────────
@@ -1208,7 +512,7 @@ btnWb.addEventListener('click', ()=>{
   if (!imgEl) return;
   wbPending=!wbPending;
   if (wbPending) {
-    btnWb.textContent='⚠️ Tape sur le blanc de référence…';
+    btnWb.textContent=t('app.wb.pending');
     btnWb.className='tb-btn pending';
   } else {
     resetWbBtn();
@@ -1217,7 +521,7 @@ btnWb.addEventListener('click', ()=>{
 
 function resetWbBtn() {
   wbPending=false;
-  btnWb.textContent=wbSet?'✓ Blancs OK (retaper pour changer)':'⚪ Balance des blancs';
+  btnWb.textContent=t(wbSet?'app.wb.done':'app.wb.reset');
   btnWb.className='tb-btn '+(wbSet?'done':'');
   if (!wbSet) {
     document.getElementById('wb-adj-panel').classList.remove('visible');
@@ -1287,25 +591,25 @@ document.getElementById('wbadj-reset').addEventListener('click', ()=>{
   cv.style.filter = 'none';
   document.getElementById('wb-adj-panel').classList.remove('visible');
   wbIndicator.classList.remove('visible');
-  btnWb.textContent = '⚪ Balance des blancs';
+  btnWb.textContent = t('app.wb.reset');
   btnWb.className   = 'tb-btn';
-  toast('Photo originale restaurée');
+  toast(t('toast.wb.reset.full'));
 });
 
 function doWB(cvX,cvY) {
   const img=canvasToImg(cvX,cvY);
   const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
     onWbSet(white, black);
-    toast('✓ Balance définie — ajuste avec les curseurs si besoin');
+    toast(t('toast.wb.def'));
   });
-  if (!ok) toast('⚠️ Zone trop sombre — tape sur le blanc de référence');
+  if (!ok) toast(t('toast.wb.dark'));
 }
 
 // ── Sampling ───────────────────────────────────────────────────────────────────
 function doSample(fromWB = false) {
   if (!circleCenter||circleRadius<1) return;
   const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
-  if (!result) { toast('⚠️ Zone invalide — réessaie'); return; }
+  if (!result) { toast(t('toast.sample.fail')); return; }
 
   document.getElementById('sampled-swatch-mini').style.background=result.hex;
   document.getElementById('sampled-hex-mini').textContent=result.hex.toUpperCase();
@@ -1408,7 +712,7 @@ function huePenalty(lab1, lab2) {
   let h2 = Math.atan2(b2, a2) * 180 / Math.PI; if (h2 < 0) h2 += 360;
   const diff = Math.abs(h1 - h2);
   const dist = Math.min(diff, 360 - diff); // distance circulaire 0–180°
-  const chromaFactor = Math.min(1, minC / 25); // pleine pénalité dès chroma≥25
+  const chromaFactor = Math.min(1, Math.max(0, (minC - 8) / 22)); // pleine pénalité dès chroma≥30, douce entre 8-30
   return dist * chromaFactor * HUE_PENALTY_WEIGHT;
 }
 
@@ -1478,18 +782,32 @@ let currentSampled = null;
 let currentTop3    = [];
 
 function matchColors(r,g,b) {
-  if (!dbColors.length) { toast('⚠️ Aucune couleur en base'); return; }
+  if (!dbColors.length) { toast(t('toast.nodb')); return; }
   currentSampled = { hex: toHexCore(r,g,b), r, g, b };
   const sampledLab = chroma(r,g,b).lab();
+
+  // Caractéristiques de la cible pour les règles ciblées
+  const [, sA, sB] = sampledLab;
+  const sampledChroma = Math.sqrt(sA*sA + sB*sB);
+  let sampledHue = Math.atan2(sB, sA) * 180 / Math.PI;
+  if (sampledHue < 0) sampledHue += 360;
+  const targetIsViolet = sampledHue >= 260 && sampledHue <= 340 && sampledChroma > 8;
+
   const scores=getFilteredColors().map(c=>{
     const labScanner = chroma(Number(c.r), Number(c.g), Number(c.b)).lab();
-    const dScanner   = deltaE2000(sampledLab, labScanner) + huePenalty(sampledLab, labScanner);
-    let dPhoto = Infinity;
+    let delta;
     if (c.r_photo != null) {
+      // Photo prioritaire — valeur corrigée plus fiable que le scanner
       const labPhoto = chroma(Number(c.r_photo), Number(c.g_photo), Number(c.b_photo)).lab();
-      dPhoto = deltaE2000(sampledLab, labPhoto) + huePenalty(sampledLab, labPhoto);
+      delta = deltaE2000(sampledLab, labPhoto) + huePenalty(sampledLab, labPhoto);
+    } else {
+      delta = deltaE2000(sampledLab, labScanner) + huePenalty(sampledLab, labScanner);
     }
-    return { ...c, delta: Math.min(dScanner, dPhoto) };
+
+    // 613 sur-représenté dans les violets désaturés — pénalité ciblée
+    if (c.reference === '613' && targetIsViolet && sampledChroma < 35) delta += 4;
+
+    return { ...c, delta };
   }).sort((a,b)=>a.delta-b.delta);
 
   // Grouper les équivalentes, puis sélectionner le top affiché :
@@ -1537,7 +855,7 @@ function matchColors(r,g,b) {
   const remaining = scores.filter(c => !shownRefs.has(c.reference)).slice(0, 8);
   document.getElementById('sheet-body').innerHTML = remaining.map(c => {
     const cls = c.delta<5?'score-great':c.delta<15?'score-good':'score-ok';
-    const lbl = c.delta<5?'Excellent':c.delta<15?'Proche':'Éloigné';
+    const lbl = c.delta<5?t('match.great'):c.delta<15?t('match.good'):t('match.ok');
     return `<div class="result-entry">
       <div class="result-swatch" style="background:${c.hex}"></div>
       <div class="result-info">
@@ -1597,7 +915,7 @@ function persistSearches() {
 
 function renderSavedList() {
   if (!savedSearches.length) {
-    savedList.innerHTML = '<div class="saved-empty">Aucune recherche enregistrée</div>';
+    savedList.innerHTML = `<div class="saved-empty">${t('saved.empty')}</div>`;
     return;
   }
   savedList.innerHTML = savedSearches.map((s, idx) => `
@@ -1640,7 +958,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
   if (!currentSampled || !currentTop3.length) return;
   savedSearches.push({ sampled: currentSampled, top3: currentTop3 });
   persistSearches();
-  toast('✓ Résultat enregistré (' + savedSearches.length + ')');
+  toast(t('toast.saved') + ' (' + savedSearches.length + ')');
   if (window.innerWidth < 768) closeSheet();
 });
 
@@ -1655,16 +973,16 @@ document.getElementById('btn-close-saved').addEventListener('click', () => {
 
 document.getElementById('btn-clear-saved').addEventListener('click', () => {
   if (!savedSearches.length) return;
-  if (!confirm('Vider toutes les recherches enregistrées ?')) return;
+  if (!confirm(t('saved.clear.confirm'))) return;
   savedSearches = [];
   persistSearches();
   renderSavedList();
-  toast('Liste vidée');
+  toast(t('toast.clear.done'));
 });
 
 // ── Export JSON ────────────────────────────────────────────────────────────────
 document.getElementById('btn-export-json').addEventListener('click', () => {
-  if (!savedSearches.length) { toast('Aucune recherche à exporter'); return; }
+  if (!savedSearches.length) { toast(t('toast.export.empty')); return; }
 
   const payload = {
     date: new Date().toISOString().slice(0, 10),
@@ -1693,12 +1011,12 @@ document.getElementById('btn-export-json').addEventListener('click', () => {
   link.href = URL.createObjectURL(blob);
   link.click();
   URL.revokeObjectURL(link.href);
-  toast('✓ Export JSON téléchargé');
+  toast(t('toast.export.json'));
 });
 
 // ── Export JPEG ────────────────────────────────────────────────────────────────
 document.getElementById('btn-export-jpeg').addEventListener('click', () => {
-  if (!savedSearches.length) { toast('Aucune recherche à exporter'); return; }
+  if (!savedSearches.length) { toast(t('toast.export.empty')); return; }
 
   const W       = 620;
   const PAD     = 24;
@@ -1723,7 +1041,7 @@ document.getElementById('btn-export-jpeg').addEventListener('click', () => {
   ctx2.fillStyle = '#ffffff';
   ctx2.font = 'bold 18px system-ui, sans-serif';
   ctx2.textBaseline = 'middle';
-  ctx2.fillText('Révélo — Résultats', PAD, HDR_H / 2);
+  ctx2.fillText(t('export.title'), PAD, HDR_H / 2);
 
   // Chaque entrée
   savedSearches.forEach((s, idx) => {
@@ -1792,7 +1110,7 @@ document.getElementById('btn-export-jpeg').addEventListener('click', () => {
     ctx2.fillText(s.chosen || '?', cx, cy - 5);
     ctx2.fillStyle = '#bbbbbb';
     ctx2.font = '8px system-ui, sans-serif';
-    ctx2.fillText('choisi', cx, cy + 10);
+    ctx2.fillText(t('export.chosen'), cx, cy + 10);
     ctx2.restore();
   });
 
@@ -1802,14 +1120,16 @@ document.getElementById('btn-export-jpeg').addEventListener('click', () => {
   ctx2.fillStyle = '#aaaaaa';
   ctx2.font = '10px system-ui, sans-serif';
   ctx2.textAlign = 'center';
-  ctx2.fillText('révélo · généré le ' + new Date().toLocaleDateString('fr-FR'), W / 2, H - 8);
+  const locale = currentLang === 'fr' ? 'fr-FR' : currentLang === 'es' ? 'es-ES' : 'en-GB';
+  ctx2.fillText(t('export.watermark') + new Date().toLocaleDateString(locale), W / 2, H - 8);
 
-  const nomFichier = prompt('Nom du fichier (sans extension) :', 'tome_page') || 'tome_page';
+  const defaultName = t('export.filename');
+  const nomFichier = prompt(t('export.prompt'), defaultName) || defaultName;
   const link = document.createElement('a');
   link.download = nomFichier.replace(/\.jpg$/i, '') + '.jpg';
   link.href = cv2.toDataURL('image/jpeg', 0.92);
   link.click();
-  toast('✓ Export JPEG téléchargé');
+  toast(t('toast.export.jpeg'));
 });
 
 function roundRect(ctx2, x, y, w, h, r, fill) {
@@ -1900,7 +1220,7 @@ fetch('/api/marques-packs').then(r => r.json()).then(data => {
     renderCollDraft();
     document.getElementById('collection-panel').classList.add('open');
   }
-}).catch(() => toast('⚠️ Impossible de charger les collections — recharge la page'));
+}).catch(() => toast(t('toast.coll.fail')));
 
 // Marque sélectionnée → remplir les packs
 document.getElementById('coll-select-marque').addEventListener('change', function() {
@@ -1977,6 +1297,19 @@ document.getElementById('btn-collection').addEventListener('click', () => {
 
 document.getElementById('btn-coll-cancel').addEventListener('click', () => {
   document.getElementById('collection-panel').classList.remove('open');
+});
+
+// ── i18n — réagir aux changements de langue ────────────────────────────────────
+window.addEventListener('langchange', () => {
+  // Re-apply WB button state after lang change
+  if (wbPending) {
+    btnWb.textContent = t('app.wb.pending');
+  } else {
+    resetWbBtn();
+  }
+  // Re-render saved list if panel is open
+  const sp = document.getElementById('saved-panel');
+  if (sp.classList.contains('open')) renderSavedList();
 });
 
 // Init badge au chargement

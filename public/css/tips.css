@@ -150,3 +150,20 @@ header p  { font-size: 0.85rem; color: #888; }
   text-decoration: none;
 }
 .kofi a:hover { color: #aaa; }
+
+/* ── Language switcher ── */
+.lang-select {
+  display: block;
+  margin: 0 auto 16px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  color: #888;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+}

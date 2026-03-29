@@ -17,12 +17,18 @@
   <meta name="apple-mobile-web-app-title" content="Révélo">
   <link rel="apple-touch-icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/tips.css">
+  <script src="/js/i18n.js"></script>
 </head>
 <body>
 
 <header>
-  <h1>Avant de commencer</h1>
-  <p>Quelques conseils pour des résultats fiables</p>
+  <select class="lang-select" onchange="setLang(this.value)">
+    <option value="fr">🇫🇷 FR</option>
+    <option value="en">🇬🇧 EN</option>
+    <option value="es">🇪🇸 ES</option>
+  </select>
+  <h1 data-i18n="tips.h1">Avant de commencer</h1>
+  <p data-i18n="tips.subtitle">Quelques conseils pour des résultats fiables</p>
 </header>
 
 <div class="tips">
@@ -30,19 +36,19 @@
   <div class="tip highlight">
     <div class="tip-icon">🎯</div>
     <div class="tip-body">
-      <h2>Le résultat n'est qu'un point de départ</h2>
-      <p>L'application a été conçu de manière tout à fait non officiel.</p>
-      <p>Je me suis servie des marqueurs que j'avais en ma possession pour créer le nuancier numérique le plus proche possible de la vérité.</p>
-      <p>Mais l'application ne donne que les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
+      <h2 data-i18n="tips.t1.h2">Le résultat n'est qu'un point de départ</h2>
+      <p data-i18n="tips.t1.p1">L'application a été conçu de manière tout à fait non officiel.</p>
+      <p data-i18n="tips.t1.p2">Je me suis servie des marqueurs que j'avais en ma possession pour créer le nuancier numérique le plus proche possible de la vérité.</p>
+      <p data-i18n-html="tips.t1.p3">Mais l'application ne donne que les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
     </div>
   </div>
 
   <div class="tip highlight">
     <div class="tip-icon">📄</div>
     <div class="tip-body">
-      <h2>Les PDFs de référence : la meilleure source</h2>
-      <p>Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu'une photo — et <strong>pas besoin de balance des blancs</strong> : clique directement sur la case colorée.</p>
-      <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref">
+      <h2 data-i18n="tips.t2.h2">Les PDFs de référence : la meilleure source</h2>
+      <p data-i18n-html="tips.t2.p">Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu'une photo — et <strong>pas besoin de balance des blancs</strong> : clique directement sur la case colorée.</p>
+      <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link">
         🎨 Palettes de référence par Jeremy Mariez →
       </a>
     </div>
@@ -51,8 +57,8 @@
   <div class="tip highlight">
     <div class="tip-icon">💡</div>
     <div class="tip-body">
-      <h2>Éclairage — pour les photos uniquement</h2>
-      <p>Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.<br>
+      <h2 data-i18n="tips.t3.h2">Éclairage — pour les photos uniquement</h2>
+      <p data-i18n-html="tips.t3.p">Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.<br>
       Le flash crée des reflets qui faussent les couleurs.<br>
       <strong>Avec un PDF Jeremy Mariez, l'éclairage n'a aucune importance.</strong></p>
     </div>
@@ -61,36 +67,36 @@
   <div class="tip highlight">
     <div class="tip-icon">⚪</div>
     <div class="tip-body">
-      <h2>Balance des blancs — pour les photos uniquement</h2>
-      <p>Les livres Hachette ont une <strong>bande blanche naturelle</strong> juste au-dessus de chaque case colorée — c'est ta référence parfaite.</p>
-      <div class="step"><span class="step-num">1</span> Tape sur le bouton balance des blancs (⚪)</div>
-      <div class="step"><span class="step-num">2</span> Clique sur la <strong>bande blanche au-dessus</strong> de la couleur à identifier</div>
-      <div class="step"><span class="step-num">3</span> Échantillonne la couleur en dessinant un cercle dessus</div>
+      <h2 data-i18n="tips.t4.h2">Balance des blancs — pour les photos uniquement</h2>
+      <p data-i18n-html="tips.t4.p">Les livres Hachette ont une <strong>bande blanche naturelle</strong> juste au-dessus de chaque case colorée — c'est ta référence parfaite.</p>
+      <div class="step"><span class="step-num">1</span> <span data-i18n="tips.t4.s1">Tape sur le bouton balance des blancs (⚪)</span></div>
+      <div class="step"><span class="step-num">2</span> <span data-i18n-html="tips.t4.s2">Clique sur la <strong>bande blanche au-dessus</strong> de la couleur à identifier</span></div>
+      <div class="step"><span class="step-num">3</span> <span data-i18n="tips.t4.s3">Échantillonne la couleur en dessinant un cercle dessus</span></div>
     </div>
   </div>
 
   <div class="tip">
     <div class="tip-icon">📸</div>
     <div class="tip-body">
-      <h2>Continue à partager tes colos !</h2>
-      <p>Tu partages tes créations sur les réseaux ? <strong>On adore voir vos colos et les codes couleurs que vous utilisez</strong> — ça inspire toute la communauté. Continue à taguer et à partager !</p>
+      <h2 data-i18n="tips.t5.h2">Continue à partager tes colos !</h2>
+      <p data-i18n-html="tips.t5.p">Tu partages tes créations sur les réseaux ? <strong>On adore voir vos colos et les codes couleurs que vous utilisez</strong> — ça inspire toute la communauté. Continue à taguer et à partager !</p>
     </div>
   </div>
 
 </div>
 
 <div class="cta">
-  <a href="/recherche" class="btn-start">C'est parti →</a>
+  <a href="/recherche" class="btn-start" data-i18n="tips.cta.start">C'est parti →</a>
 
-  <button id="btn-install" style="display:none">
+  <button id="btn-install" style="display:none" data-i18n="tips.cta.install">
     Ajouter à l'écran d'accueil
   </button>
-  <p id="ios-install" style="display:none" class="skip">
+  <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">
     Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>
   </p>
 
-  <p class="skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
-  <p class="kofi"><a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener">☕ Soutenir le projet sur Tipeee</a></p>
+  <p class="skip" data-i18n="tips.cta.skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
+  <p class="kofi"><a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener" data-i18n="tips.cta.kofi">☕ Soutenir le projet sur Tipeee</a></p>
 </div>
 
 <script>
