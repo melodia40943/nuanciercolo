@@ -13,6 +13,8 @@ import testRoutes     from './routes/test.js';
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1); // Infomaniak reverse proxy
+
 app.use(helmet({
   contentSecurityPolicy: false, // désactivé car CDN externes (pdf.js, fonts Google)
 }));
