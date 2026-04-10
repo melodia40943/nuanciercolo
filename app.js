@@ -31,12 +31,6 @@ app.use(helmet({
   contentSecurityPolicy: false, // désactivé car CDN externes (pdf.js, fonts Google)
 }));
 
-app.use('/api', rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 500,
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
