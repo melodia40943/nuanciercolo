@@ -6,6 +6,160 @@
   <title>Révélo — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 800px) { .analytics-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .kpi-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .kpi-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #999;
+      margin-bottom: 0.4rem;
+    }
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #222;
+      line-height: 1;
+    }
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+    .kpi-sub strong { color: #555; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 700px) { .row-2 { grid-template-columns: 1fr; } }
+
+    .panel-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .panel-card h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #999;
+      margin-bottom: 1rem;
+    }
+
+    /* Graphique barres */
+    .chart-wrap {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      margin-bottom: 1.5rem;
+    }
+    .chart-wrap h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #999;
+      margin-bottom: 1rem;
+    }
+    .chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 120px;
+    }
+    .chart-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      position: relative;
+    }
+    .chart-bar {
+      width: 100%;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(to top, #4361EE, #8B2FC9);
+      min-height: 2px;
+      transition: opacity .15s;
+      cursor: default;
+    }
+    .chart-bar:hover { opacity: 0.75; }
+    .chart-col .tip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #222;
+      color: #fff;
+      font-size: 0.68rem;
+      white-space: nowrap;
+      padding: 3px 7px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .chart-col:hover .tip { display: block; }
+    .chart-labels {
+      display: flex;
+      gap: 3px;
+      margin-top: 4px;
+    }
+    .chart-label {
+      flex: 1;
+      text-align: center;
+      font-size: 0.6rem;
+      color: #bbb;
+      overflow: hidden;
+    }
+
+    /* Retention donut simplifié */
+    .retention-bars { display: flex; flex-direction: column; gap: 0.75rem; }
+    .ret-row { display: flex; flex-direction: column; gap: 4px; }
+    .ret-label { display: flex; justify-content: space-between; font-size: 0.82rem; color: #555; }
+    .ret-label strong { color: #222; }
+    .ret-track { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+    .ret-fill { height: 100%; border-radius: 4px; }
+    .ret-fill.new      { background: linear-gradient(90deg, #F72585, #FF6635); }
+    .ret-fill.returning{ background: linear-gradient(90deg, #4361EE, #8B2FC9); }
+
+    /* Devices */
+    .device-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; font-size: 0.85rem; }
+    .device-icon { font-size: 1.3rem; width: 28px; text-align: center; }
+    .device-track { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+    .device-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #06D6A0, #4CC9F0); }
+    .device-count { font-weight: 600; color: #333; min-width: 36px; text-align: right; }
+
+    /* Top pages */
+    .pages-table { width: 100%; border-collapse: collapse; }
+    .pages-table td { padding: 0.45rem 0; font-size: 0.85rem; border-bottom: 1px solid #f5f5f5; }
+    .pages-table td:last-child { text-align: right; color: #888; }
+    .page-name { font-family: monospace; color: #4361EE; }
+
+    .loading { color: #aaa; font-size: 0.9rem; padding: 2rem 0; text-align: center; }
+    .error-msg { color: #e74c3c; font-size: 0.85rem; padding: 1rem 0; }
+  </style>
 </head>
 <body>
   <nav>
@@ -20,8 +174,143 @@
   </nav>
 
   <main>
-    <h1>Dashboard</h1>
-    <p>Bienvenue dans le back office de Révélo.</p>
+    <div class="page-header">
+      <h1>Analytics</h1>
+    </div>
+
+    <div id="analytics-content">
+      <p class="loading">Chargement…</p>
+    </div>
   </main>
+
+  <script>
+  fetch('/api/analytics')
+    .then(r => r.json())
+    .then(data => render(data))
+    .catch(err => {
+      document.getElementById('analytics-content').innerHTML =
+        `<p class="error-msg">Erreur : ${err.message}</p>`;
+    });
+
+  function n(v) { return Number(v) || 0; }
+
+  function render({ kpis, chart, pages, devices, retention }) {
+    const mobile  = n(devices?.mobile);
+    const desktop = n(devices?.desktop);
+    const total   = mobile + desktop || 1;
+
+    // Graphique 30 jours — remplir les jours manquants
+    const chartMap = {};
+    chart.forEach(r => { chartMap[r.day.slice(0,10)] = r; });
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      days.push({ key, visits: n(chartMap[key]?.visits), uniq: n(chartMap[key]?.uniq) });
+    }
+    const maxVisits = Math.max(1, ...days.map(d => d.visits));
+
+    const retTotal = n(retention.new) + n(retention.returning) || 1;
+
+    // Labels jours (affiche 1 sur 5)
+    const labels = days.map((d, i) => {
+      if (i % 5 !== 0) return `<span class="chart-label"></span>`;
+      const dt = new Date(d.key + 'T12:00:00');
+      return `<span class="chart-label">${dt.getDate()}/${dt.getMonth()+1}</span>`;
+    }).join('');
+
+    const bars = days.map(d => {
+      const h = Math.round((d.visits / maxVisits) * 100);
+      return `<div class="chart-col">
+        <span class="tip">${d.key}<br>${d.visits} visite${d.visits>1?'s':''} · ${d.uniq} uniq.</span>
+        <div class="chart-bar" style="height:${h}%"></div>
+      </div>`;
+    }).join('');
+
+    const pagesHtml = pages.length
+      ? pages.map(p => `<tr>
+          <td><span class="page-name">${p.page}</span></td>
+          <td>${n(p.visits)} visites · ${n(p.uniq)} uniq.</td>
+        </tr>`).join('')
+      : '<tr><td colspan="2" style="color:#aaa">Aucune donnée</td></tr>';
+
+    document.getElementById('analytics-content').innerHTML = `
+      <div class="analytics-grid">
+        ${kpiCard("Aujourd'hui", n(kpis.visits_today), n(kpis.uniq_today) + ' visiteurs uniques')}
+        ${kpiCard('7 derniers jours', n(kpis.visits_7d), n(kpis.uniq_7d) + ' visiteurs uniques')}
+        ${kpiCard('30 derniers jours', n(kpis.visits_30d), n(kpis.uniq_30d) + ' visiteurs uniques')}
+        ${kpiCard('Cette année', n(kpis.visits_year), n(kpis.uniq_year) + ' visiteurs uniques')}
+      </div>
+
+      <div class="chart-wrap">
+        <h3>Visites — 30 derniers jours</h3>
+        <div class="chart">${bars}</div>
+        <div class="chart-labels">${labels}</div>
+      </div>
+
+      <div class="row-2">
+        <div class="panel-card">
+          <h3>Nouveaux vs récurrents (30j)</h3>
+          <div class="retention-bars">
+            <div class="ret-row">
+              <div class="ret-label">
+                <span>Nouveaux visiteurs</span>
+                <strong>${n(retention.new)}</strong>
+              </div>
+              <div class="ret-track">
+                <div class="ret-fill new" style="width:${Math.round(n(retention.new)/retTotal*100)}%"></div>
+              </div>
+            </div>
+            <div class="ret-row">
+              <div class="ret-label">
+                <span>Visiteurs récurrents</span>
+                <strong>${n(retention.returning)}</strong>
+              </div>
+              <div class="ret-track">
+                <div class="ret-fill returning" style="width:${Math.round(n(retention.returning)/retTotal*100)}%"></div>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:0.75rem;color:#bbb;margin-top:1rem">
+            Total visiteurs uniques : ${n(kpis.uniq_total)} depuis le début
+          </p>
+        </div>
+
+        <div class="panel-card">
+          <h3>Appareils (30j)</h3>
+          <div class="device-row">
+            <span class="device-icon">📱</span>
+            <div class="device-track">
+              <div class="device-fill" style="width:${Math.round(mobile/total*100)}%"></div>
+            </div>
+            <span class="device-count">${mobile}</span>
+          </div>
+          <div class="device-row">
+            <span class="device-icon">💻</span>
+            <div class="device-track">
+              <div class="device-fill" style="width:${Math.round(desktop/total*100)}%"></div>
+            </div>
+            <span class="device-count">${desktop}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Pages les plus visitées (30j)</h3>
+        <table class="pages-table">
+          <tbody>${pagesHtml}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function kpiCard(label, value, sub) {
+    return `<div class="kpi-card">
+      <div class="kpi-label">${label}</div>
+      <div class="kpi-value">${value}</div>
+      <div class="kpi-sub"><strong>${sub}</strong></div>
+    </div>`;
+  }
+  </script>
 </body>
 </html>

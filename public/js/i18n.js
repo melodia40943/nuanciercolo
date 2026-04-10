@@ -39,6 +39,10 @@ const TRANSLATIONS = {
     'tips.cta.skip':    'Ces conseils sont accessibles depuis le menu à tout moment.',
     'tips.cta.kofi':    '☕ Soutenir le projet sur Tipeee',
 
+    'cookie.text':      '🍪 Ce site utilise un cookie <strong>anonyme</strong> pour compter les visites et savoir si l\'application vous plaît. Aucune donnée personnelle n\'est collectée.',
+    'cookie.accept':    'Accepter',
+    'cookie.refuse':    'Refuser',
+
     // ── test.html ──
     'app.back':           '← Retour',
     'app.pack':           '🎨 Pack',
@@ -143,6 +147,10 @@ const TRANSLATIONS = {
     'tips.cta.skip':    'These tips are accessible from the menu at any time.',
     'tips.cta.kofi':    '☕ Support the project on Tipeee',
 
+    'cookie.text':      '🍪 This site uses an <strong>anonymous</strong> cookie to count visits and see if you enjoy the app. No personal data is collected.',
+    'cookie.accept':    'Accept',
+    'cookie.refuse':    'Decline',
+
     // ── test.html ──
     'app.back':           '← Back',
     'app.pack':           '🎨 Pack',
@@ -246,6 +254,10 @@ const TRANSLATIONS = {
     'tips.cta.ios':     'En iPhone: toca <strong>Compartir</strong> y luego <strong>"En la pantalla de inicio"</strong>',
     'tips.cta.skip':    'Estos consejos son accesibles desde el menú en cualquier momento.',
     'tips.cta.kofi':    '☕ Apoyar el proyecto en Tipeee',
+
+    'cookie.text':      '🍪 Este sitio usa una cookie <strong>anónima</strong> para contar visitas y saber si la aplicación te gusta. No se recopilan datos personales.',
+    'cookie.accept':    'Aceptar',
+    'cookie.refuse':    'Rechazar',
 
     // ── test.html ──
     'app.back':           '← Volver',
