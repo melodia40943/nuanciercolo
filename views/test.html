@@ -19,7 +19,7 @@
   <script src="/js/i18n.js"></script>
   <script src="/js/chroma.min.js"></script>
   <script src="/js/sampler-core.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="/js/pdf.min.js"></script>
 
 </head>
 <body>
@@ -258,7 +258,7 @@ function loadImage(f) {
 
 function loadPdf(f) {
   if (!window.pdfjsLib) { toast(t('toast.pdf.fail')); return; }
-  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc='/js/pdf.worker.min.js';
   const rd=new FileReader();
   rd.onload=ev=>{
     pdfjsLib.getDocument({ data: ev.target.result }).promise.then(pdf=>{

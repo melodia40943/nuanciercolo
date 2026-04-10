@@ -142,14 +142,45 @@ header p  { font-size: 0.85rem; color: #888; }
 .kofi {
   text-align: center;
   margin-top: 28px;
-  font-size: 0.78rem;
-  color: #555;
+  font-size: 0.9rem;
 }
 .kofi a {
-  color: #888;
+  display: inline-block;
+  color: #fff;
   text-decoration: none;
+  background: #ff5e5b;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: background 0.2s;
 }
-.kofi a:hover { color: #aaa; }
+.kofi a:hover { background: #e54e4b; }
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.social-links a:hover { opacity: 0.8; }
+/* Facebook : rose pâle → rose foncé → orange */
+.social-links a:nth-child(1) { background: linear-gradient(135deg, #FF5470, #F72585, #FF6635); }
+/* Instagram : jaune → vert → bleu */
+.social-links a:nth-child(2) { background: linear-gradient(135deg, #FFD500, #06D6A0, #4CC9F0); }
+/* TikTok : bleu foncé → mauve → rose pâle */
+.social-links a:nth-child(3) { background: linear-gradient(135deg, #4361EE, #8B2FC9, #FF5470); }
+.social-links svg { width: 20px; height: 20px; }
 
 /* ── Language switcher ── */
 .lang-select {
