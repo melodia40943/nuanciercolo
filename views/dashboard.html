@@ -185,8 +185,11 @@
 
   <script>
   fetch('/api/analytics')
-    .then(r => r.json())
-    .then(data => render(data))
+    .then(r => {
+      if (r.status === 401) { location.href = '/coulisses'; return; }
+      return r.json();
+    })
+    .then(data => { if (data) render(data); })
     .catch(err => {
       document.getElementById('analytics-content').innerHTML =
         `<p class="error-msg">Erreur : ${err.message}</p>`;
