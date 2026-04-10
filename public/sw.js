@@ -1,4 +1,4 @@
-const CACHE = 'nuancier-v6';
+const CACHE = 'revelo-__VER__';
 
 const STATIC = [
   '/test',
