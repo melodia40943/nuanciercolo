@@ -3,8 +3,6 @@ import express     from 'express';
 import session     from 'express-session';
 import helmet      from 'helmet';
 import rateLimit   from 'express-rate-limit';
-import { readFileSync } from 'fs';
-import { execSync }     from 'child_process';
 import { requireAuth } from './middleware/auth.js';
 import { analyticsMiddleware } from './middleware/analytics.js';
 import authRoutes    from './routes/auth.js';
@@ -17,13 +15,7 @@ import testRoutes     from './routes/test.js';
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-let ASSET_VERSION;
-try {
-  ASSET_VERSION = execSync('git rev-parse --short HEAD').toString().trim();
-} catch {
-  ASSET_VERSION = Date.now().toString(36);
-}
-const swContent = readFileSync('./public/sw.js', 'utf8').replace('__VER__', ASSET_VERSION);
+
 
 app.set('trust proxy', true); // Infomaniak — plusieurs niveaux de proxy
 
@@ -42,12 +34,6 @@ const loginLimiter = rateLimit({
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-app.get('/sw.js', (req, res) => {
-  res.setHeader('Content-Type', 'application/javascript');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.send(swContent);
-});
 
 app.use(express.static('public'));
 

@@ -1,4 +1,4 @@
-const CACHE = 'revelo-__VER__';
+const CACHE = 'revelo-v2.1';
 
 const STATIC = [
   '/test',
