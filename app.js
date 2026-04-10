@@ -25,7 +25,7 @@ try {
 }
 const swContent = readFileSync('./public/sw.js', 'utf8').replace('__VER__', ASSET_VERSION);
 
-app.set('trust proxy', 1); // Infomaniak reverse proxy
+app.set('trust proxy', true); // Infomaniak — plusieurs niveaux de proxy
 
 app.use(helmet({
   contentSecurityPolicy: false, // désactivé car CDN externes (pdf.js, fonts Google)
