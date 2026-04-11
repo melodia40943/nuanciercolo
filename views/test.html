@@ -25,7 +25,7 @@
 <body>
 
 <!-- Filtre SVG pour correction WB live sur le canvas -->
-<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<svg class="svg-sprite" aria-hidden="true">
   <defs>
     <filter id="wb-filter" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
       <feColorMatrix type="matrix" id="wb-matrix"
@@ -36,11 +36,11 @@
 
 <!-- Toolbar flottante -->
 <div id="toolbar">
-  <a href="/conseils" class="tb-btn" data-i18n="app.back" style="text-decoration:none;background:rgba(30,30,30,.75);color:#fff;">← Retour</a>
-  <button class="tb-btn" id="btn-collection" data-i18n="app.pack" style="background:#fff;color:#333;display:none;">🎨 Pack</button>
+  <a href="/conseils" class="tb-btn" data-i18n="app.back">← Retour</a>
+  <button class="tb-btn" id="btn-collection" data-i18n="app.pack" style="display:none;">🎨 Pack</button>
   <button class="tb-btn" id="btn-open" data-i18n="app.photo">📷 Photo</button>
   <button class="tb-btn" id="btn-wb" data-i18n="app.wb">⚪ Balance des blancs</button>
-  <button class="tb-btn" id="btn-saved" style="background:#fff;color:#333;display:none;">📋 <span id="saved-count">0</span></button>
+  <button class="tb-btn" id="btn-saved" style="display:none;">📋 <span id="saved-count">0</span></button>
   <select class="lang-select" onchange="setLang(this.value)">
     <option value="fr">🇫🇷 FR</option>
     <option value="en">🇬🇧 EN</option>
@@ -54,20 +54,20 @@
   <div id="drop-zone">
     <div class="ico">📷</div>
     <p data-i18n="drop.text">Ouvre une photo ou un PDF du nuancier</p>
-    <span data-i18n="drop.sub" style="font-size:0.75rem;color:#888;margin-top:2px;">Images (jpg, png…) ou PDF couleurs</span>
-    <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;align-items:center;">
-      <a href="/conseils" data-i18n="drop.tips" style="font-size:0.78rem;color:#4a6cf7;text-decoration:none;" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
-      <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" style="font-size:0.78rem;color:#27ae60;text-decoration:none;" onclick="event.stopPropagation()">🎨 PDFs de référence par Jeremy Mariez →</a>
+    <span class="drop-sub" data-i18n="drop.sub">Images (jpg, png…) ou PDF couleurs</span>
+    <div class="drop-links">
+      <a href="/conseils" class="link-tips" data-i18n="drop.tips" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
+      <a href="http://jeremymariez.free.fr/npainter.htm" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎨 PDFs de référence par Jeremy Mariez →</a>
     </div>
   </div>
   <div id="canvas-wrap">
     <canvas id="main-canvas"></canvas>
   </div>
   <!-- Navigation PDF -->
-  <div id="pdf-nav" style="display:none;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);align-items:center;gap:10px;background:rgba(0,0,0,.7);padding:6px 14px;border-radius:20px;z-index:50;">
-    <button id="pdf-prev" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px;">‹</button>
-    <span id="pdf-page-info" style="color:#fff;font-size:0.8rem;white-space:nowrap;cursor:pointer;" id="pdf-page-info" title="Changer de page">Page 1 / 1</span>
-    <button id="pdf-next" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px;">›</button>
+  <div id="pdf-nav" style="display:none;" title="Changer de page">
+    <button id="pdf-prev">‹</button>
+    <span id="pdf-page-info">Page 1 / 1</span>
+    <button id="pdf-next">›</button>
   </div>
   <input type="file" id="file-input" accept="image/*,application/pdf">
 </div>
@@ -76,9 +76,9 @@
 <div id="wb-adj-panel">
   <div class="wbadj-inner">
     <div class="wbadj-left">
-      <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,.2);flex-shrink:0;">
-        <div id="wbadj-corr" style="width:36px;height:36px;flex-shrink:0;"></div>
-        <div style="width:36px;height:36px;flex-shrink:0;background:#fff;"></div>
+      <div class="wbadj-swatches">
+        <div id="wbadj-corr"></div>
+        <div class="wbadj-white"></div>
       </div>
       <div class="wbadj-info" id="wbadj-info">Ajuste jusqu'à ce que les deux carrés soient identiques</div>
     </div>
@@ -130,18 +130,18 @@
 <div id="collection-panel">
   <div id="collection-header">
     <h2 data-i18n="coll.title">Ma collection</h2>
-    <button class="saved-action-btn" id="btn-coll-cancel" data-i18n="coll.close" style="background:#eee;color:#333;">✕ Fermer</button>
+    <button class="saved-action-btn" id="btn-coll-cancel" data-i18n="coll.close">✕ Fermer</button>
   </div>
   <div id="collection-body">
-    <!-- Option "Tous" -->
-    <div class="coll-option-tous">
+    <!-- Option "Tous" — visible uniquement si connectée -->
+    <div class="coll-option-tous" id="coll-tous-row" style="display:none;">
       <input type="radio" name="coll-mode" id="radio-tous" value="tous" checked>
       <label for="radio-tous" data-i18n="coll.all">Toutes les couleurs</label>
       <small>mode dev</small>
     </div>
-    <div class="coll-option-tous" style="cursor:default;">
+    <div class="coll-option-tous coll-option-tous--static">
       <input type="radio" name="coll-mode" id="radio-custom" value="custom">
-      <label for="radio-custom" data-i18n="coll.custom" style="cursor:pointer;">Ma sélection</label>
+      <label for="radio-custom" data-i18n="coll.custom">Ma sélection</label>
     </div>
 
     <!-- Liste des marques/packs sélectionnés -->
@@ -169,9 +169,9 @@
 <div id="saved-panel">
   <div id="saved-header">
     <h2 data-i18n="saved.title">Recherches enregistrées</h2>
-    <button class="saved-action-btn" id="btn-export-json" data-i18n="saved.json" style="background:#27ae60;color:#fff;display:none;">⬇ JSON</button>
+    <button class="saved-action-btn" id="btn-export-json" data-i18n="saved.json" style="display:none;">⬇ JSON</button>
     <button class="saved-action-btn" id="btn-export-jpeg" data-i18n="saved.jpeg">⬇ JPEG</button>
-    <button class="saved-action-btn" id="btn-clear-saved" data-i18n="saved.clear" style="background:#ffeaea;color:var(--danger);">🗑 Vider</button>
+    <button class="saved-action-btn" id="btn-clear-saved" data-i18n="saved.clear">🗑 Vider</button>
     <button class="saved-action-btn" id="btn-close-saved" data-i18n="saved.close">✕ Fermer</button>
   </div>
   <div id="saved-list">
@@ -214,7 +214,10 @@ const sheet   = document.getElementById('sheet');
 const btnWb   = document.getElementById('btn-wb');
 
 // ── DB ─────────────────────────────────────────────────────────────────────────
-fetch('/api/couleurs/all').then(r=>r.json()).then(c=>{
+fetch('/api/couleurs/all').then(r=>{
+  if(r.status===429) reportError(429, '/recherche');
+  return r.json();
+}).then(c=>{
   dbColors=c;
   updateDbBadge();
 }).catch(() => toast(t('toast.colors.fail')));
@@ -1315,9 +1318,12 @@ window.addEventListener('langchange', () => {
 // Init badge au chargement
 updateSavedBadge();
 
-// Afficher le bouton JSON uniquement si connecté
+// Afficher les outils dev uniquement si connectée
 fetch('/api/me').then(r => r.json()).then(({ loggedIn }) => {
-  if (loggedIn) document.getElementById('btn-export-json').style.display = '';
+  if (loggedIn) {
+    document.getElementById('btn-export-json').style.display = '';
+    document.getElementById('coll-tous-row').style.display = '';
+  }
 }).catch(() => {});
 
 // ── Utils ──────────────────────────────────────────────────────────────────────

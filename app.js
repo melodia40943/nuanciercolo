@@ -30,6 +30,7 @@ const loginLimiter = rateLimit({
   message: 'Trop de tentatives, réessaie dans 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
 });
 
 app.use(express.urlencoded({ extended: true }));

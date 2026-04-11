@@ -1,3 +1,11 @@
+// Fonction globale de signalement d'erreur (utilisée par test.html et dashboard.html)
+window.reportError = function(code, page) {
+  navigator.sendBeacon('/api/report-error',
+    new Blob([JSON.stringify({ error_code: code, page: page || location.pathname })],
+    { type: 'application/json' })
+  );
+};
+
 (function () {
   const CONSENT_COOKIE = 'revelo_consent';
   const ONE_YEAR = 365 * 24 * 60 * 60;

@@ -67,15 +67,43 @@ router.get('/api/analytics', requireAuth, async (req, res) => {
     const uniq30d = Number(kpis.uniq_30d) || 0;
     const ret     = Number(returning_count) || 0;
 
+    // Erreurs 429 trackées
+    const [[errorsRows]] = await pool.query(`
+      SELECT
+        SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)) AS errors_24h,
+        SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 7  DAY))  AS errors_7d,
+        SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 30 DAY))  AS errors_30d
+      FROM analytics_errors
+      WHERE error_code = 429
+    `);
+
     res.json({
       kpis,
       chart:     chartRows,
       pages:     pagesRows,
       devices:   devicesRows[0],
       retention: { new: uniq30d - ret, returning: ret },
+      errors429: errorsRows[0],
     });
   } catch (err) {
     console.error('[analytics route]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Signalement d'erreur côté client (public, pas d'auth)
+router.post('/api/report-error', async (req, res) => {
+  const { error_code, page } = req.body;
+  if (!error_code || ![429, 503, 500].includes(Number(error_code))) {
+    return res.status(400).json({ error: 'Invalid' });
+  }
+  try {
+    await pool.query(
+      'INSERT INTO analytics_errors (error_code, page) VALUES (?, ?)',
+      [Number(error_code), (page || '').substring(0, 100) || null]
+    );
+    res.json({ ok: true });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

@@ -656,6 +656,60 @@ html, body {
   #wb-adj-panel { right: 340px; bottom: 0; border-radius: 14px 14px 0 0; }
 }
 
+/* SVG sprite invisible */
+.svg-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Bouton retour dans la toolbar */
+a.tb-btn { text-decoration: none; background: rgba(30,30,30,.75); color: #fff; }
+
+/* Boutons collection et saved — fond blanc par défaut */
+#btn-collection, #btn-saved { background: #fff; color: #333; }
+
+/* Drop zone — sous-titre et liens */
+.drop-sub { font-size: 0.75rem; color: #888; margin-top: 2px; }
+.drop-links { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.drop-links a { font-size: 0.78rem; text-decoration: none; }
+.drop-links a.link-tips { color: #4a6cf7; }
+.drop-links a.link-ref  { color: #27ae60; }
+
+/* Navigation PDF */
+#pdf-nav {
+  position: absolute;
+  bottom: 8px; left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,.7);
+  padding: 6px 14px;
+  border-radius: 20px;
+  z-index: 50;
+}
+#pdf-prev, #pdf-next {
+  background: none; border: none;
+  color: #fff; font-size: 1.1rem;
+  cursor: pointer; padding: 0 4px;
+}
+#pdf-page-info { color: #fff; font-size: 0.8rem; white-space: nowrap; cursor: pointer; }
+
+/* WB swatches */
+.wbadj-swatches {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,.2);
+  flex-shrink: 0;
+}
+#wbadj-corr  { width: 36px; height: 36px; flex-shrink: 0; }
+.wbadj-white { width: 36px; height: 36px; flex-shrink: 0; background: #fff; }
+
+/* Collection — ligne non-cliquable */
+.coll-option-tous--static { cursor: default; }
+
+/* Boutons export JSON et vider dans le panel saved */
+#btn-export-json { background: #27ae60; color: #fff; }
+#btn-clear-saved { background: #ffeaea; color: var(--danger); }
+
 /* Modal PDF */
 #pdf-modal {
   position: fixed;

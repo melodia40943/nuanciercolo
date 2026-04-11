@@ -6,160 +6,7 @@
   <title>Révélo — Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/style.css">
-  <style>
-    .analytics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    @media (max-width: 800px) { .analytics-grid { grid-template-columns: repeat(2, 1fr); } }
-
-    .kpi-card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 1.1rem 1.25rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    }
-    .kpi-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #999;
-      margin-bottom: 0.4rem;
-    }
-    .kpi-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #222;
-      line-height: 1;
-    }
-    .kpi-sub {
-      font-size: 0.78rem;
-      color: #888;
-      margin-top: 0.25rem;
-    }
-    .kpi-sub strong { color: #555; }
-
-    .row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    @media (max-width: 700px) { .row-2 { grid-template-columns: 1fr; } }
-
-    .panel-card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 1.25rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    }
-    .panel-card h3 {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #999;
-      margin-bottom: 1rem;
-    }
-
-    /* Graphique barres */
-    .chart-wrap {
-      background: #fff;
-      border-radius: 10px;
-      padding: 1.25rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      margin-bottom: 1.5rem;
-    }
-    .chart-wrap h3 {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #999;
-      margin-bottom: 1rem;
-    }
-    .chart {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 120px;
-    }
-    .chart-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      height: 100%;
-      position: relative;
-    }
-    .chart-bar {
-      width: 100%;
-      border-radius: 3px 3px 0 0;
-      background: linear-gradient(to top, #4361EE, #8B2FC9);
-      min-height: 2px;
-      transition: opacity .15s;
-      cursor: default;
-    }
-    .chart-bar:hover { opacity: 0.75; }
-    .chart-col .tip {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 4px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: #222;
-      color: #fff;
-      font-size: 0.68rem;
-      white-space: nowrap;
-      padding: 3px 7px;
-      border-radius: 4px;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .chart-col:hover .tip { display: block; }
-    .chart-labels {
-      display: flex;
-      gap: 3px;
-      margin-top: 4px;
-    }
-    .chart-label {
-      flex: 1;
-      text-align: center;
-      font-size: 0.6rem;
-      color: #bbb;
-      overflow: hidden;
-    }
-
-    /* Retention donut simplifié */
-    .retention-bars { display: flex; flex-direction: column; gap: 0.75rem; }
-    .ret-row { display: flex; flex-direction: column; gap: 4px; }
-    .ret-label { display: flex; justify-content: space-between; font-size: 0.82rem; color: #555; }
-    .ret-label strong { color: #222; }
-    .ret-track { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
-    .ret-fill { height: 100%; border-radius: 4px; }
-    .ret-fill.new      { background: linear-gradient(90deg, #F72585, #FF6635); }
-    .ret-fill.returning{ background: linear-gradient(90deg, #4361EE, #8B2FC9); }
-
-    /* Devices */
-    .device-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; font-size: 0.85rem; }
-    .device-icon { font-size: 1.3rem; width: 28px; text-align: center; }
-    .device-track { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
-    .device-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #06D6A0, #4CC9F0); }
-    .device-count { font-weight: 600; color: #333; min-width: 36px; text-align: right; }
-
-    /* Top pages */
-    .pages-table { width: 100%; border-collapse: collapse; }
-    .pages-table td { padding: 0.45rem 0; font-size: 0.85rem; border-bottom: 1px solid #f5f5f5; }
-    .pages-table td:last-child { text-align: right; color: #888; }
-    .page-name { font-family: monospace; color: #4361EE; }
-
-    .loading { color: #aaa; font-size: 0.9rem; padding: 2rem 0; text-align: center; }
-    .error-msg { color: #e74c3c; font-size: 0.85rem; padding: 1rem 0; }
-  </style>
+  <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
   <nav>
@@ -167,7 +14,7 @@
     <div>
       <a href="/couleurs">Couleurs</a>
       <a href="/packs">Packs</a>
-      <form method="POST" action="/logout" style="display:inline">
+      <form method="POST" action="/logout">
         <button type="submit">Déconnexion</button>
       </form>
     </div>
@@ -186,18 +33,20 @@
   <script>
   fetch('/api/analytics')
     .then(r => {
-      if (r.status === 401) { location.href = '/coulisses'; return; }
+      if (r.status === 401) { location.href = '/coulisses'; return null; }
+      if (r.status === 429) { reportError(429, '/dashboard'); throw new Error('Serveur temporairement surchargé — réessaie dans quelques minutes.'); }
+      if (!r.ok) throw new Error(`Erreur serveur (${r.status})`);
       return r.json();
     })
     .then(data => { if (data) render(data); })
     .catch(err => {
       document.getElementById('analytics-content').innerHTML =
-        `<p class="error-msg">Erreur : ${err.message}</p>`;
+        `<p class="error-msg">${err.message}</p>`;
     });
 
   function n(v) { return Number(v) || 0; }
 
-  function render({ kpis, chart, pages, devices, retention }) {
+  function render({ kpis, chart, pages, devices, retention, errors429 }) {
     const mobile  = n(devices?.mobile);
     const desktop = n(devices?.desktop);
     const total   = mobile + desktop || 1;
@@ -235,7 +84,7 @@
           <td><span class="page-name">${p.page}</span></td>
           <td>${n(p.visits)} visites · ${n(p.uniq)} uniq.</td>
         </tr>`).join('')
-      : '<tr><td colspan="2" style="color:#aaa">Aucune donnée</td></tr>';
+      : '<tr><td colspan="2" class="pages-empty">Aucune donnée</td></tr>';
 
     document.getElementById('analytics-content').innerHTML = `
       <div class="analytics-grid">
@@ -274,7 +123,7 @@
               </div>
             </div>
           </div>
-          <p style="font-size:0.75rem;color:#bbb;margin-top:1rem">
+          <p class="retention-note">
             Total visiteurs uniques : ${n(kpis.uniq_total)} depuis le début
           </p>
         </div>
@@ -299,6 +148,16 @@
       </div>
 
       <div class="panel-card">
+        <h3>Erreurs 429 (Infomaniak)</h3>
+        <div class="errors-grid">
+          <div><div class="kpi-label">24h</div><div class="errors-count" style="color:${n(errors429?.errors_24h)>0?'#e74c3c':'#27ae60'}">${n(errors429?.errors_24h)}</div></div>
+          <div><div class="kpi-label">7 jours</div><div class="errors-count" style="color:${n(errors429?.errors_7d)>0?'#e74c3c':'#27ae60'}">${n(errors429?.errors_7d)}</div></div>
+          <div><div class="kpi-label">30 jours</div><div class="errors-count" style="color:${n(errors429?.errors_30d)>0?'#e74c3c':'#27ae60'}">${n(errors429?.errors_30d)}</div></div>
+        </div>
+        <p class="errors-note">Signalements reçus depuis les navigateurs des utilisatrices</p>
+      </div>
+
+      <div class="panel-card panel-card--mt">
         <h3>Pages les plus visitées (30j)</h3>
         <table class="pages-table">
           <tbody>${pagesHtml}</tbody>
@@ -315,5 +174,13 @@
     </div>`;
   }
   </script>
+<script>
+window.reportError = function(code, page) {
+  navigator.sendBeacon('/api/report-error',
+    new Blob([JSON.stringify({ error_code: code, page: page || location.pathname })],
+    { type: 'application/json' })
+  );
+};
+</script>
 </body>
 </html>

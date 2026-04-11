@@ -1,7 +1,6 @@
-const CACHE = 'revelo-v2.1';
+const CACHE = 'revelo-v2.3';
 
 const STATIC = [
-  '/test',
   '/js/chroma.min.js',
   '/js/sampler-core.js',
 ];
@@ -9,7 +8,9 @@ const STATIC = [
 // Installation : mise en cache des assets statiques
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(STATIC))
+    caches.open(CACHE)
+      .then(c => c.addAll(STATIC))
+      .catch(() => {}) // échec silencieux — le SW s'installe quand même
   );
   self.skipWaiting();
 });
