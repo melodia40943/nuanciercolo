@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express     from 'express';
 import session     from 'express-session';
 import helmet      from 'helmet';
-import rateLimit   from 'express-rate-limit';
 import { requireAuth } from './middleware/auth.js';
 import { analyticsMiddleware } from './middleware/analytics.js';
 import authRoutes    from './routes/auth.js';
@@ -24,15 +23,6 @@ app.use(helmet({
 }));
 
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: 'Trop de tentatives, réessaie dans 15 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { trustProxy: false },
-});
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -49,8 +39,6 @@ app.use(session({
 }));
 
 app.use(analyticsMiddleware);
-
-app.post('/coulisses', loginLimiter);
 app.use('/', authRoutes);
 app.use('/', analyticsRoutes);
 app.use('/', couleursRoutes);
