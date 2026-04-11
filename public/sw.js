@@ -1,4 +1,4 @@
-const CACHE = 'revelo-v2.3';
+const CACHE = 'revelo-v2.4';
 
 const STATIC = [
   '/js/chroma.min.js',
@@ -31,13 +31,15 @@ self.addEventListener('fetch', e => {
 
   const url = new URL(e.request.url);
 
-  // API couleurs : network first, fallback cache
+  // API couleurs : network first, fallback cache (on ne met en cache que les 2xx)
   if (url.pathname === '/api/couleurs/all') {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
           return res;
         })
         .catch(() => caches.match(e.request))
