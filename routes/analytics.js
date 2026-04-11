@@ -67,15 +67,19 @@ router.get('/api/analytics', requireAuth, async (req, res) => {
     const uniq30d = Number(kpis.uniq_30d) || 0;
     const ret     = Number(returning_count) || 0;
 
-    // Erreurs 429 trackées
-    const [[errorsRows]] = await pool.query(`
-      SELECT
-        SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)) AS errors_24h,
-        SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 7  DAY))  AS errors_7d,
-        SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 30 DAY))  AS errors_30d
-      FROM analytics_errors
-      WHERE error_code = 429
-    `);
+    // Erreurs 429 trackées (table peut ne pas exister en prod — fallback silencieux)
+    let errorsRows = { errors_24h: 0, errors_7d: 0, errors_30d: 0 };
+    try {
+      const [[rows]] = await pool.query(`
+        SELECT
+          SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)) AS errors_24h,
+          SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 7  DAY))  AS errors_7d,
+          SUM(reported_at >= DATE_SUB(NOW(), INTERVAL 30 DAY))  AS errors_30d
+        FROM analytics_errors
+        WHERE error_code = 429
+      `);
+      errorsRows = rows;
+    } catch { /* table absente ou autre erreur DB — on ignore */ }
 
     res.json({
       kpis,

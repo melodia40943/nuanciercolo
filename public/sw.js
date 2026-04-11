@@ -1,17 +1,8 @@
 const CACHE = 'revelo-v2.4';
 
-const STATIC = [
-  '/js/chroma.min.js',
-  '/js/sampler-core.js',
-];
-
-// Installation : mise en cache des assets statiques
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(STATIC))
-      .catch(() => {}) // échec silencieux — le SW s'installe quand même
-  );
+// Installation : pas de pré-chargement pour éviter les bursts de requêtes au déploiement
+// Les assets sont mis en cache naturellement lors des premières visites (fetch handler)
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
