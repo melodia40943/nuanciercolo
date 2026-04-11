@@ -35,6 +35,7 @@ skills-lock.json
 # Fichiers de test / échantillons locaux
 echantillon/
 echantillon/*
+scripts/test-*.mjs
 
 # Backups DB (contiennent potentiellement des données sensibles)
 *.sql
