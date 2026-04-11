@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express     from 'express';
 import session     from 'express-session';
+import MySQLStore  from 'express-mysql-session';
 import helmet      from 'helmet';
 import { requireAuth } from './middleware/auth.js';
 import { analyticsMiddleware } from './middleware/analytics.js';
@@ -28,10 +29,24 @@ app.use(express.json());
 
 app.use(express.static('public'));
 
+const SessionStore = MySQLStore(session);
+const sessionStore = new SessionStore({
+  host:               process.env.DB_HOST,
+  port:               parseInt(process.env.DB_PORT) || 3306,
+  user:               process.env.DB_USER,
+  password:           process.env.DB_PASS,
+  database:           process.env.DB_NAME,
+  clearExpired:       true,
+  checkExpirationInterval: 15 * 60 * 1000, // nettoie les sessions expirées toutes les 15 min
+  expiration:         parseInt(process.env.SESSION_MAX_AGE) || 86400000,
+  createDatabaseTable: true, // crée la table sessions si elle n'existe pas
+});
+
 app.use(session({
   secret:            process.env.SESSION_SECRET,
   resave:            false,
   saveUninitialized: false,
+  store:             sessionStore,
   cookie: {
     secure:  process.env.NODE_ENV === 'production',
     maxAge:  parseInt(process.env.SESSION_MAX_AGE) || 86400000
