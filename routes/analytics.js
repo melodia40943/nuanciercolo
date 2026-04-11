@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 const router = express.Router();
 
 router.get('/api/analytics', requireAuth, async (req, res) => {
+  console.log('[analytics] sessionID:', req.sessionID, '| userId:', req.session?.userId, '| url:', req.originalUrl);
   try {
     const [[kpisRows], [chartRows], [pagesRows], [devicesRows]] = await Promise.all([
       pool.query(`
@@ -93,6 +94,16 @@ router.get('/api/analytics', requireAuth, async (req, res) => {
     console.error('[analytics route]', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Diagnostic temporaire — à supprimer après debug
+router.get('/api/debug-session', (req, res) => {
+  res.json({
+    sessionID: req.sessionID,
+    userId: req.session?.userId ?? null,
+    hasSession: !!(req.session && req.session.userId),
+    pid: process.pid,
+  });
 });
 
 // Signalement d'erreur côté client (public, pas d'auth)
