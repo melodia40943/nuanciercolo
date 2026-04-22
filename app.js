@@ -39,12 +39,12 @@ app.use(session({
 }));
 
 app.use(analyticsMiddleware);
-app.use('/', authRoutes);
-app.use('/', analyticsRoutes);
-app.use('/', couleursRoutes);
-app.use('/', marquesRoutes);
-app.use('/', packsRoutes);
-app.use('/', testRoutes);
+app.use(authRoutes);
+app.use(analyticsRoutes);
+app.use(couleursRoutes);
+app.use(marquesRoutes);
+app.use(packsRoutes);
+app.use(testRoutes);
 
 app.get('/dashboard', requireAuth, (req, res) => {
   res.sendFile('dashboard.html', { root: './views' });
