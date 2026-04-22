@@ -55,6 +55,7 @@ const TRANSLATIONS = {
     'drop.text':          'Ouvre une photo ou un PDF du nuancier',
     'drop.sub':           'Images (jpg, png…) ou PDF couleurs',
     'drop.tips':          'Conseils pour de meilleurs résultats →',
+    'drop.ref':           '🎨 PDFs de référence par Jeremy Mariez →',
 
     'sheet.tap':          'Tape sur une couleur',
     'sheet.all':          '↑ tous les matchs',
@@ -112,6 +113,7 @@ const TRANSLATIONS = {
     'toast.pdf.fail':     '⚠️ Impossible de lire ce PDF',
     'export.chosen':      'choisi',
     'pdf.pages':          ' pages — choisir une page',
+    'canvas.tip':         'Tap = échantillonner · Drag = naviguer · Pinch = zoom',
   },
 
   en: {
@@ -163,6 +165,7 @@ const TRANSLATIONS = {
     'drop.text':          'Open a photo or PDF of your color chart',
     'drop.sub':           'Images (jpg, png…) or color PDF',
     'drop.tips':          'Tips for better results →',
+    'drop.ref':           '🎨 Reference PDFs by Jeremy Mariez →',
 
     'sheet.tap':          'Tap on a color',
     'sheet.all':          '↑ all matches',
@@ -220,6 +223,7 @@ const TRANSLATIONS = {
     'toast.pdf.fail':     '⚠️ Could not read this PDF',
     'export.chosen':      'chosen',
     'pdf.pages':          ' pages — choose a page',
+    'canvas.tip':         'Tap = sample · Drag = navigate · Pinch = zoom',
   },
 
   es: {
@@ -271,6 +275,7 @@ const TRANSLATIONS = {
     'drop.text':          'Abre una foto o PDF de tu tabla de colores',
     'drop.sub':           'Imágenes (jpg, png…) o PDF de colores',
     'drop.tips':          'Consejos para mejores resultados →',
+    'drop.ref':           '🎨 PDFs de referencia por Jeremy Mariez →',
 
     'sheet.tap':          'Toca un color',
     'sheet.all':          '↑ todos los resultados',
@@ -328,6 +333,227 @@ const TRANSLATIONS = {
     'toast.pdf.fail':     '⚠️ No se pudo leer este PDF',
     'export.chosen':      'elegido',
     'pdf.pages':          ' páginas — elegir una',
+    'canvas.tip':         'Tap = muestrear · Drag = navegar · Pinch = zoom',
+  },
+
+  nl: {
+    // ── tips.html ──
+    'tips.title':         'Tips — Révélo',
+    'tips.h1':            'Voordat je begint',
+    'tips.subtitle':      'Enkele tips voor betrouwbare resultaten',
+
+    'tips.t1.h2':  'Het resultaat is slechts een startpunt',
+    'tips.t1.p1':  'Deze app is op een volledig onofficiële manier gemaakt.',
+    'tips.t1.p2':  'Ik heb de markers die ik bij de hand had gebruikt om een zo nauwkeurig mogelijk digitaal staalboek te maken.',
+    'tips.t1.p3':  'Maar de app geeft je alleen de <strong>beste perceptuele overeenkomsten</strong> — vertrouw op je oog voor de uiteindelijke keuze tussen de beste resultaten.',
+
+    'tips.t2.h2':   'Referentie-PDF\'s: de beste bron',
+    'tips.t2.p':    'Sommige artiesten publiceren PDF\'s met de <strong>exacte digitale kleuren</strong> die ze voor ogen hadden. Deze bestanden geven veel betere resultaten dan een foto. <strong>Doe toch de witbalans</strong> voordat je op de gekleurde cel klikt.',
+    'tips.t2.link': '🎨 Referentiepaletten van Jeremy Mariez →',
+
+    'tips.t3.h2': 'Belichting',
+    'tips.t3.p':  'Gebruik een <strong>bureaulamp</strong> in plaats van de flits van je telefoon.<br>De flits veroorzaakt reflecties die de kleuren verstoren.<br><strong>Met een Jeremy Mariez-PDF maakt belichting helemaal niet uit.</strong>',
+
+    'tips.t4.h2':   'Witbalans — altijd aanbevolen',
+    'tips.t4.p':    'Hachette-boeken hebben een <strong>natuurlijk witte strook</strong> net boven elke gekleurde cel — dat is jouw perfecte referentie. In een PDF, klik op een wit gebied van de pagina.',
+    'tips.t4.s1':   'Tik op de witbalansknop (⚪)',
+    'tips.t4.s2':   'Klik op de <strong>witte strook boven</strong> de kleur die je wilt identificeren',
+    'tips.t4.s3':   'Steekproef de kleur door er een cirkel overheen te tekenen',
+
+    'tips.t5.h2': 'Blijf je kleurplaten delen!',
+    'tips.t5.p':  'Deel je creaties op sociale media? <strong>We zien graag je kleurplaten en de kleurcodes die je gebruikt</strong> — het inspireert de hele gemeenschap. Blijf taggen en delen!',
+
+    'tips.cta.start':   'Aan de slag →',
+    'tips.cta.install': 'Toevoegen aan startscherm',
+    'tips.cta.ios':     'Op iPhone: tik op <strong>Delen</strong> en dan <strong>"Zet op beginscherm"</strong>',
+    'tips.cta.skip':    'Deze tips zijn altijd toegankelijk via het menu.',
+    'tips.cta.kofi':    '☕ Steun het project op Tipeee',
+
+    'cookie.text':      '🍪 Deze site gebruikt een <strong>anoniem</strong> cookie om bezoeken te tellen en te zien of je de app leuk vindt. Er worden geen persoonlijke gegevens verzameld.',
+    'cookie.accept':    'Accepteren',
+    'cookie.refuse':    'Weigeren',
+
+    // ── test.html ──
+    'app.back':           '← Terug',
+    'app.pack':           '🎨 Pack',
+    'app.photo':          '📷 Foto',
+    'app.wb':             '⚪ Witbalans',
+    'app.wb.pending':     '⚠️ Tik op de witte referentie…',
+    'app.wb.done':        '✓ Witbalans ingesteld (tik om te wijzigen)',
+    'app.wb.reset':       '⚪ Witbalans',
+
+    'drop.text':          'Open een foto of PDF van je kleurenwaaier',
+    'drop.sub':           'Afbeeldingen (jpg, png…) of kleur-PDF',
+    'drop.tips':          'Tips voor betere resultaten →',
+    'drop.ref':           '🎨 Referentie-PDF\'s van Jeremy Mariez →',
+
+    'sheet.tap':          'Tik op een kleur',
+    'sheet.all':          '↑ alle overeenkomsten',
+    'sheet.save':         '+ Dit resultaat opslaan',
+    'sheet.empty':        'Tik op een kleur om overeenkomsten te zien',
+    'sheet.kofi':         '☕ Steun het project',
+
+    'coll.title':         'Mijn collectie',
+    'coll.close':         '✕ Sluiten',
+    'coll.all':           'Alle kleuren',
+    'coll.custom':        'Mijn selectie',
+    'coll.add.label':     'Een merk toevoegen',
+    'coll.add.marque':    '— Kies een merk —',
+    'coll.add.pack':      '— Kies een pack —',
+    'coll.add.btn':       '+ Toevoegen aan mijn collectie',
+    'coll.nopacks':       '⚠️ Geen packs voor dit merk',
+    'coll.apply':         '✓ Toepassen',
+
+    'saved.title':        'Opgeslagen zoekopdrachten',
+    'saved.close':        '✕ Sluiten',
+    'saved.empty':        'Geen opgeslagen zoekopdrachten',
+    'saved.clear':        '🗑 Wissen',
+    'saved.clear.confirm':'Alle opgeslagen zoekopdrachten wissen?',
+    'saved.jpeg':         '⬇ JPEG',
+    'saved.json':         '⬇ JSON',
+
+    'toast.wb.set':       '✓ Witbalans toegepast',
+    'toast.wb.reset':     'Witbalans gereset',
+    'toast.saved':        '✓ Resultaat opgeslagen',
+    'toast.nodb':         '⚠️ Geen kleuren in de database',
+
+    'export.title':       'Révélo — Resultaten',
+    'export.watermark':   'révélo · gegenereerd op ',
+    'export.prompt':      'Bestandsnaam (zonder extensie):',
+    'export.filename':    'pagina',
+
+    'app.wb.auto':        '✓ Witbalans automatisch ingesteld',
+    'match.great':        'Uitstekend',
+    'match.good':         'Dichtbij',
+    'match.ok':           'Ver',
+
+    'toast.wb.def':       '✓ Balans ingesteld — gebruik schuifregelaars om bij te stellen',
+    'toast.wb.reset.full':'Originele foto hersteld',
+    'toast.wb.auto.ok':   '✓ Automatische balans — pas zo nodig aan',
+    'toast.wb.auto.dark': '⚠️ Donkere foto — pas de helderheid aan',
+    'toast.wb.auto.no':   'Tik op ⚪ op de witte strook van het boek',
+    'toast.wb.dark':      '⚠️ Te donker — tik op de witte referentie',
+    'toast.sample.fail':  '⚠️ Ongeldig gebied — probeer opnieuw',
+    'toast.clear.done':   'Lijst gewist',
+    'toast.export.empty': 'Geen zoekopdrachten om te exporteren',
+    'toast.export.jpeg':  '✓ JPEG geëxporteerd',
+    'toast.export.json':  '✓ JSON geëxporteerd',
+    'toast.coll.fail':    '⚠️ Collecties konden niet worden geladen — herlaad de pagina',
+    'toast.colors.fail':  '⚠️ Kleuren konden niet worden geladen — herlaad de pagina',
+    'toast.pdf.fail':     '⚠️ Dit PDF kon niet worden gelezen',
+    'export.chosen':      'gekozen',
+    'pdf.pages':          ' pagina\'s — kies een pagina',
+    'canvas.tip':         'Tap = samplen · Drag = navigeren · Pinch = zoomen',
+  },
+
+  de: {
+    // ── tips.html ──
+    'tips.title':         'Tipps — Révélo',
+    'tips.h1':            'Bevor du anfängst',
+    'tips.subtitle':      'Einige Tipps für zuverlässige Ergebnisse',
+
+    'tips.t1.h2':  'Das Ergebnis ist nur ein Ausgangspunkt',
+    'tips.t1.p1':  'Diese App wurde auf vollkommen inoffizieller Weise erstellt.',
+    'tips.t1.p2':  'Ich habe die Marker, die ich zur Hand hatte, verwendet, um ein möglichst genaues digitales Farbmuster zu erstellen.',
+    'tips.t1.p3':  'Die App gibt dir jedoch nur die <strong>besten wahrnehmungsbezogenen Übereinstimmungen</strong> — vertraue deinem Auge für die endgültige Wahl unter den ersten Ergebnissen.',
+
+    'tips.t2.h2':   'Referenz-PDFs: die beste Quelle',
+    'tips.t2.p':    'Einige Künstler veröffentlichen PDFs mit den <strong>genauen digitalen Farben</strong>, die sie im Sinn hatten. Diese Dateien liefern viel bessere Ergebnisse als ein Foto. <strong>Führe dennoch den Weißabgleich durch</strong>, bevor du auf die Farbzelle klickst.',
+    'tips.t2.link': '🎨 Referenzpaletten von Jeremy Mariez →',
+
+    'tips.t3.h2': 'Beleuchtung',
+    'tips.t3.p':  'Verwende eine <strong>Schreibtischlampe</strong> statt dem Blitz deines Telefons.<br>Der Blitz erzeugt Reflexionen, die die Farben verfälschen.<br><strong>Mit einem Jeremy Mariez-PDF spielt die Beleuchtung keine Rolle.</strong>',
+
+    'tips.t4.h2':   'Weißabgleich — immer empfohlen',
+    'tips.t4.p':    'Hachette-Bücher haben einen <strong>natürlichen weißen Streifen</strong> direkt über jeder Farbzelle — das ist deine perfekte Referenz. In einem PDF klicke auf einen weißen Bereich der Seite.',
+    'tips.t4.s1':   'Tippe auf die Weißabgleich-Schaltfläche (⚪)',
+    'tips.t4.s2':   'Klicke auf den <strong>weißen Streifen über</strong> der Farbe, die du identifizieren möchtest',
+    'tips.t4.s3':   'Probiere die Farbe, indem du einen Kreis darüber zeichnest',
+
+    'tips.t5.h2': 'Teile weiterhin deine Ausmalbilder!',
+    'tips.t5.p':  'Teilst du deine Kreationen in sozialen Medien? <strong>Wir sehen gerne eure Ausmalbilder und die Farbcodes, die ihr verwendet</strong> — das inspiriert die gesamte Community. Bleib am Taggen und Teilen!',
+
+    'tips.cta.start':   'Los geht\'s →',
+    'tips.cta.install': 'Zum Startbildschirm hinzufügen',
+    'tips.cta.ios':     'Auf dem iPhone: tippe auf <strong>Teilen</strong> und dann <strong>"Zum Home-Bildschirm"</strong>',
+    'tips.cta.skip':    'Diese Tipps sind jederzeit über das Menü zugänglich.',
+    'tips.cta.kofi':    '☕ Das Projekt auf Tipeee unterstützen',
+
+    'cookie.text':      '🍪 Diese Website verwendet ein <strong>anonymes</strong> Cookie, um Besuche zu zählen und zu sehen, ob dir die App gefällt. Es werden keine persönlichen Daten erhoben.',
+    'cookie.accept':    'Akzeptieren',
+    'cookie.refuse':    'Ablehnen',
+
+    // ── test.html ──
+    'app.back':           '← Zurück',
+    'app.pack':           '🎨 Pack',
+    'app.photo':          '📷 Foto',
+    'app.wb':             '⚪ Weißabgleich',
+    'app.wb.pending':     '⚠️ Tippe auf die weiße Referenz…',
+    'app.wb.done':        '✓ Weißabgleich gesetzt (tippen zum Ändern)',
+    'app.wb.reset':       '⚪ Weißabgleich',
+
+    'drop.text':          'Öffne ein Foto oder PDF des Farbfächers',
+    'drop.sub':           'Bilder (jpg, png…) oder Farb-PDF',
+    'drop.tips':          'Tipps für bessere Ergebnisse →',
+    'drop.ref':           '🎨 Referenz-PDFs von Jeremy Mariez →',
+
+    'sheet.tap':          'Tippe auf eine Farbe',
+    'sheet.all':          '↑ alle Treffer',
+    'sheet.save':         '+ Dieses Ergebnis speichern',
+    'sheet.empty':        'Tippe auf eine Farbe, um Treffer zu sehen',
+    'sheet.kofi':         '☕ Das Projekt unterstützen',
+
+    'coll.title':         'Meine Sammlung',
+    'coll.close':         '✕ Schließen',
+    'coll.all':           'Alle Farben',
+    'coll.custom':        'Meine Auswahl',
+    'coll.add.label':     'Eine Marke hinzufügen',
+    'coll.add.marque':    '— Marke wählen —',
+    'coll.add.pack':      '— Pack wählen —',
+    'coll.add.btn':       '+ Zu meiner Sammlung hinzufügen',
+    'coll.nopacks':       '⚠️ Keine Packs für diese Marke',
+    'coll.apply':         '✓ Anwenden',
+
+    'saved.title':        'Gespeicherte Suchen',
+    'saved.close':        '✕ Schließen',
+    'saved.empty':        'Keine gespeicherten Suchen',
+    'saved.clear':        '🗑 Leeren',
+    'saved.clear.confirm':'Alle gespeicherten Suchen leeren?',
+    'saved.jpeg':         '⬇ JPEG',
+    'saved.json':         '⬇ JSON',
+
+    'toast.wb.set':       '✓ Weißabgleich angewendet',
+    'toast.wb.reset':     'Weißabgleich zurückgesetzt',
+    'toast.saved':        '✓ Ergebnis gespeichert',
+    'toast.nodb':         '⚠️ Keine Farben in der Datenbank',
+
+    'export.title':       'Révélo — Ergebnisse',
+    'export.watermark':   'révélo · generiert am ',
+    'export.prompt':      'Dateiname (ohne Erweiterung):',
+    'export.filename':    'seite',
+
+    'app.wb.auto':        '✓ Weißabgleich automatisch gesetzt',
+    'match.great':        'Ausgezeichnet',
+    'match.good':         'Nah',
+    'match.ok':           'Weit',
+
+    'toast.wb.def':       '✓ Abgleich gesetzt — mit Reglern anpassen',
+    'toast.wb.reset.full':'Originalfoto wiederhergestellt',
+    'toast.wb.auto.ok':   '✓ Automatischer Abgleich — bei Bedarf anpassen',
+    'toast.wb.auto.dark': '⚠️ Dunkles Foto — Helligkeit anpassen',
+    'toast.wb.auto.no':   'Tippe auf ⚪ auf dem weißen Streifen des Buches',
+    'toast.wb.dark':      '⚠️ Zu dunkel — tippe auf die weiße Referenz',
+    'toast.sample.fail':  '⚠️ Ungültiger Bereich — erneut versuchen',
+    'toast.clear.done':   'Liste geleert',
+    'toast.export.empty': 'Keine Suchen zum Exportieren',
+    'toast.export.jpeg':  '✓ JPEG exportiert',
+    'toast.export.json':  '✓ JSON exportiert',
+    'toast.coll.fail':    '⚠️ Sammlungen konnten nicht geladen werden — Seite neu laden',
+    'toast.colors.fail':  '⚠️ Farben konnten nicht geladen werden — Seite neu laden',
+    'toast.pdf.fail':     '⚠️ Dieses PDF konnte nicht gelesen werden',
+    'export.chosen':      'gewählt',
+    'pdf.pages':          ' Seiten — Seite wählen',
+    'canvas.tip':         'Tap = samplen · Drag = navigieren · Pinch = zoomen',
   }
 };
 

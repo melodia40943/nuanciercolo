@@ -45,6 +45,8 @@
     <option value="fr">🇫🇷 FR</option>
     <option value="en">🇬🇧 EN</option>
     <option value="es">🇪🇸 ES</option>
+    <option value="nl">🇳🇱 NL</option>
+    <option value="de">🇩🇪 DE</option>
   </select>
 </div>
 
@@ -57,7 +59,7 @@
     <span class="drop-sub" data-i18n="drop.sub">Images (jpg, png…) ou PDF couleurs</span>
     <div class="drop-links">
       <a href="/conseils" class="link-tips" data-i18n="drop.tips" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
-      <a href="http://jeremymariez.free.fr/npainter.htm" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎨 PDFs de référence par Jeremy Mariez →</a>
+      <a href="http://jeremymariez.free.fr/npainter.htm" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()" data-i18n="drop.ref">🎨 PDFs de référence par Jeremy Mariez →</a>
     </div>
   </div>
   <div id="canvas-wrap">
@@ -96,7 +98,7 @@
   </div>
 </div>
 
-<div id="tip">Tap = échantillonner · Drag = naviguer · Pinch = zoom</div>
+<div id="tip" data-i18n="canvas.tip">Tap = échantillonner · Drag = naviguer · Pinch = zoom</div>
 
 <!-- Sheet résultats — tiroir droit -->
 <div id="sheet">
