@@ -40,12 +40,14 @@ app.use(session({
 
 app.use(analyticsMiddleware);
 app.use(authRoutes);
-console.log('[app] analyticsRoutes:', typeof analyticsRoutes, '| routes:', analyticsRoutes?.stack?.length);
 app.use(analyticsRoutes);
 app.use(couleursRoutes);
 app.use(marquesRoutes);
 app.use(packsRoutes);
 app.use(testRoutes);
+
+// Route inline (test de diagnostic — hors sub-router)
+app.get('/api/ping', (req, res) => res.json({ ok: true, pid: String(process.pid) }));
 
 app.get('/dashboard', requireAuth, (req, res) => {
   res.sendFile('dashboard.html', { root: './views' });
