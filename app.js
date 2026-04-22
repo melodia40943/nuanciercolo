@@ -5,7 +5,7 @@ import helmet      from 'helmet';
 import { requireAuth } from './middleware/auth.js';
 import { analyticsMiddleware } from './middleware/analytics.js';
 import authRoutes    from './routes/auth.js';
-import analyticsRoutes from './routes/analytics.js';
+import analyticsRoutes from './routes/dashboard-api.js';
 import couleursRoutes from './routes/couleurs.js';
 import marquesRoutes  from './routes/marques.js';
 import packsRoutes    from './routes/packs.js';
@@ -40,6 +40,7 @@ app.use(session({
 
 app.use(analyticsMiddleware);
 app.use(authRoutes);
+console.log('[app] analyticsRoutes:', typeof analyticsRoutes, '| routes:', analyticsRoutes?.stack?.length);
 app.use(analyticsRoutes);
 app.use(couleursRoutes);
 app.use(marquesRoutes);
