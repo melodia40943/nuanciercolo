@@ -131,6 +131,10 @@
           <p class="retention-note">
             Total visiteurs uniques : ${n(kpis.uniq_total)} depuis le début
           </p>
+          <p class="retention-note retention-note-historical">
+            Anciens visiteurs de retour ce mois : <strong>${n(retention.historical)}</strong>
+            ${retention.historical === 0 ? '<span style="color:#aaa;font-size:0.78rem">(données insuffisantes — disponible après 30j d\'historique)</span>' : ''}
+          </p>
         </div>
 
         <div class="panel-card">

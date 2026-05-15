@@ -55,9 +55,21 @@ router.get('/api/analytics', requireAuth, async (req, res) => {
       `),
     ]);
 
-    // Visiteurs récurrents sur 30 jours = ont visité AVANT les 30 derniers jours ET aussi dans les 30 derniers jours
-    const [[{ returning_count }]] = await pool.query(`
-      SELECT COUNT(DISTINCT visitor_id) AS returning_count
+    // Récurrents multi-jours : au moins 2 jours distincts dans les 30 derniers jours
+    const [[{ returning_multi }]] = await pool.query(`
+      SELECT COUNT(*) AS returning_multi
+      FROM (
+        SELECT visitor_id
+        FROM analytics_visits
+        WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY visitor_id
+        HAVING COUNT(DISTINCT DATE(visited_at)) >= 2
+      ) t
+    `);
+
+    // Anciens visiteurs de retour : ont visité AVANT les 30 derniers jours ET aussi dedans
+    const [[{ returning_historical }]] = await pool.query(`
+      SELECT COUNT(DISTINCT visitor_id) AS returning_historical
       FROM analytics_visits
       WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
         AND visitor_id IN (
@@ -68,7 +80,8 @@ router.get('/api/analytics', requireAuth, async (req, res) => {
 
     const kpis    = kpisRows[0];
     const uniq30d = Number(kpis.uniq_30d) || 0;
-    const ret     = Number(returning_count) || 0;
+    const ret     = Number(returning_multi) || 0;
+    const retHist = Number(returning_historical) || 0;
 
     // Erreurs 429 trackées (table peut ne pas exister en prod — fallback silencieux)
     let errorsRows = { errors_24h: 0, errors_7d: 0, errors_30d: 0 };
@@ -89,7 +102,7 @@ router.get('/api/analytics', requireAuth, async (req, res) => {
       chart:     chartRows,
       pages:     pagesRows,
       devices:   devicesRows[0],
-      retention: { new: uniq30d - ret, returning: ret },
+      retention: { new: uniq30d - ret, returning: ret, historical: retHist },
       errors429: errorsRows[0],
     });
   } catch (err) {

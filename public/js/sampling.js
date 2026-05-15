@@ -5,7 +5,8 @@ let imgEl     = null;
 let imgData   = null;
 let natW = 0, natH = 0;
 let wbPending = false;
-let sampledColor = null;
+let sampledColor    = null;
+let rawSampledColor = null;
 let toastTm;
 let lensSize  = 55;
 
@@ -254,12 +255,51 @@ function setWbStatus(state) {
   if (state==='ok'){el.className='wb-status ok';}
 }
 
+function adjRgbToHex(r,g,b) {
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+function applyAdjCorrection(raw, bright, temp) {
+  const bf = 1 + bright * 0.01;
+  const ts = temp * 0.6;
+  return {
+    r: Math.round(Math.min(255, Math.max(0, raw.r * bf + ts))),
+    g: Math.round(Math.min(255, Math.max(0, raw.g * bf))),
+    b: Math.round(Math.min(255, Math.max(0, raw.b * bf - ts)))
+  };
+}
+
+function updateSampleDisplay() {
+  if (!rawSampledColor) return;
+  const brightEl = document.getElementById('sample-bright');
+  const tempEl   = document.getElementById('sample-temp');
+  if (!brightEl) return;
+  const bright = parseInt(brightEl.value);
+  const temp   = parseInt(tempEl.value);
+  document.getElementById('sample-bright-val').textContent = bright > 0 ? '+' + bright : bright;
+  document.getElementById('sample-temp-val').textContent   = temp   > 0 ? '+' + temp   : temp;
+
+  const corr    = applyAdjCorrection(rawSampledColor, bright, temp);
+  const corrHex = adjRgbToHex(corr.r, corr.g, corr.b);
+  sampledColor  = { hex: corrHex, r: corr.r, g: corr.g, b: corr.b };
+
+  document.getElementById('sample-preview').style.background = corrHex;
+  document.getElementById('sample-hex').textContent = corrHex.toUpperCase();
+  document.getElementById('sample-rgb').textContent = `RGB(${corr.r}, ${corr.g}, ${corr.b})`;
+}
+
 // Sampling
 function doSample() {
   if (!circleCenter||circleRadius<1) return;
   const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
   if (!result) { showToast('⚠️ Zone invalide — réessaie'); return; }
-  sampledColor=result;
+  rawSampledColor = result;
+
+  // Remettre les sliders à zéro pour chaque nouvel échantillon
+  const brightEl = document.getElementById('sample-bright');
+  const tempEl   = document.getElementById('sample-temp');
+  if (brightEl) brightEl.value = 0;
+  if (tempEl)   tempEl.value   = 0;
 
   // Quadrants
   if (result.quads) result.quads.forEach((q,i) => {
@@ -269,14 +309,25 @@ function doSample() {
     cell.querySelector('span').textContent=q.hex.toUpperCase();
   });
 
-  document.getElementById('sample-preview').style.background=result.hex;
-  document.getElementById('sample-hex').textContent=result.hex.toUpperCase();
-  document.getElementById('sample-rgb').textContent=`RGB(${result.r}, ${result.g}, ${result.b})`;
   document.getElementById('step-sample').style.display='block';
   document.getElementById('btn-apply').disabled=false;
   const btnPhoto = document.getElementById('btn-apply-photo');
   if (btnPhoto) btnPhoto.disabled=false;
+
+  updateSampleDisplay();
 }
+
+// Sliders d'ajustement en temps réel
+const sampleBrightEl = document.getElementById('sample-bright');
+const sampleTempEl   = document.getElementById('sample-temp');
+const sampleResetEl  = document.getElementById('sample-adj-reset');
+if (sampleBrightEl) sampleBrightEl.addEventListener('input', updateSampleDisplay);
+if (sampleTempEl)   sampleTempEl.addEventListener('input', updateSampleDisplay);
+if (sampleResetEl)  sampleResetEl.addEventListener('click', () => {
+  if (sampleBrightEl) sampleBrightEl.value = 0;
+  if (sampleTempEl)   sampleTempEl.value   = 0;
+  updateSampleDisplay();
+});
 
 // Appliquer au formulaire
 document.getElementById('btn-apply').addEventListener('click', ()=>{

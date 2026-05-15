@@ -157,6 +157,7 @@
 
 /* Note sous le bloc nouveaux/récurrents */
 .retention-note { font-size: 0.75rem; color: #bbb; margin-top: 1rem; }
+.retention-note-historical { margin-top: 0.35rem; }
 
 /* Bloc erreurs 429 */
 .errors-grid { display: flex; gap: 1.5rem; margin-bottom: 0.5rem; }

@@ -3,18 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Révélo — Trouve tes feutres par la couleur</title>
+  <title>Révélo — Trouve tes feutres pour coloriage mystère et coloriage par numéro</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="manifest" href="/manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Révélo">
   <meta name="description" content="Trouve les feutres Languo ou Guangna pour tes coloriages mystères. Photographie une couleur et Révélo t'indique les références les plus proches par analyse colorimétrique.">
-  <meta property="og:title" content="Révélo — Trouve tes feutres par la couleur">
-  <meta property="og:description" content="Outil gratuit pour coloristes : ouvre la photo d'un coloriage mystère ou d'un nuancier, clique sur une couleur, et Révélo trouve les feutres Languo et Guangna les plus proches.">
+  <meta property="og:title" content="Révélo — Feutres pour coloriage mystère et coloriage par numéro">
+  <meta property="og:description" content="Outil gratuit : photographie une couleur de ton coloriage mystère ou coloriage par numéro, Révélo identifie les feutres Languo et Guangna les plus proches par analyse colorimétrique.">
   <meta property="og:url" content="https://revelo.studio/recherche">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="https://revelo.studio/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://revelo.studio/og.png">
+  <meta name="twitter:title" content="Révélo — Feutres pour coloriage mystère et coloriage par numéro">
+  <meta name="twitter:description" content="Outil gratuit : photographie une couleur de ton coloriage mystère, Révélo identifie les feutres Languo et Guangna les plus proches.">
   <link rel="canonical" href="https://revelo.studio/recherche">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Révélo",
+    "url": "https://revelo.studio/recherche",
+    "description": "Outil gratuit pour identifier les références de feutres Languo et Guangna correspondant à une couleur de coloriage mystère ou coloriage par numéro, par analyse colorimétrique delta E.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "All",
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+    "inLanguage": ["fr", "en", "es", "nl", "de"],
+    "creator": {"@type": "Person", "name": "Mélodie"},
+    "featureList": [
+      "Analyse colorimétrique par photo ou PDF",
+      "Balance des blancs automatique",
+      "Matching feutres Languo et Guangna",
+      "Export CSV et JPEG",
+      "Sauvegarde locale des recherches"
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="/css/test.css">
   <script src="/js/i18n.js"></script>
   <script src="/js/chroma.min.js"></script>
@@ -54,6 +80,7 @@
 <!-- Canvas -->
 <div id="canvas-panel">
   <div id="drop-zone">
+    <h1 class="drop-h1">Trouve tes feutres pour coloriage mystère et coloriage par numéro</h1>
     <div class="ico">📷</div>
     <p data-i18n="drop.text">Ouvre une photo ou un PDF du nuancier</p>
     <span class="drop-sub" data-i18n="drop.sub">Images (jpg, png…) ou PDF couleurs</span>
@@ -849,7 +876,7 @@ function matchColors(r,g,b) {
       <div class="top3-ref">${c.reference}</div>
       <div class="top3-brand">${c.marque}</div>
       ${equivHtml}
-      <div class="top3-de de-${cls}">ΔE ${c.delta.toFixed(1)}</div>
+      <div class="top3-de de-${cls}">${t('match.' + cls)}</div>
     </div>`;
   }).join('');
 
@@ -865,7 +892,7 @@ function matchColors(r,g,b) {
       <div class="result-swatch" style="background:${c.hex}"></div>
       <div class="result-info">
         <div class="result-ref">${c.marque} ${c.reference}</div>
-        <div class="result-meta">${c.hex.toUpperCase()} · ΔE ${c.delta.toFixed(1)}</div>
+        <div class="result-meta">${c.hex.toUpperCase()}</div>
       </div>
       <div class="result-score ${cls}">${lbl}</div>
     </div>`;

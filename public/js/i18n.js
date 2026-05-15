@@ -93,8 +93,8 @@ const TRANSLATIONS = {
     'export.filename':    'tome_page',
 
     'app.wb.auto':        '✓ Blancs OK (auto)',
-    'match.great':        'Excellent',
-    'match.good':         'Proche',
+    'match.great':        'Proche',
+    'match.good':         'Correct',
     'match.ok':           'Éloigné',
 
     'toast.wb.def':       '✓ Balance définie — ajuste avec les curseurs',
@@ -203,8 +203,8 @@ const TRANSLATIONS = {
     'export.filename':    'page',
 
     'app.wb.auto':        '✓ White balance auto set',
-    'match.great':        'Excellent',
-    'match.good':         'Close',
+    'match.great':        'Close',
+    'match.good':         'Fair',
     'match.ok':           'Distant',
 
     'toast.wb.def':       '✓ Balance set — use sliders to adjust',
@@ -313,8 +313,8 @@ const TRANSLATIONS = {
     'export.filename':    'pagina',
 
     'app.wb.auto':        '✓ Balance automática aplicada',
-    'match.great':        'Excelente',
-    'match.good':         'Cercano',
+    'match.great':        'Cercano',
+    'match.good':         'Correcto',
     'match.ok':           'Lejano',
 
     'toast.wb.def':       '✓ Balance definido — ajusta con los controles',
@@ -423,8 +423,8 @@ const TRANSLATIONS = {
     'export.filename':    'pagina',
 
     'app.wb.auto':        '✓ Witbalans automatisch ingesteld',
-    'match.great':        'Uitstekend',
-    'match.good':         'Dichtbij',
+    'match.great':        'Dichtbij',
+    'match.good':         'Redelijk',
     'match.ok':           'Ver',
 
     'toast.wb.def':       '✓ Balans ingesteld — gebruik schuifregelaars om bij te stellen',
@@ -533,8 +533,8 @@ const TRANSLATIONS = {
     'export.filename':    'seite',
 
     'app.wb.auto':        '✓ Weißabgleich automatisch gesetzt',
-    'match.great':        'Ausgezeichnet',
-    'match.good':         'Nah',
+    'match.great':        'Nah',
+    'match.good':         'Akzeptabel',
     'match.ok':           'Weit',
 
     'toast.wb.def':       '✓ Abgleich gesetzt — mit Reglern anpassen',
