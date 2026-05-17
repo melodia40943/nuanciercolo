@@ -291,6 +291,44 @@ router.post('/api/mediums/:id/delete', requireAuth, async (req, res) => {
   }
 });
 
+// Page correction batch
+router.get('/couleurs/correction', requireAuth, async (req, res) => {
+  try {
+    const [couleurs] = await pool.query(`
+      SELECT c.id, c.reference, c.r, c.g, c.b, c.hex,
+             c.r_photo, c.g_photo, c.b_photo, c.hex_photo,
+             c.marque_id, m.nom AS marque_nom
+      FROM couleurs c
+      JOIN marques m ON m.id = c.marque_id
+      ORDER BY m.nom, c.reference
+    `);
+    const [marques] = await pool.query('SELECT * FROM marques ORDER BY nom');
+    res.send(renderCorrection(couleurs, marques));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+// API correction batch — applique les valeurs corrigées dans hex_photo / r_photo / g_photo / b_photo
+router.post('/api/couleurs/correction', requireAuth, async (req, res) => {
+  const { corrections } = req.body;
+  if (!corrections || !corrections.length) return res.status(400).json({ error: 'Aucune correction' });
+  try {
+    for (const c of corrections) {
+      const hex = '#' + [c.r, c.g, c.b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+      await pool.query(
+        'UPDATE couleurs SET hex_photo=?, r_photo=?, g_photo=?, b_photo=? WHERE id=?',
+        [hex, Math.round(c.r), Math.round(c.g), Math.round(c.b), c.id]
+      );
+    }
+    res.json({ updated: corrections.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // --- Templates ---
 
 function nav() {
@@ -300,12 +338,305 @@ function nav() {
       <div>
         <a href="/dashboard">Dashboard</a>
         <a href="/couleurs">Couleurs</a>
+        <a href="/couleurs/correction">Correction batch</a>
         <a href="/packs">Packs</a>
         <form method="POST" action="/logout" style="display:inline">
           <button type="submit">Déconnexion</button>
         </form>
       </div>
     </nav>`;
+}
+
+function renderCorrection(couleurs, marques) {
+  const couleursJson = JSON.stringify(couleurs.map(c => ({
+    id: c.id, reference: c.reference,
+    marque_id: c.marque_id, marque_nom: c.marque_nom,
+    r: c.r, g: c.g, b: c.b, hex: c.hex,
+    hasPhoto: c.r_photo != null,
+    rp: c.r_photo, gp: c.g_photo, bp: c.b_photo, hexP: c.hex_photo
+  })));
+
+  const optMarques = marques.map(m => `<option value="${m.id}">${m.nom}</option>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Révélo BO — Correction batch</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .correction-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:16px}
+    .correction-card{border:1px solid #ddd;border-radius:6px;padding:8px;display:flex;gap:8px;align-items:center}
+    .correction-card.has-photo{opacity:0.45}
+    .swatch-pair{display:flex;gap:4px;flex-shrink:0}
+    .swatch-col{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .swatch-sm{width:36px;height:36px;border-radius:4px;border:1px solid #ccc}
+    .swatch-lbl{font-size:10px;color:#888}
+    .correction-ref{font-weight:600;font-size:13px}
+    .correction-brand{font-size:11px;color:#888}
+    .correction-hex{font-size:10px;color:#aaa;font-family:monospace}
+    .photo-warn{font-size:10px;color:#e67e22}
+    .settings-panel{background:#f5f5f5;border-radius:8px;padding:16px;margin-bottom:16px}
+    .s-row{display:grid;grid-template-columns:170px 1fr 54px;align-items:center;gap:8px;margin-bottom:10px}
+    .stats-bar{background:#e8f4e8;border-radius:6px;padding:8px 12px;margin:12px 0;font-size:13px}
+  </style>
+</head>
+<body>
+  ${nav()}
+  <main>
+    <div class="page-header">
+      <h1>Correction couleur batch</h1>
+      <p style="color:#888;font-size:13px">Applique un boost de saturation et/ou un décalage de teinte sur une plage de teinte. Le résultat est stocké dans <code>hex_photo</code>.</p>
+    </div>
+
+    <div class="settings-panel">
+      <div class="s-row">
+        <label>Teinte — début</label>
+        <input type="range" id="hueFrom" min="0" max="359" value="300">
+        <span style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+          <span id="hue-from-sw" style="width:16px;height:16px;border-radius:3px;border:1px solid #ccc;background:hsl(300,80%,50%);display:inline-block;flex-shrink:0"></span>
+          <span id="hueFromVal">300°</span>
+        </span>
+      </div>
+      <div class="s-row">
+        <label>Teinte — fin</label>
+        <input type="range" id="hueTo" min="0" max="359" value="70">
+        <span style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+          <span id="hue-to-sw" style="width:16px;height:16px;border-radius:3px;border:1px solid #ccc;background:hsl(70,80%,50%);display:inline-block;flex-shrink:0"></span>
+          <span id="hueToVal">70°</span>
+        </span>
+      </div>
+      <div style="margin:2px 0 10px;position:relative;height:20px">
+        <div style="position:absolute;inset:0;border-radius:4px;background:linear-gradient(to right,hsl(0,80%,55%),hsl(30,80%,55%),hsl(60,80%,55%),hsl(90,80%,55%),hsl(120,80%,55%),hsl(150,80%,55%),hsl(180,80%,55%),hsl(210,80%,55%),hsl(240,80%,55%),hsl(270,80%,55%),hsl(300,80%,55%),hsl(330,80%,55%),hsl(360,80%,55%))"></div>
+        <div id="hue-m-from" style="position:absolute;width:3px;height:100%;top:0;left:83.6%;background:rgba(0,0,0,0.75);border-radius:2px;transform:translateX(-50%)"></div>
+        <div id="hue-m-to" style="position:absolute;width:3px;height:100%;top:0;left:19.5%;background:rgba(0,0,0,0.75);border-radius:2px;transform:translateX(-50%)"></div>
+      </div>
+      <small style="color:#888;display:block;margin-bottom:12px">Plage 300°→70° = bordeaux, rouges, oranges, jaunes (avec passage par 0°). Plage 40°→70° = jaunes seuls.</small>
+
+      <div class="s-row">
+        <label>Boost saturation</label>
+        <input type="range" id="satBoost" min="0" max="80" value="20">
+        <span id="satBoostVal">+20%</span>
+      </div>
+      <div class="s-row">
+        <label>Décalage teinte</label>
+        <input type="range" id="hueShift" min="-30" max="30" value="0">
+        <span id="hueShiftVal">0°</span>
+      </div>
+      <div class="s-row">
+        <label>Aperçu correction</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="width:22px;height:22px;border-radius:3px;border:1px solid #ccc;background:hsl(30,70%,50%);display:block"></span>
+            <span style="font-size:10px;color:#888">avant</span>
+          </span>
+          <span style="color:#ccc">→</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span id="sample-after" style="width:22px;height:22px;border-radius:3px;border:1px solid #ccc;display:block"></span>
+            <span style="font-size:10px;color:#888">après</span>
+          </span>
+          <span style="font-size:11px;color:#888">sur orange de référence</span>
+        </div>
+        <span></span>
+      </div>
+      <div class="s-row">
+        <label>Modulation chroma</label>
+        <label style="font-size:13px"><input type="checkbox" id="chromaMod" checked> Réduire le boost pour les couleurs désaturées (bruns)</label>
+        <span></span>
+      </div>
+      <div class="s-row">
+        <label>Filtre marque</label>
+        <select id="filterMarque" style="width:100%">
+          <option value="">Toutes les marques</option>
+          ${optMarques}
+        </select>
+        <span></span>
+      </div>
+      <div class="s-row">
+        <label>Référence</label>
+        <input type="text" id="filterRef" placeholder="ex: 821 ou cs 50…" style="width:100%">
+        <span></span>
+      </div>
+      <div class="s-row">
+        <label>Écraser existants</label>
+        <label style="font-size:13px"><input type="checkbox" id="overwrite"> Inclure les couleurs qui ont déjà une valeur photo (affichées en grisé)</label>
+        <span></span>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn-primary" id="btn-preview">Prévisualiser</button>
+        <button class="btn-delete" id="btn-apply" disabled>Appliquer (0 couleurs)</button>
+        <button type="button" id="btn-check-all" style="display:none;background:none;border:1px solid #ccc;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">Tout cocher</button>
+        <button type="button" id="btn-uncheck-all" style="display:none;background:none;border:1px solid #ccc;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px">Tout décocher</button>
+      </div>
+    </div>
+
+    <div id="stats-bar" class="stats-bar" style="display:none"></div>
+    <div id="correction-grid" class="correction-grid"></div>
+    <button id="btn-apply2" class="btn-delete" style="display:none;margin:12px 0" disabled>Appliquer les couleurs cochées</button>
+  </main>
+
+  <script>
+  const ALL_COLORS = ${couleursJson};
+  let pending = [];
+
+  function rgbToHsl(r,g,b){
+    r/=255;g/=255;b/=255;
+    const max=Math.max(r,g,b),min=Math.min(r,g,b),l=(max+min)/2;
+    if(max===min)return[0,0,l];
+    const d=max-min,s=l>0.5?d/(2-max-min):d/(max+min);
+    let h;
+    switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;default:h=((r-g)/d+4)/6;}
+    return[h*360,s,l];
+  }
+  function hslToRgb(h,s,l){
+    h/=360;
+    if(s===0){const v=Math.round(l*255);return[v,v,v];}
+    const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+    const f=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+    return[Math.round(f(p,q,h+1/3)*255),Math.round(f(p,q,h)*255),Math.round(f(p,q,h-1/3)*255)];
+  }
+  function toHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0')).join('');}
+  function inRange(h,from,to){return from<=to?h>=from&&h<=to:h>=from||h<=to;}
+
+  function correct(r,g,b,satBoost,hueShift,chromaMod){
+    let[h,s,l]=rgbToHsl(r,g,b);
+    const mod=chromaMod?Math.min(1,s/0.25):1;
+    const newS=Math.min(1,s+(satBoost/100)*mod);
+    const newH=((h+hueShift)+360)%360;
+    return hslToRgb(newH,newS,l);
+  }
+
+  document.getElementById('btn-preview').addEventListener('click',()=>{
+    const hFrom  =+document.getElementById('hueFrom').value;
+    const hTo    =+document.getElementById('hueTo').value;
+    const sat    =+document.getElementById('satBoost').value;
+    const shift  =+document.getElementById('hueShift').value;
+    const chroma = document.getElementById('chromaMod').checked;
+    const over   = document.getElementById('overwrite').checked;
+    const marque = document.getElementById('filterMarque').value;
+    const refFilter = document.getElementById('filterRef').value.trim().toLowerCase();
+
+    pending=[];const cards=[];
+    let nBrand=0,nPhoto=0,nHue=0;
+    for(const c of ALL_COLORS){
+      if(marque&&String(c.marque_id)!==String(marque))continue;
+      if(refFilter&&c.reference.toLowerCase()!==refFilter)continue;
+      nBrand++;
+      if(c.hasPhoto&&!over){nPhoto++;continue;}
+      const baseR=c.hasPhoto?Number(c.rp):Number(c.r);
+      const baseG=c.hasPhoto?Number(c.gp):Number(c.g);
+      const baseB=c.hasPhoto?Number(c.bp):Number(c.b);
+      const baseHex=c.hasPhoto?c.hexP:c.hex;
+      const[h]=rgbToHsl(baseR,baseG,baseB);
+      if(!refFilter&&!inRange(h,hFrom,hTo)){nHue++;continue;}
+      const[nr,ng,nb]=correct(baseR,baseG,baseB,sat,shift,chroma);
+      const newHex=toHex(nr,ng,nb);
+      pending.push({id:c.id,r:nr,g:ng,b:nb});
+      const baseLbl=c.hasPhoto?'photo':'scan';
+      cards.push(\`<div class="correction-card\${c.hasPhoto?' has-photo':''}" data-id="\${c.id}" data-br="\${baseR}" data-bg="\${baseG}" data-bb="\${baseB}">
+        <input type="checkbox" class="card-check" data-id="\${c.id}" checked style="margin-right:2px;flex-shrink:0">
+        <div class="swatch-pair">
+          <div class="swatch-col"><div class="swatch-sm" style="background:\${baseHex}"></div><div class="swatch-lbl">\${baseLbl}</div></div>
+          <div class="swatch-col"><div class="swatch-sm" style="background:\${newHex}"></div><div class="swatch-lbl">corrigé</div></div>
+        </div>
+        <div>
+          <div class="correction-ref">\${c.reference}</div>
+          <div class="correction-brand">\${c.marque_nom}</div>
+          <div class="correction-hex" data-base="\${baseHex}" data-new="\${newHex}">\${baseHex} → \${newHex}</div>
+          \${c.hasPhoto?'<div class="photo-warn">⚠ base = valeur photo</div>':''}
+        </div>
+      </div>\`);
+    }
+    document.getElementById('correction-grid').innerHTML=cards.length?cards.join(''):'<p style="color:#888">Aucune couleur dans cette plage.</p>';
+    document.getElementById('stats-bar').style.display='';
+    var dbg='<b>'+pending.length+' couleur(s) retenue(s)</b>';
+    if(marque)dbg+=' — marque filtrée : '+nBrand+' couleurs';
+    dbg+=' — exclues valeur photo : '+nPhoto+', exclues hors plage : '+nHue;
+    document.getElementById('stats-bar').innerHTML=dbg;
+    var hasCards=pending.length>0;
+    document.getElementById('btn-check-all').style.display=hasCards?'':'none';
+    document.getElementById('btn-uncheck-all').style.display=hasCards?'':'none';
+    updateApplyBtn();
+    document.getElementById('correction-grid').addEventListener('change',updateApplyBtn);
+    updateVis();
+  });
+
+  function updateApplyBtn(){
+    const n=document.querySelectorAll('#correction-grid .card-check:checked').length;
+    const btn=document.getElementById('btn-apply');
+    btn.disabled=n===0;
+    btn.textContent='Appliquer ('+n+' couleur'+(n>1?'s':'')+')';
+  }
+
+  async function doApply(){
+    const checkedIds=new Set([...document.querySelectorAll('#correction-grid .card-check:checked')].map(cb=>+cb.dataset.id));
+    const toApply=pending.filter(p=>checkedIds.has(p.id));
+    if(!toApply.length)return;
+    if(!confirm('Appliquer la correction sur '+toApply.length+' couleur(s) ?'))return;
+    const r=await fetch('/api/couleurs/correction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({corrections:toApply})});
+    if(r.ok){const{updated}=await r.json();alert(updated+' couleur(s) mises à jour.');location.reload();}
+    else alert('Erreur lors de l\\'application.');
+  }
+  document.getElementById('btn-apply').addEventListener('click',doApply);
+  document.getElementById('btn-apply2').addEventListener('click',doApply);
+
+  document.getElementById('btn-check-all').addEventListener('click',()=>{
+    document.querySelectorAll('#correction-grid .card-check').forEach(cb=>cb.checked=true);
+    updateApplyBtn();
+  });
+  document.getElementById('btn-uncheck-all').addEventListener('click',()=>{
+    document.querySelectorAll('#correction-grid .card-check').forEach(cb=>cb.checked=false);
+    updateApplyBtn();
+  });
+
+  function dot(c){return'<span style="display:inline-block;width:11px;height:11px;border-radius:2px;border:1px solid #ccc;background:'+c+';vertical-align:middle;margin-right:3px"></span>';}
+
+  function updateVis(){
+    const from=+document.getElementById('hueFrom').value;
+    const to=+document.getElementById('hueTo').value;
+    const sat=+document.getElementById('satBoost').value;
+    const shift=+document.getElementById('hueShift').value;
+    const chroma=document.getElementById('chromaMod').checked;
+    document.getElementById('hueFromVal').textContent=from+'°';
+    document.getElementById('hue-from-sw').style.background='hsl('+from+',80%,50%)';
+    document.getElementById('hue-m-from').style.left=(from/359*100).toFixed(1)+'%';
+    document.getElementById('hueToVal').textContent=to+'°';
+    document.getElementById('hue-to-sw').style.background='hsl('+to+',80%,50%)';
+    document.getElementById('hue-m-to').style.left=(to/359*100).toFixed(1)+'%';
+    document.getElementById('satBoostVal').textContent='+'+sat+'%';
+    const v=shift;document.getElementById('hueShiftVal').textContent=(v>=0?'+':'')+v+'°';
+    const[nr,ng,nb]=correct(217,127,38,sat,shift,chroma);
+    document.getElementById('sample-after').style.background=toHex(nr,ng,nb);
+
+    const cardEls=document.querySelectorAll('#correction-grid .correction-card[data-id]');
+    if(!cardEls.length)return;
+    const btnApply2=document.getElementById('btn-apply2');
+    btnApply2.style.display='';
+    btnApply2.disabled=false;
+    if(cardEls.length>10)return;
+    pending=[];
+    cardEls.forEach(card=>{
+      const br=+card.dataset.br,bg=+card.dataset.bg,bb=+card.dataset.bb,id=+card.dataset.id;
+      const[cr,cg,cb]=correct(br,bg,bb,sat,shift,chroma);
+      const newHex=toHex(cr,cg,cb);
+      const swatches=card.querySelectorAll('.swatch-sm');
+      if(swatches[1])swatches[1].style.background=newHex;
+      const hexDiv=card.querySelector('.correction-hex');
+      if(hexDiv){
+        const baseHex=hexDiv.dataset.base;
+        hexDiv.dataset.new=newHex;
+        hexDiv.innerHTML=dot(baseHex)+baseHex+' → '+dot(newHex)+newHex;
+      }
+      pending.push({id,r:cr,g:cg,b:cb});
+    });
+    updateApplyBtn();
+  }
+  document.querySelectorAll('#hueFrom,#hueTo,#satBoost,#hueShift,#chromaMod').forEach(el=>el.addEventListener('input',updateVis));
+  updateVis();
+  </script>
+</body>
+</html>`;
 }
 
 function renderCouleurs(couleurs, marques, filters) {

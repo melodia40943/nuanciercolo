@@ -885,7 +885,7 @@ function matchColors(r,g,b) {
   const shownRefs = new Set(topGroups.flatMap(g =>
     [g.primary.reference, ...g.equivalents.map(e => e.reference)]
   ));
-  const remaining = scores.filter(c => !shownRefs.has(c.reference) && c.delta < 6).slice(0, 8);
+  const remaining = scores.filter(c => !shownRefs.has(c.reference)).slice(0, 8);
   document.getElementById('sheet-body').innerHTML = remaining.map(c => {
     const cls = c.delta<5?'score-great':c.delta<15?'score-good':'score-ok';
     const lbl = c.delta<5?t('match.great'):c.delta<15?t('match.good'):t('match.ok');
