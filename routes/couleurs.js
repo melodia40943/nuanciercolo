@@ -4,6 +4,33 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Écrit pack_couleurs depuis une liste de pack_ids fournie manuellement.
+async function syncPackCouleurs(couleurId, packIds) {
+  await pool.query('DELETE FROM pack_couleurs WHERE couleur_id = ?', [couleurId]);
+  if (!packIds || !packIds.length) return;
+  await pool.query('INSERT INTO pack_couleurs (couleur_id, pack_id) VALUES ?', [packIds.map(id => [couleurId, id])]);
+}
+
+// Recalcule pack_couleurs depuis pack_min_id : inclut le pack min et tous les packs
+// plus grands de la même marque. Si pack_min_id est null, inclut tous les packs de la marque.
+async function syncPackCouleursByMin(couleurId, packMinId, marqueId) {
+  await pool.query('DELETE FROM pack_couleurs WHERE couleur_id = ?', [couleurId]);
+  let packs;
+  if (packMinId) {
+    const [[packMin]] = await pool.query('SELECT marque_id, nb_couleurs FROM packs WHERE id = ?', [packMinId]);
+    if (!packMin) return;
+    if (packMin.nb_couleurs != null) {
+      [packs] = await pool.query('SELECT id FROM packs WHERE marque_id = ? AND nb_couleurs >= ?', [packMin.marque_id, packMin.nb_couleurs]);
+    } else {
+      packs = [{ id: packMinId }];
+    }
+  } else if (marqueId) {
+    [packs] = await pool.query('SELECT id FROM packs WHERE marque_id = ?', [marqueId]);
+  }
+  if (!packs || !packs.length) return;
+  await pool.query('INSERT INTO pack_couleurs (couleur_id, pack_id) VALUES ?', [packs.map(p => [couleurId, p.id])]);
+}
+
 // Liste des couleurs
 router.get('/couleurs', requireAuth, async (req, res) => {
   const { marque_id, ref, active } = req.query;
@@ -39,7 +66,7 @@ router.get('/couleurs/new', requireAuth, async (req, res) => {
     const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
     const [resPacks]   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
     const [resMediums] = await pool.query('SELECT * FROM mediums ORDER BY nom');
-    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: null }));
+    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: null, packCouleurs: [] }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -49,11 +76,18 @@ router.get('/couleurs/new', requireAuth, async (req, res) => {
 // INSERT couleur (form classique → redirect)
 router.post('/couleurs', requireAuth, async (req, res) => {
   const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
+  const rawPc = req.body.pack_couleurs;
+  const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
   try {
-    await pool.query(
+    const [result] = await pool.query(
       'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null]
     );
+    if (packIds) {
+      await syncPackCouleurs(result.insertId, packIds);
+    } else {
+      await syncPackCouleursByMin(result.insertId, pack_min_id || null, marque_id || null);
+    }
     res.redirect('/couleurs');
   } catch (err) {
     console.error(err);
@@ -65,11 +99,18 @@ router.post('/couleurs', requireAuth, async (req, res) => {
 router.post('/api/couleurs', requireAuth, async (req, res) => {
   const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
   if (!marque_id || !reference || !hex) return res.status(400).json({ error: 'Champs manquants' });
+  const rawPc = req.body.pack_couleurs;
+  const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
   try {
     const [result] = await pool.query(
       'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null]
     );
+    if (packIds) {
+      await syncPackCouleurs(result.insertId, packIds);
+    } else {
+      await syncPackCouleursByMin(result.insertId, pack_min_id || null, marque_id || null);
+    }
     res.json({ id: result.insertId, reference, hex, r, g, b });
   } catch (err) {
     console.error(err);
@@ -80,13 +121,15 @@ router.post('/api/couleurs', requireAuth, async (req, res) => {
 // Formulaire édition
 router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
   try {
-    const [resCouleur] = await pool.query('SELECT * FROM couleurs WHERE id = ?', [req.params.id]);
+    const [resCouleur]     = await pool.query('SELECT * FROM couleurs WHERE id = ?', [req.params.id]);
     if (!resCouleur.length) return res.redirect('/couleurs');
-    const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
-    const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
-    const [resPacks]   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
-    const [resMediums] = await pool.query('SELECT * FROM mediums ORDER BY nom');
-    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: resCouleur[0] }));
+    const [resMarques]     = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resPointes]     = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const [resPacks]       = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    const [resMediums]     = await pool.query('SELECT * FROM mediums ORDER BY nom');
+    const [resPackCouleurs] = await pool.query('SELECT pack_id FROM pack_couleurs WHERE couleur_id = ?', [req.params.id]);
+    const packCouleurs = resPackCouleurs.map(r => r.pack_id);
+    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: resCouleur[0], packCouleurs }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -96,11 +139,18 @@ router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
 // UPDATE couleur
 router.post('/couleurs/:id', requireAuth, async (req, res) => {
   const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, active } = req.body;
+  const rawPc = req.body.pack_couleurs;
+  const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
   try {
     await pool.query(
       'UPDATE couleurs SET marque_id=?, reference=?, hex=?, r=?, g=?, b=?, hex_photo=?, r_photo=?, g_photo=?, b_photo=?, medium=?, pointe_id=?, pack_min_id=?, active=? WHERE id=?',
       [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, active === '1', req.params.id]
     );
+    if (packIds) {
+      await syncPackCouleurs(req.params.id, packIds);
+    } else {
+      await syncPackCouleursByMin(req.params.id, pack_min_id || null, marque_id || null);
+    }
     res.redirect('/couleurs');
   } catch (err) {
     console.error(err);
@@ -178,6 +228,13 @@ router.post('/api/couleurs/bulk', requireAuth, async (req, res) => {
       `UPDATE couleurs SET ${fields.join(', ')} WHERE id IN (?)`,
       params
     );
+    if (pack_min_id !== undefined) {
+      const [[couleurRef]] = await pool.query('SELECT marque_id FROM couleurs WHERE id = ? LIMIT 1', [ids[0]]);
+      const marqueId = couleurRef?.marque_id || null;
+      for (const id of ids) {
+        await syncPackCouleursByMin(id, pack_min_id || null, marqueId);
+      }
+    }
     res.json({ updated: result.affectedRows });
   } catch (err) {
     console.error(err);
@@ -333,7 +390,7 @@ function renderCouleurs(couleurs, marques, filters) {
 </html>`;
 }
 
-function renderForm({ marques, pointes, packs, mediums, couleur }) {
+function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = [] }) {
   const edit = !!couleur;
   const v = couleur || {};
   const action = edit ? `/couleurs/${v.id}` : '/couleurs';
@@ -531,11 +588,21 @@ function renderForm({ marques, pointes, packs, mediums, couleur }) {
           </div>
 
           <div class="form-group">
-            <label>Pack contenant la référence</label>
+            <label>Pack minimum contenant la référence</label>
             <div class="select-with-add">
               <select name="pack_min_id" id="select-pack">${optPacks}</select>
               <button type="button" class="btn-add-inline" onclick="openModal('modal-pack')">+</button>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label>Inclus dans les packs
+              <button type="button" class="btn-add-inline" style="margin-left:8px" onclick="autoCalcPacks()">Recalculer auto.</button>
+            </label>
+            <select name="pack_couleurs" id="select-packs-multi" multiple size="5" style="width:100%">
+              ${packs.map(p => `<option value="${p.id}" ${packCouleurs.includes(p.id) ? 'selected' : ''}>${p.marque_nom} — ${p.nom}</option>`).join('')}
+            </select>
+            <small style="color:#888">Ctrl+clic pour sélection multiple. Laisser vide = recalcul automatique depuis pack min.</small>
           </div>
 
           <div class="form-group">
@@ -679,6 +746,24 @@ function renderForm({ marques, pointes, packs, mediums, couleur }) {
     });
   </script>
   <script>
+    const ALL_PACKS = ${JSON.stringify(packs.map(p => ({ id: p.id, marque_id: p.marque_id, nb_couleurs: p.nb_couleurs || null })))};
+
+    function autoCalcPacks() {
+      const packMinId = Number(document.getElementById('select-pack').value);
+      const multiSel  = document.getElementById('select-packs-multi');
+      if (!packMinId) {
+        Array.from(multiSel.options).forEach(o => o.selected = false);
+        return;
+      }
+      const packMin = ALL_PACKS.find(p => p.id === packMinId);
+      if (!packMin) return;
+      Array.from(multiSel.options).forEach(opt => {
+        const p = ALL_PACKS.find(x => x.id === Number(opt.value));
+        opt.selected = p && p.marque_id === packMin.marque_id &&
+          (packMin.nb_couleurs == null || p.nb_couleurs == null || p.nb_couleurs >= packMin.nb_couleurs);
+      });
+    }
+
     function openModal(id) {
       document.getElementById(id).style.display = 'flex';
       if (id === 'modal-pack') loadMarquesInModal();
@@ -789,7 +874,8 @@ function renderForm({ marques, pointes, packs, mediums, couleur }) {
         b_photo:     document.getElementById('b-photo-input').value   || null,
         medium:      form.querySelector('[name=medium]').value || 'acrylique',
         pointe_id:   form.querySelector('[name=pointe_id]').value,
-        pack_min_id: document.getElementById('select-pack').value,
+        pack_min_id:   document.getElementById('select-pack').value,
+        pack_couleurs: [...document.getElementById('select-packs-multi').selectedOptions].map(o => Number(o.value)),
       };
       if (!data.marque_id || !data.reference || !data.hex) {
         alert('Marque, référence et couleur sont requis.');
@@ -926,7 +1012,7 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
       <div class="sep"></div>
       <label>Pointe</label>
       <select id="bulk-pointe">${optPointes}</select>
-      <label>Pack contenant la référence</label>
+      <label>Pack minimum contenant la référence</label>
       <select id="bulk-pack">${optPacks}</select>
       <button type="button" id="btn-apply-bulk" class="btn-primary" disabled>Appliquer</button>
       <div class="sep"></div>
@@ -947,7 +1033,7 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
           <th>Hex (scan)</th>
           <th>Hex (photo)</th>
           <th>Pointe</th>
-          <th>Pack min</th>
+          <th>Pack minimum</th>
         </tr>
       </thead>
       <tbody>

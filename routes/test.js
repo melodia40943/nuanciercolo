@@ -58,7 +58,6 @@ router.get('/api/marques-packs', async (req, res) => {
     const [packs]   = await pool.query(`
       SELECT id, marque_id, nom, nb_couleurs
       FROM packs
-      WHERE nb_couleurs IS NOT NULL
       ORDER BY marque_id, nb_couleurs
     `);
     const result = marques.map(m => ({

@@ -23,7 +23,7 @@ router.get('/packs', requireAuth, async (req, res) => {
 // API — ajouter un pack (JSON)
 router.post('/api/packs', requireAuth, async (req, res) => {
   const { marque_id, nom, nb_couleurs, prix_approx, lien_temu, lien_amazon } = req.body;
-  if (!marque_id || !nom) return res.status(400).json({ error: 'Champs manquants' });
+  if (!marque_id || !nom || !nb_couleurs) return res.status(400).json({ error: 'Champs manquants (marque, nom et nb couleurs requis)' });
   try {
     const [result] = await pool.query(
       `INSERT INTO packs (marque_id, nom, nb_couleurs, prix_approx, lien_temu, lien_amazon)
@@ -147,7 +147,7 @@ function renderPacks(packs, marques) {
           </div>
           <div class="form-group">
             <label>Nb de couleurs</label>
-            <input type="number" name="nb_couleurs" min="1" placeholder="ex: 80">
+            <input type="number" name="nb_couleurs" min="1" placeholder="ex: 80" required>
           </div>
           <div class="form-group">
             <label>Prix approx (€)</label>
