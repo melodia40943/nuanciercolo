@@ -41,6 +41,9 @@
     ]
   }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/test.css">
   <script src="/js/i18n.js"></script>
   <script src="/js/chroma.min.js"></script>
@@ -60,20 +63,25 @@
   </defs>
 </svg>
 
-<!-- Toolbar flottante -->
-<div id="toolbar">
-  <a href="/conseils" class="tb-btn" data-i18n="app.back">← Retour</a>
-  <button class="tb-btn" id="btn-collection" data-i18n="app.pack" style="display:none;">🎨 Pack</button>
-  <button class="tb-btn" id="btn-open" data-i18n="app.photo">📷 Photo</button>
-  <button class="tb-btn" id="btn-wb" data-i18n="app.wb">⚪ Balance des blancs</button>
-  <button class="tb-btn" id="btn-saved" style="display:none;">📋 <span id="saved-count">0</span></button>
-  <select class="lang-select" onchange="setLang(this.value)">
-    <option value="fr">🇫🇷 FR</option>
-    <option value="en">🇬🇧 EN</option>
-    <option value="es">🇪🇸 ES</option>
-    <option value="nl">🇳🇱 NL</option>
-    <option value="de">🇩🇪 DE</option>
-  </select>
+<!-- Chrome haut -->
+<div id="top-chrome">
+  <a href="/conseils" class="chrome-pill" id="btn-back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    <span data-i18n="app.back">Retour</span>
+  </a>
+  <div class="top-chrome-right">
+    <button class="chrome-pill chrome-pill--blue" id="btn-conseils">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span data-i18n="app.conseils">Conseils</span>
+    </button>
+    <select class="chrome-pill lang-select" onchange="setLang(this.value)">
+      <option value="fr">🇫🇷 FR</option>
+      <option value="en">🇬🇧 EN</option>
+      <option value="es">🇪🇸 ES</option>
+      <option value="nl">🇳🇱 NL</option>
+      <option value="de">🇩🇪 DE</option>
+    </select>
+  </div>
 </div>
 
 
@@ -85,7 +93,6 @@
     <p data-i18n="drop.text">Ouvre une photo ou un PDF du nuancier</p>
     <span class="drop-sub" data-i18n="drop.sub">Images (jpg, png…) ou PDF couleurs</span>
     <div class="drop-links">
-      <a href="/conseils" class="link-tips" data-i18n="drop.tips" onclick="event.stopPropagation()">Conseils pour de meilleurs résultats →</a>
       <a href="http://jeremymariez.free.fr/npainter.htm" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()" data-i18n="drop.ref">🎨 PDFs de référence par Jeremy Mariez →</a>
     </div>
   </div>
@@ -101,28 +108,78 @@
   <input type="file" id="file-input" accept="image/*,application/pdf">
 </div>
 
-<!-- Panneau ajustement WB -->
+<!-- Barre de navigation basse -->
+<div id="bottom-bar">
+  <button class="bb-item bb-item--primary" id="btn-open">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <span class="bb-label" id="bb-photo-label" data-i18n="bb.open">Ouvrir</span>
+  </button>
+  <button class="bb-item" id="btn-wb" disabled>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>
+    <span class="bb-label" id="bb-wb-label" data-i18n="bb.wb">Blancs</span>
+  </button>
+  <button class="bb-item" id="btn-collection" style="display:none">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>
+    <span class="bb-label" data-i18n="bb.pack">Mes feutres</span>
+  </button>
+  <button class="bb-item" id="btn-saved">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <span class="bb-label" data-i18n="bb.list">Liste</span>
+    <span class="bb-badge" id="saved-count" style="display:none">0</span>
+  </button>
+</div>
+
+<!-- Panneau ajustement WB — bottom sheet -->
 <div id="wb-adj-panel">
-  <div class="wbadj-inner">
-    <div class="wbadj-left">
-      <div class="wbadj-swatches">
-        <div id="wbadj-corr"></div>
-        <div class="wbadj-white"></div>
-      </div>
-      <div class="wbadj-info" id="wbadj-info">Ajuste jusqu'à ce que les deux carrés soient identiques</div>
+  <div class="wbadj-header">
+    <div>
+      <div class="wbadj-title" data-i18n="wb.title">Balance des blancs</div>
+      <div class="wbadj-status" id="wbadj-status" data-i18n="wb.status.none">Pas de balance définie</div>
     </div>
-    <div class="wbadj-right">
-      <div class="wbadj-row">
-        <span class="wbadj-lbl">☀️ Luminosité</span>
-        <input type="range" class="wbadj-slider" id="sl-bright" min="-60" max="60" value="0">
-      </div>
-      <div class="wbadj-row">
-        <span class="wbadj-lbl">🌡 Température</span>
-        <input type="range" class="wbadj-slider" id="sl-temp" min="-60" max="60" value="0">
-      </div>
-    </div>
-    <button class="wbadj-reset" id="wbadj-reset">↺</button>
+    <button class="wbadj-reset" id="wbadj-reset" title="Réinitialiser">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    </button>
   </div>
+  <div class="wbadj-actions">
+    <button class="wbadj-action-btn" id="btn-wb-pick">
+      <span class="wbadj-action-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></svg>
+      </span>
+      <div>
+        <div class="wbadj-action-label" data-i18n="wb.pick">Pointer une zone blanche</div>
+        <div class="wbadj-action-sub" data-i18n="wb.pick.sub">Touche le papier blanc de ta photo</div>
+      </div>
+    </button>
+  </div>
+  <div class="wbadj-fine-label" data-i18n="wb.fine">Ajuster finement</div>
+  <div class="wbadj-row">
+    <span class="wbadj-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    </span>
+    <span class="wbadj-lbl" data-i18n="wb.bright">Luminosité</span>
+    <span class="wbadj-val" id="wbadj-bright-val">0</span>
+    <input type="range" class="wbadj-slider" id="sl-bright" min="-60" max="60" value="0">
+    <div class="wbadj-hints">
+      <span data-i18n="wb.bright.dark">Plus sombre</span>
+      <span data-i18n="wb.bright.light">Plus clair</span>
+    </div>
+  </div>
+  <div class="wbadj-row">
+    <span class="wbadj-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+    </span>
+    <span class="wbadj-lbl" data-i18n="wb.temp">Température</span>
+    <span class="wbadj-val" id="wbadj-temp-val">0</span>
+    <input type="range" class="wbadj-slider" id="sl-temp" min="-60" max="60" value="0">
+    <div class="wbadj-hints">
+      <span data-i18n="wb.temp.cold">Plus froid</span>
+      <span data-i18n="wb.temp.warm">Plus chaud</span>
+    </div>
+  </div>
+  <button class="wbadj-done" id="wbadj-done">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+    <span data-i18n="wb.done">Terminé</span>
+  </button>
 </div>
 
 <div id="tip" data-i18n="canvas.tip">Tap = échantillonner · Drag = naviguer · Pinch = zoom</div>
@@ -155,42 +212,42 @@
 
 <div id="toast"></div>
 
-<!-- Panel sélection collection -->
-<div id="collection-panel">
-  <div id="collection-header">
-    <h2 data-i18n="coll.title">Ma collection</h2>
-    <button class="saved-action-btn" id="btn-coll-cancel" data-i18n="coll.close">✕ Fermer</button>
+<!-- Panel Mes feutres -->
+<div id="mf-panel" aria-hidden="true">
+  <div id="mf-header">
+    <div>
+      <div class="mf-title" data-i18n="mf.title">Mes feutres</div>
+      <div class="mf-subtitle" data-i18n="mf.subtitle">Choisis ton médium, puis tes packs</div>
+    </div>
+    <button class="mf-close-btn" id="btn-mf-close" aria-label="Fermer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
   </div>
-  <div id="collection-body">
-    <!-- Option "Tous" — visible uniquement si connectée -->
-    <div class="coll-option-tous" id="coll-tous-row" style="display:none;">
-      <input type="radio" name="coll-mode" id="radio-tous" value="tous" checked>
-      <label for="radio-tous" data-i18n="coll.all">Toutes les couleurs</label>
-      <small>mode dev</small>
-    </div>
-    <div class="coll-option-tous coll-option-tous--static">
-      <input type="radio" name="coll-mode" id="radio-custom" value="custom">
-      <label for="radio-custom" data-i18n="coll.custom">Ma sélection</label>
-    </div>
-
-    <!-- Liste des marques/packs sélectionnés -->
-    <div id="coll-selected-list"></div>
-
-    <!-- Ajout d'une marque+pack -->
-    <div id="coll-add-zone">
-      <span class="coll-add-label" data-i18n="coll.add.label">Ajouter une marque</span>
-      <select class="coll-select" id="coll-select-marque">
-        <option value="" data-i18n="coll.add.marque">— Choisir une marque —</option>
-      </select>
-      <select class="coll-select" id="coll-select-pack" disabled>
-        <option value="" data-i18n="coll.add.pack">— Choisir un pack —</option>
-      </select>
-      <div id="coll-no-packs" data-i18n="coll.nopacks">⚠️ Aucun pack enregistré pour cette marque</div>
-      <button id="btn-coll-add-entry" data-i18n="coll.add.btn" disabled>+ Ajouter à ma collection</button>
+  <div id="mf-scroll">
+    <span class="mf-section-label" data-i18n="mf.type">Type de feutre</span>
+    <div id="mf-medium-grid"></div>
+    <div class="mf-collection-header" id="mf-coll-header"></div>
+    <div id="mf-coll-list"></div>
+    <span class="mf-section-label" data-i18n="mf.add.label">Ajouter une marque</span>
+    <div id="mf-add-zone">
+      <div class="mf-select-wrap">
+        <select id="mf-select-marque">
+          <option value="">— Choisir une marque —</option>
+        </select>
+        <svg class="mf-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="mf-select-wrap mf-select-wrap--pack" id="mf-pack-wrap">
+        <select id="mf-select-pack" disabled>
+          <option value="">— Choisir un pack —</option>
+        </select>
+        <svg class="mf-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <button id="btn-mf-add" disabled data-i18n="mf.add.btn">+ Ajouter à ma collection</button>
     </div>
   </div>
-  <div id="collection-footer">
-    <button id="btn-coll-apply" data-i18n="coll.apply">✓ Appliquer</button>
+  <div id="mf-footer">
+    <div class="mf-footer-info" id="mf-footer-info"></div>
+    <button id="btn-mf-apply" data-i18n="mf.apply">✓ Appliquer</button>
   </div>
 </div>
 
@@ -217,6 +274,123 @@
   </div>
 </div>
 
+<!-- ─────────────────────────────────────────────
+     OVERLAY CONSEILS
+────────────────────────────────────────────── -->
+<div id="conseils-overlay" class="conseils-overlay" aria-hidden="true">
+  <div class="conseils-panel" role="dialog" aria-label="Conseils" aria-modal="true">
+
+    <button class="conseils-close" id="btn-close-conseils" aria-label="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="conseils-scroll">
+
+      <!-- Partenaire -->
+      <div class="partner-card">
+        <div class="partner-label" data-i18n="partner.label">En partenariat avec</div>
+        <div class="partner-row">
+          <span class="partner-name">Popping Boutiques</span>
+          <span class="partner-badge" data-i18n="partner.badge">−10%</span>
+        </div>
+        <p class="partner-desc" data-i18n-html="partner.desc">
+          Révélo est soutenu par <strong>Popping Boutiques</strong>, boutique de produits dérivés et goodies sous licence, feutres &amp; coloriages.<br>
+          <strong>Un grand merci à eux pour leur confiance ❤️</strong><br>
+          Profite de <strong>−10%*</strong> sur tout le site avec le code&nbsp;:
+        </p>
+        <div class="partner-code-row">
+          <span class="partner-code">REVELO</span>
+          <span class="partner-code-hint" data-i18n="partner.code.hint">à coller au paiement</span>
+        </div>
+        <a href="https://popping-boutiques.com/?ref=212QD95V&chn=1" target="_blank" rel="noopener" class="partner-btn" data-i18n="partner.btn">Découvrir la boutique →</a>
+        <p class="partner-note" data-i18n="partner.note">*Hors Mystery Bag, coloriages &amp; TikTok Shop.</p>
+      </div>
+
+      <!-- Titre section conseils -->
+      <div class="conseils-header">
+        <h2 data-i18n="tips.h1">Avant de commencer</h2>
+        <p data-i18n="tips.subtitle">Quelques conseils pour des résultats fiables</p>
+      </div>
+
+      <!-- Conseils -->
+      <div class="tips">
+
+        <div class="tip highlight">
+          <div class="tip-icon">🎯</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t1.h2">Le résultat n'est qu'un point de départ</h3>
+            <p data-i18n="tips.t1.p1">L'application a été conçue de manière tout à fait non officielle.</p>
+            <p data-i18n="tips.t1.p2">Je me suis servie des marqueurs que j'avais en ma possession pour créer le nuancier numérique le plus proche possible de la vérité.</p>
+            <p data-i18n-html="tips.t1.p3">Mais l'application ne donne que les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
+          </div>
+        </div>
+
+        <div class="tip highlight">
+          <div class="tip-icon">📄</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t2.h2">Les PDFs de référence : la meilleure source</h3>
+            <p data-i18n-html="tips.t2.p">Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête.</p>
+            <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link">🎨 Palettes de référence par Jeremy Mariez →</a>
+          </div>
+        </div>
+
+        <div class="tip highlight">
+          <div class="tip-icon">💡</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t3.h2">Éclairage — pour les photos uniquement</h3>
+            <p data-i18n-html="tips.t3.p">Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.</p>
+          </div>
+        </div>
+
+        <div class="tip highlight">
+          <div class="tip-icon">⚪</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t4.h2">Balance des blancs — toujours recommandée</h3>
+            <p data-i18n-html="tips.t4.p">Les livres Hachette ont une <strong>bande blanche naturelle</strong> juste au-dessus de chaque case colorée.</p>
+            <div class="step"><span class="step-num">1</span> <span data-i18n="tips.t4.s1">Tape sur le bouton balance des blancs (⚪)</span></div>
+            <div class="step"><span class="step-num">2</span> <span data-i18n-html="tips.t4.s2">Clique sur la <strong>bande blanche au-dessus</strong> de la couleur à identifier</span></div>
+            <div class="step"><span class="step-num">3</span> <span data-i18n="tips.t4.s3">Échantillonne la couleur en dessinant un cercle dessus</span></div>
+          </div>
+        </div>
+
+        <div class="tip">
+          <div class="tip-icon">📸</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t5.h2">Continue à partager tes colos !</h3>
+            <p data-i18n-html="tips.t5.p">Tu partages tes créations sur les réseaux ? <strong>On adore voir vos colos</strong> — ça inspire toute la communauté !</p>
+          </div>
+        </div>
+
+      </div><!-- /.tips -->
+
+      <!-- Soutien -->
+      <div class="conseils-support">
+        <a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener" class="btn-tipeee" data-i18n="tips.cta.kofi">☕ Soutenir le projet sur Tipeee</a>
+        <div class="social-links">
+          <a href="https://www.facebook.com/profile.php?id=61583097987882" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/melo_craft_and_colo/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@melodia40943" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /.conseils-scroll -->
+
+    <!-- Footer install PWA uniquement -->
+    <div class="conseils-footer">
+      <button id="btn-install" style="display:none" data-i18n="tips.cta.install">Ajouter à l'écran d'accueil</button>
+      <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong></p>
+      <p class="skip" data-i18n="tips.cta.skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
+    </div>
+
+  </div><!-- /.conseils-panel -->
+</div><!-- /.conseils-overlay -->
+
 <script>
 // ── Service Worker ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
@@ -226,6 +400,7 @@ if ('serviceWorker' in navigator) {
 // ── State ──────────────────────────────────────────────────────────────────────
 let imgEl=null, imgData=null, natW=0, natH=0;
 let wbPending=false;
+let wbStatus='none'; // 'none' | 'auto' | 'manuel'
 let viewX=0, viewY=0, viewScale=1;
 let circleCenter=null, circleRadius=0;
 const CIRCLE_SCREEN_PX = 18; // taille du cercle de sélection à l'écran (px)
@@ -368,14 +543,15 @@ function applyImageEl(img) {
   imgData=oc.getContext('2d').getImageData(0,0,natW,natH);
   document.getElementById('drop-zone').style.display='none';
   document.getElementById('canvas-wrap').style.display='block';
-  btnWb.style.display='block';
+  btnWb.disabled=false;
+  document.getElementById('bb-photo-label').setAttribute('data-i18n','bb.photo');
+  document.getElementById('bb-photo-label').textContent=t('bb.photo');
   resizeCanvas(); fitView(); render();
   // WB automatique
   const autoOk=autoDetectWB(imgData,natW,natH,({white,black})=>{
-    btnWb.textContent=t('app.wb.auto');
-    btnWb.className='tb-btn done';
     const brightness=(white.r+white.g+white.b)/3;
-    onWbSet(white, black);
+    wbStatus='auto';
+    onWbSet(white, black, false);
     if (brightness<170) toast(t('toast.wb.auto.dark'));
     else toast(t('toast.wb.auto.ok'));
   });
@@ -464,7 +640,7 @@ cv.addEventListener('mouseup', e=>{
   const wasMoved=pointerMoved, pos=pointerStart;
   pointerDown=false; pointerStart=null; pointerMoved=false;
   if (e.button===1||e.button===2) return;
-  if (wbPending && pos) { doWB(pos.x,pos.y); resetWbBtn(); return; }
+  if (wbPending && pos) { doWB(pos.x,pos.y); return; }
   if (!wasMoved && pos) placeSampleCircle(pos.x,pos.y);
 });
 cv.addEventListener('mouseleave', ()=>{ pointerDown=false; pointerStart=null; if(!wbPending) cv.style.cursor='crosshair'; });
@@ -521,7 +697,7 @@ cv.addEventListener('touchend', e=>{
   if (!pointerDown) return;
   const wasMoved=pointerMoved, pos=pointerStart;
   pointerDown=false; pointerStart=null; pointerMoved=false;
-  if (wbPending && pos) { doWB(pos.x,pos.y); resetWbBtn(); return; } // soulever = confirmer WB
+  if (wbPending && pos) { doWB(pos.x,pos.y); return; }
   if (!wasMoved && pos) placeSampleCircle(pos.x,pos.y);
 },{passive:false});
 
@@ -542,40 +718,49 @@ let wbBaseWhite = null;
 
 btnWb.addEventListener('click', ()=>{
   if (!imgEl) return;
-  wbPending=!wbPending;
-  if (wbPending) {
-    btnWb.textContent=t('app.wb.pending');
-    btnWb.className='tb-btn pending';
-  } else {
-    resetWbBtn();
-  }
+  const adjPanel=document.getElementById('wb-adj-panel');
+  adjPanel.classList.contains('visible') ? adjPanel.classList.remove('visible') : adjPanel.classList.add('visible');
 });
 
-function resetWbBtn() {
-  wbPending=false;
-  btnWb.textContent=t(wbSet?'app.wb.done':'app.wb.reset');
-  btnWb.className='tb-btn '+(wbSet?'done':'');
-  if (!wbSet) {
-    document.getElementById('wb-adj-panel').classList.remove('visible');
-    cv.style.filter='none';
+function updateWbBtn() {
+  const lbl=document.getElementById('bb-wb-label');
+  if (wbStatus !== 'none') {
+    btnWb.classList.add('bb-item--active');
+    lbl.setAttribute('data-i18n','bb.wb.ok');
+    lbl.textContent=t('bb.wb.ok');
+  } else {
+    btnWb.classList.remove('bb-item--active');
+    lbl.setAttribute('data-i18n','bb.wb');
+    lbl.textContent=t('bb.wb');
   }
 }
 
+function updateWbStatusText() {
+  const el=document.getElementById('wbadj-status');
+  const key = wbStatus==='auto' ? 'wb.status.auto' : wbStatus==='manuel' ? 'wb.status.manuel' : 'wb.status.none';
+  el.setAttribute('data-i18n', key);
+  el.textContent=t(key);
+}
+
 // Appelé après chaque changement de WB (clic ou auto) pour initialiser le panneau
-function onWbSet(white, black) {
+function onWbSet(white, black, openPanel=true) {
   wbBaseWhite = { r: white.r, g: white.g, b: white.b };
   document.getElementById('sl-bright').value = 0;
   document.getElementById('sl-temp').value   = 0;
   applyWbSliders();
-  document.getElementById('wb-adj-panel').classList.add('visible');
+  updateWbBtn();
+  updateWbStatusText();
+  if (openPanel) document.getElementById('wb-adj-panel').classList.add('visible');
 }
 
-// Recalcule wbWhite à partir des sliders et met à jour filtre + swatch
+// Recalcule wbWhite à partir des sliders et met à jour filtre
 function applyWbSliders() {
   if (!wbBaseWhite) return;
-  const bright = parseFloat(document.getElementById('sl-bright').value); // -60..+60
-  const temp   = parseFloat(document.getElementById('sl-temp').value);   // -60..+60
-  const scale = 1 - bright * 0.006;
+  const bright = parseFloat(document.getElementById('sl-bright').value);
+  const temp   = parseFloat(document.getElementById('sl-temp').value);
+  document.getElementById('wbadj-bright-val').textContent = bright > 0 ? '+'+bright : bright;
+  document.getElementById('wbadj-temp-val').textContent   = temp   > 0 ? '+'+temp   : temp;
+  const scale  = 1 - bright * 0.006;
   const tShift = temp * 0.6;
   wbWhite = {
     r: Math.max(10, wbBaseWhite.r * scale - tShift),
@@ -583,14 +768,6 @@ function applyWbSliders() {
     b: Math.max(10, wbBaseWhite.b * scale + tShift),
   };
   wbSet = true;
-  const corr = applyWB({ r: Math.round(wbBaseWhite.r), g: Math.round(wbBaseWhite.g), b: Math.round(wbBaseWhite.b) });
-  document.getElementById('wbadj-corr').style.background = toHex(corr.r, corr.g, corr.b);
-  const drift = Math.max(corr.r,corr.g,corr.b) - Math.min(corr.r,corr.g,corr.b);
-  const bri   = (corr.r+corr.g+corr.b)/3;
-  document.getElementById('wbadj-info').textContent =
-    bri > 220 && drift < 15 ? '✓ Blanc — tu peux échantillonner !'
-    : bri > 180 && drift < 30 ? '〜 Presque blanc — ajuste encore'
-    : '⚠️ Pas encore blanc — continue';
   updateWbFilter();
   if (circleCenter) doSample(true);
 }
@@ -612,26 +789,37 @@ function updateWbFilter() {
 
 document.getElementById('sl-bright').addEventListener('input', applyWbSliders);
 document.getElementById('sl-temp').addEventListener('input', applyWbSliders);
+document.getElementById('btn-wb-pick').addEventListener('click', ()=>{
+  wbPending=true;
+  document.getElementById('wb-adj-panel').classList.remove('visible');
+  toast(t('wb.pick.sub'));
+});
+document.getElementById('wbadj-done').addEventListener('click', ()=>{
+  document.getElementById('wb-adj-panel').classList.remove('visible');
+});
 document.getElementById('wbadj-reset').addEventListener('click', ()=>{
-  // Retour à la photo originale : plus aucune correction
   wbBaseWhite = null;
   wbWhite = { r:255, g:255, b:255 };
   wbBlack = { r:0,   g:0,   b:0   };
   wbSet   = false;
+  wbStatus = 'none';
   document.getElementById('sl-bright').value = 0;
   document.getElementById('sl-temp').value   = 0;
+  document.getElementById('wbadj-bright-val').textContent = '0';
+  document.getElementById('wbadj-temp-val').textContent   = '0';
   cv.style.filter = 'none';
   document.getElementById('wb-adj-panel').classList.remove('visible');
-  wbIndicator.classList.remove('visible');
-  btnWb.textContent = t('app.wb.reset');
-  btnWb.className   = 'tb-btn';
+  updateWbBtn();
+  updateWbStatusText();
   toast(t('toast.wb.reset.full'));
 });
 
 function doWB(cvX,cvY) {
+  wbPending=false;
   const img=canvasToImg(cvX,cvY);
   const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
-    onWbSet(white, black);
+    wbStatus='manuel';
+    onWbSet(white, black, true);
     toast(t('toast.wb.def'));
   });
   if (!ok) toast(t('toast.wb.dark'));
@@ -872,10 +1060,14 @@ function matchColors(r,g,b) {
         <div class="top3-ref">${eq.reference}</div>
         <div class="top3-brand">${eq.marque}</div>
       </div>`).join('');
+    const couchesHtml  = (c.couches && c.medium === 'Feutre à alcool') ? `<div class="top3-couches">${t('couches.' + c.couches)}</div>` : '';
+    const refAltHtml   = c.reference_alt ? `<div class="top3-ref-alt">${c.reference_alt}</div>` : '';
     return `<div class="top3-card match-${cls}">
       <div class="top3-swatch" style="background:${c.hex}"></div>
       <div class="top3-ref">${c.reference}</div>
+      ${refAltHtml}
       <div class="top3-brand">${c.marque}</div>
+      ${couchesHtml}
       ${equivHtml}
       <div class="top3-de de-${cls}">${t('match.' + cls)}</div>
     </div>`;
@@ -889,11 +1081,13 @@ function matchColors(r,g,b) {
   document.getElementById('sheet-body').innerHTML = remaining.map(c => {
     const cls = c.delta<5?'score-great':c.delta<15?'score-good':'score-ok';
     const lbl = c.delta<5?t('match.great'):c.delta<15?t('match.good'):t('match.ok');
+    const couchesMeta = (c.couches && c.medium === 'Feutre à alcool') ? ` · ${t('couches.' + c.couches)}` : '';
+    const refAltMeta  = c.reference_alt ? ` · ex. ${c.reference_alt}` : '';
     return `<div class="result-entry">
       <div class="result-swatch" style="background:${c.hex}"></div>
       <div class="result-info">
         <div class="result-ref">${c.marque} ${c.reference}</div>
-        <div class="result-meta">${c.hex.toUpperCase()}</div>
+        <div class="result-meta">${c.hex.toUpperCase()}${refAltMeta}${couchesMeta}</div>
       </div>
       <div class="result-score ${cls}">${lbl}</div>
     </div>`;
@@ -938,7 +1132,7 @@ const savedCount = document.getElementById('saved-count');
 
 function updateSavedBadge() {
   savedCount.textContent = savedSearches.length;
-  btnSaved.style.display = savedSearches.length > 0 ? '' : 'none';
+  savedCount.style.display = savedSearches.length > 0 ? '' : 'none';
 }
 
 function persistSearches() {
@@ -1184,165 +1378,258 @@ function roundRect(ctx2, x, y, w, h, r, fill) {
   ctx2.stroke();
 }
 
-// ── Collection ────────────────────────────────────────────────────────────────
-// collection = null → tous
-// collection = [{ marque_id, marque_nom, pack_id, pack_nom, pack_nb }]
-const COLL_KEY = 'nuancier_collection';
-let collection     = JSON.parse(localStorage.getItem(COLL_KEY) || 'null');
-let collDraft      = collection ? JSON.parse(JSON.stringify(collection)) : [];
-let collMode       = collection ? 'custom' : 'tous';
-let marquesPacksDB = [];
+// ── Mes feutres ───────────────────────────────────────────────────────────────
+const MF_KEY     = 'revelo_collection_v2'; // { [mediumName]: [{marque_id,marque_nom,pack_id,pack_nom,pack_nb}] }
+const MF_MED_KEY = 'revelo_active_medium';
+
+const MEDIUM_META = {
+  'Feutre acrylique':  { labelKey: 'mf.med.acrylique', color: '#FF6635' },
+  'Feutre gel':        { labelKey: 'mf.med.gel',        color: '#06D6A0' },
+  'Feutre à alcool':   { labelKey: 'mf.med.alcool',     color: '#4CC9F0' },
+  'Feutre à eau':      { labelKey: 'mf.med.eau',        color: '#4361EE' },
+  'Crayon de couleur': { labelKey: 'mf.med.crayon',     color: '#FFD500' },
+};
+
+let collByMedium  = JSON.parse(localStorage.getItem(MF_KEY) || '{}');
+let activeMedium  = localStorage.getItem(MF_MED_KEY) || null;
+let mfDraft       = [];
+let mfMarques     = [];
+let activeMediums = [];
+
+function getMediumLabel(name) {
+  const key = MEDIUM_META[name]?.labelKey;
+  return key ? t(key) : (name || '?');
+}
+function getMediumColor(name) {
+  return MEDIUM_META[name]?.color || '#4A6CF7';
+}
 
 function getFilteredColors() {
-  if (!collection || collection.length === 0) return dbColors;
-  const ownedPackIds = new Set(collection.map(s => s.pack_id));
-  return dbColors.filter(c => {
-    if (!c.pack_ids || c.pack_ids.length === 0) return true; // pas encore assigné → inclus
-    return c.pack_ids.some(pid => ownedPackIds.has(pid));
-  });
+  let colors = dbColors;
+  if (activeMedium) colors = colors.filter(c => c.medium === activeMedium);
+  const ownedPacks = (activeMedium && collByMedium[activeMedium]) || [];
+  if (ownedPacks.length > 0) {
+    const ownedPackIds = new Set(ownedPacks.map(s => s.pack_id));
+    colors = colors.filter(c => {
+      if (!c.pack_ids || c.pack_ids.length === 0) return true;
+      return c.pack_ids.some(pid => ownedPackIds.has(pid));
+    });
+  }
+  return colors;
 }
 
-function collLabelText() {
-  if (!collection || collection.length === 0) return 'toutes les couleurs';
-  return collection.map(s => `${s.marque_nom} ${s.pack_nom}`).join(' + ');
+function updateCollLabel() { updateDbBadge(); }
+
+function renderMediumGrid() {
+  const grid = document.getElementById('mf-medium-grid');
+  grid.innerHTML = activeMediums.map(name => {
+    const color = getMediumColor(name);
+    const count = (collByMedium[name] || []).length;
+    const sel   = name === activeMedium;
+    return `<button class="mf-medium-btn${sel ? ' mf-medium-btn--active' : ''}" data-medium="${name}" style="--mc:${color}">
+      <span class="mf-medium-label">${getMediumLabel(name)}</span>
+      <span class="mf-medium-count" style="${count ? `color:${color}` : ''}">${count ? `${count} pack${count > 1 ? 's' : ''}` : t('mf.none')}</span>
+    </button>`;
+  }).join('');
+  grid.querySelectorAll('.mf-medium-btn').forEach(btn =>
+    btn.addEventListener('click', () => switchMfMedium(btn.dataset.medium))
+  );
 }
 
-function updateCollLabel() {
-  updateDbBadge();
+function renderMfCollHeader() {
+  const el = document.getElementById('mf-coll-header');
+  if (!activeMedium) { el.innerHTML = ''; return; }
+  const color = getMediumColor(activeMedium);
+  el.innerHTML = `
+    <span class="mf-section-label" style="margin-bottom:0">${t('mf.collection')}</span>
+    <span class="mf-dot" style="background:${color}"></span>
+    <span class="mf-coll-medium-name" style="color:${color}">${getMediumLabel(activeMedium)}</span>`;
 }
 
-function renderCollDraft() {
-  const list = document.getElementById('coll-selected-list');
-  if (!collDraft.length) { list.innerHTML = ''; return; }
-  list.innerHTML = collDraft.map((s, i) => `
-    <div class="coll-entry">
-      <div class="coll-entry-info">
-        <div class="coll-entry-marque">${s.marque_nom}</div>
-        <div class="coll-entry-pack">${s.pack_nom}</div>
+function saveMfCollection() {
+  if (activeMedium) collByMedium[activeMedium] = [...mfDraft];
+  localStorage.setItem(MF_KEY, JSON.stringify(collByMedium));
+}
+
+function renderMfDraft() {
+  const list = document.getElementById('mf-coll-list');
+  if (!mfDraft.length) {
+    if (activeMedium) {
+      const label = `<strong style="color:#ECECF4">${getMediumLabel(activeMedium)}</strong>`;
+      list.innerHTML = `<div class="mf-empty"><div class="mf-empty-text">${t('mf.empty.pre')} ${label} ${t('mf.empty.suf')}</div></div>`;
+    } else {
+      list.innerHTML = '';
+    }
+    return;
+  }
+  list.innerHTML = mfDraft.map((s, i) => `
+    <div class="mf-entry">
+      <div class="mf-entry-info">
+        <div class="mf-entry-marque">${s.marque_nom}</div>
+        <div class="mf-entry-pack">${s.pack_nom}</div>
       </div>
-      <button class="coll-entry-del" data-i="${i}">✕</button>
+      <button class="mf-entry-del" data-i="${i}" aria-label="Supprimer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      </button>
     </div>`).join('');
-  list.querySelectorAll('.coll-entry-del').forEach(btn =>
+  list.querySelectorAll('.mf-entry-del').forEach(btn =>
     btn.addEventListener('click', e => {
-      collDraft.splice(Number(e.currentTarget.dataset.i), 1);
-      if (!collDraft.length) {
-        document.getElementById('radio-tous').checked = true;
-        collMode = 'tous';
-      }
-      renderCollDraft();
+      mfDraft.splice(Number(e.currentTarget.dataset.i), 1);
+      saveMfCollection();
+      renderMfDraft();
+      renderMfFooter();
     })
   );
 }
 
-// Charger marques + packs et afficher le bouton collection
-fetch('/api/marques-packs').then(r => r.json()).then(data => {
-  marquesPacksDB = data;
-  const sel = document.getElementById('coll-select-marque');
-  data.forEach(m => {
-    const opt = document.createElement('option');
-    opt.value = m.id; opt.textContent = m.nom;
-    sel.appendChild(opt);
-  });
+function renderMfFooter() {
+  const el = document.getElementById('mf-footer-info');
+  if (!activeMedium) { el.innerHTML = ''; return; }
+  const color = getMediumColor(activeMedium);
+  const count = mfDraft.length;
+  el.innerHTML = `${t('mf.footer.in')} <strong style="color:${color}">${getMediumLabel(activeMedium)}</strong> · ${count} pack${count !== 1 ? 's' : ''}`;
+}
+
+async function loadMfMarques() {
+  if (!activeMedium) return;
+  const marqueEl = document.getElementById('mf-select-marque');
+  const packEl   = document.getElementById('mf-select-pack');
+  marqueEl.innerHTML = `<option value="">${t('mf.add.marque')}</option>`;
+  packEl.innerHTML   = `<option value="">${t('mf.add.pack')}</option>`;
+  packEl.disabled    = true;
+  document.getElementById('btn-mf-add').disabled = true;
+  document.getElementById('mf-pack-wrap').classList.remove('mf-select-wrap--enabled');
+  try {
+    const data = await fetch(`/api/marques-packs?medium=${encodeURIComponent(activeMedium)}`).then(r => r.json());
+    mfMarques = data;
+    data.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id; opt.textContent = m.nom;
+      marqueEl.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+function switchMfMedium(name) {
+  activeMedium = name;
+  mfDraft = collByMedium[name] ? JSON.parse(JSON.stringify(collByMedium[name])) : [];
+  renderMediumGrid();
+  renderMfCollHeader();
+  renderMfDraft();
+  renderMfFooter();
+  loadMfMarques();
+}
+
+function openMfPanel() {
+  if (activeMedium) {
+    mfDraft = collByMedium[activeMedium] ? JSON.parse(JSON.stringify(collByMedium[activeMedium])) : [];
+  }
+  renderMediumGrid();
+  renderMfCollHeader();
+  renderMfDraft();
+  renderMfFooter();
+  loadMfMarques();
+  const panel = document.getElementById('mf-panel');
+  panel.classList.add('open');
+  panel.removeAttribute('aria-hidden');
+}
+
+function closeMfPanel() {
+  const panel = document.getElementById('mf-panel');
+  panel.classList.remove('open');
+  panel.setAttribute('aria-hidden', 'true');
+}
+
+// Charger les médiums actifs et afficher le bouton
+fetch('/api/mediums/active').then(r => r.json()).then(mediums => {
+  activeMediums = mediums;
+  if (activeMedium && !activeMediums.includes(activeMedium)) {
+    activeMedium = activeMediums[0] || null;
+    localStorage.setItem(MF_MED_KEY, activeMedium || '');
+  }
+  if (!activeMedium && activeMediums.length > 0) {
+    activeMedium = activeMediums[0];
+    localStorage.setItem(MF_MED_KEY, activeMedium);
+  }
   document.getElementById('btn-collection').style.display = '';
   updateCollLabel();
-  // Première visite : ouvrir le panel de sélection automatiquement
-  if (!collection) {
-    collDraft = [];
-    collMode  = 'custom';
-    document.getElementById('radio-custom').checked = true;
-    renderCollDraft();
-    document.getElementById('collection-panel').classList.add('open');
-  }
+  // Première visite : ouvrir le panel automatiquement
+  if (!localStorage.getItem(MF_KEY)) openMfPanel();
 }).catch(() => toast(t('toast.coll.fail')));
 
-// Marque sélectionnée → remplir les packs
-document.getElementById('coll-select-marque').addEventListener('change', function() {
+document.getElementById('btn-collection').addEventListener('click', openMfPanel);
+document.getElementById('btn-mf-close').addEventListener('click', closeMfPanel);
+
+document.getElementById('mf-select-marque').addEventListener('change', function() {
   const marqueId = Number(this.value);
-  const packSel  = document.getElementById('coll-select-pack');
-  const noPacksMsg = document.getElementById('coll-no-packs');
-  packSel.innerHTML = '<option value="">— Choisir un pack —</option>';
-  packSel.disabled = true;
-  document.getElementById('btn-coll-add-entry').disabled = true;
-  noPacksMsg.style.display = 'none';
+  const packEl   = document.getElementById('mf-select-pack');
+  const packWrap = document.getElementById('mf-pack-wrap');
+  packEl.innerHTML = `<option value="">${t('mf.add.pack')}</option>`;
+  packEl.disabled  = true;
+  packWrap.classList.remove('mf-select-wrap--enabled');
+  document.getElementById('btn-mf-add').disabled = true;
   if (!marqueId) return;
-  const marque = marquesPacksDB.find(m => m.id === marqueId);
-  if (!marque || !marque.packs.length) {
-    noPacksMsg.style.display = '';
-    return;
-  }
+  const marque = mfMarques.find(m => m.id === marqueId);
+  if (!marque || !marque.packs.length) return;
   marque.packs.forEach(p => {
     const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.nom;
-    opt.dataset.nb  = p.nb_couleurs;
-    opt.dataset.nom = p.nom;
-    packSel.appendChild(opt);
+    opt.value = p.id; opt.textContent = p.nom;
+    opt.dataset.nb = p.nb_couleurs; opt.dataset.nom = p.nom;
+    packEl.appendChild(opt);
   });
-  packSel.disabled = false;
+  packEl.disabled = false;
+  packWrap.classList.add('mf-select-wrap--enabled');
 });
 
-document.getElementById('coll-select-pack').addEventListener('change', function() {
-  document.getElementById('btn-coll-add-entry').disabled = !this.value;
+document.getElementById('mf-select-pack').addEventListener('change', function() {
+  document.getElementById('btn-mf-add').disabled = !this.value;
 });
 
-document.getElementById('btn-coll-add-entry').addEventListener('click', () => {
-  const marqueEl = document.getElementById('coll-select-marque');
-  const packEl   = document.getElementById('coll-select-pack');
+document.getElementById('btn-mf-add').addEventListener('click', () => {
+  const marqueEl = document.getElementById('mf-select-marque');
+  const packEl   = document.getElementById('mf-select-pack');
   const selOpt   = packEl.options[packEl.selectedIndex];
   if (!marqueEl.value || !packEl.value) return;
-  const marque = marquesPacksDB.find(m => m.id === Number(marqueEl.value));
+  const marque = mfMarques.find(m => m.id === Number(marqueEl.value));
   const packId = Number(packEl.value);
-  // Ignorer si ce pack est déjà dans le draft
-  if (collDraft.some(s => s.pack_id === packId)) return;
-  const entry = {
-    marque_id: marque.id, marque_nom: marque.nom,
-    pack_id: packId, pack_nom: selOpt.dataset.nom,
-    pack_nb: Number(selOpt.dataset.nb)
-  };
-  collDraft.push(entry);
-  document.getElementById('radio-custom').checked = true;
-  collMode = 'custom';
-  marqueEl.value = ''; packEl.innerHTML = '<option value="">— Choisir un pack —</option>';
-  packEl.disabled = true;
-  document.getElementById('btn-coll-add-entry').disabled = true;
-  renderCollDraft();
+  if (mfDraft.some(s => s.pack_id === packId)) return;
+  mfDraft.push({ marque_id: marque.id, marque_nom: marque.nom, pack_id: packId, pack_nom: selOpt.dataset.nom, pack_nb: Number(selOpt.dataset.nb) });
+  saveMfCollection();
+  marqueEl.value = '';
+  packEl.innerHTML = `<option value="">${t('mf.add.pack')}</option>`;
+  packEl.disabled  = true;
+  document.getElementById('mf-pack-wrap').classList.remove('mf-select-wrap--enabled');
+  document.getElementById('btn-mf-add').disabled = true;
+  renderMfDraft();
+  renderMfFooter();
 });
 
-document.querySelectorAll('input[name=coll-mode]').forEach(r =>
-  r.addEventListener('change', e => { collMode = e.target.value; })
-);
-
-document.getElementById('btn-coll-apply').addEventListener('click', () => {
-  collection = (collMode === 'custom' && collDraft.length) ? [...collDraft] : null;
-  localStorage.setItem(COLL_KEY, JSON.stringify(collection));
+document.getElementById('btn-mf-apply').addEventListener('click', () => {
+  localStorage.setItem(MF_MED_KEY, activeMedium || '');
   updateCollLabel();
-  document.getElementById('collection-panel').classList.remove('open');
-  toast(collection ? `✓ Collection : ${collLabelText()}` : '✓ Mode : toutes les couleurs');
-});
-
-document.getElementById('btn-collection').addEventListener('click', () => {
-  collDraft  = collection ? JSON.parse(JSON.stringify(collection)) : [];
-  collMode   = collection ? 'custom' : 'tous';
-  document.getElementById(collMode === 'tous' ? 'radio-tous' : 'radio-custom').checked = true;
-  renderCollDraft();
-  document.getElementById('collection-panel').classList.add('open');
-});
-
-document.getElementById('btn-coll-cancel').addEventListener('click', () => {
-  document.getElementById('collection-panel').classList.remove('open');
+  closeMfPanel();
+  const count = mfDraft.length;
+  toast(count
+    ? `✓ ${getMediumLabel(activeMedium)} · ${count} pack${count > 1 ? 's' : ''}`
+    : `✓ ${t('mf.apply.all')}`);
 });
 
 // ── i18n — réagir aux changements de langue ────────────────────────────────────
 window.addEventListener('langchange', () => {
-  // Re-apply WB button state after lang change
-  if (wbPending) {
-    btnWb.textContent = t('app.wb.pending');
-  } else {
-    resetWbBtn();
+  updateWbBtn();
+  updateWbStatusText();
+  if (imgEl) {
+    document.getElementById('bb-photo-label').textContent = t('bb.photo');
   }
-  // Re-render saved list if panel is open
   const sp = document.getElementById('saved-panel');
   if (sp.classList.contains('open')) renderSavedList();
+  const mfp = document.getElementById('mf-panel');
+  if (mfp.classList.contains('open')) {
+    renderMediumGrid();
+    renderMfCollHeader();
+    renderMfDraft();
+    renderMfFooter();
+  }
 });
 
 // Init badge au chargement
@@ -1352,14 +1639,60 @@ updateSavedBadge();
 fetch('/api/me').then(r => r.json()).then(({ loggedIn }) => {
   if (loggedIn) {
     document.getElementById('btn-export-json').style.display = '';
-    document.getElementById('coll-tous-row').style.display = '';
   }
 }).catch(() => {});
 
-// ── Utils ──────────────────────────────────────────────────────────────────────
-function toHex(r,g,b) {
-  return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0')).join('');
+// ── Overlay Conseils ───────────────────────────────────────────────────────────
+function openConseils() {
+  const ov=document.getElementById('conseils-overlay');
+  ov.classList.add('open');
+  ov.removeAttribute('aria-hidden');
 }
+function closeConseils() {
+  const ov=document.getElementById('conseils-overlay');
+  ov.classList.remove('open');
+  ov.setAttribute('aria-hidden','true');
+  localStorage.setItem('revelo_visited','1');
+}
+document.getElementById('btn-conseils').addEventListener('click', openConseils);
+document.getElementById('btn-close-conseils').addEventListener('click', closeConseils);
+// Fermer via backdrop
+document.getElementById('conseils-overlay').addEventListener('click', e=>{
+  if (e.target===e.currentTarget) closeConseils();
+});
+// Auto-open à la première visite
+if (!localStorage.getItem('revelo_visited')) openConseils();
+
+// Copier le code promo
+document.querySelector('.partner-code')?.addEventListener('click', function() {
+  navigator.clipboard?.writeText('REVELO').then(()=>{
+    this.classList.add('copied');
+    toast('Code REVELO copié !');
+    setTimeout(()=>this.classList.remove('copied'), 2000);
+  });
+});
+
+// PWA install
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  document.getElementById('btn-install').style.display='';
+});
+document.getElementById('btn-install').addEventListener('click', ()=>{
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{
+    deferredPrompt=null;
+    document.getElementById('btn-install').style.display='none';
+  });
+});
+// iOS install hint
+const isIos=()=>/iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches;
+if (isIos() && !isStandalone()) document.getElementById('ios-install').style.display='';
+
+// ── Utils ──────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el=document.getElementById('toast');
   el.textContent=msg; el.classList.add('show');
@@ -1368,5 +1701,6 @@ function toast(msg) {
 }
 </script>
 <script src="/js/cookie-consent.js"></script>
+
 </body>
 </html>

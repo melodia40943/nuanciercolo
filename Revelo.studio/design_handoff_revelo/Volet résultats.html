@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Révélo — Volet résultats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background:
+      radial-gradient(1000px 600px at 50% -10%, rgba(74,108,247,.10), transparent 60%),
+      #0a0b12;
+    min-height: 100vh; padding: 40px 24px 80px; font-family: system-ui, sans-serif; color: #ECECF4;
+  }
+  .hint { text-align:center; color:#6E7088; font-size:13px; margin-bottom: 26px; }
+  .hint b { color:#A2A3B8; }
+  .stage { display:flex; flex-wrap:wrap; gap:48px; align-items:flex-start; justify-content:center; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .col .label { font-family:"Bricolage Grotesque", system-ui; font-weight:700; font-size:15px; color:#A2A3B8; }
+  .col .label b { color:#ECECF4; }
+</style>
+</head>
+<body>
+<div class="hint">Touche une case du nuancier (dans chaque maquette) → les correspondances se mettent à jour.</div>
+<div class="stage" id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="frames/ios-frame.jsx"></script>
+<script type="text/babel" src="frames/browser-window.jsx"></script>
+<script type="text/babel" src="screens/resultats.jsx"></script>
+
+<script type="text/babel">
+  function App() {
+    return (
+      <>
+        <div className="col">
+          <div className="label"><b>Mobile</b> · tiroir droit</div>
+          <IOSDevice width={360} height={780} dark={true}>
+            <RechercheResultats />
+          </IOSDevice>
+        </div>
+        <div className="col">
+          <div className="label"><b>Desktop</b> · colonne permanente</div>
+          <ChromeWindow width={820} height={560} url="revelo.studio/recherche">
+            <div style={{ width:'100%', height:'100%' }}>
+              <RechercheResultats desktop={true} />
+            </div>
+          </ChromeWindow>
+        </div>
+      </>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

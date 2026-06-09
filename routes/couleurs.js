@@ -75,13 +75,13 @@ router.get('/couleurs/new', requireAuth, async (req, res) => {
 
 // INSERT couleur (form classique → redirect)
 router.post('/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
+  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches } = req.body;
   const rawPc = req.body.pack_couleurs;
   const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
   try {
     const [result] = await pool.query(
-      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null]
+      'INSERT INTO couleurs (marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, couches ? parseInt(couches) : null]
     );
     if (packIds) {
       await syncPackCouleurs(result.insertId, packIds);
@@ -97,16 +97,16 @@ router.post('/couleurs', requireAuth, async (req, res) => {
 
 // INSERT couleur (API JSON → pas de redirect, pour ajout multiple)
 router.post('/api/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id } = req.body;
+  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches } = req.body;
   if (!marque_id || !reference || !hex) return res.status(400).json({ error: 'Champs manquants' });
   const rawPc = req.body.pack_couleurs;
   const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
   try {
     const [result] = await pool.query(
-      'INSERT INTO couleurs (marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null]
+      'INSERT INTO couleurs (marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, couches ? parseInt(couches) : null]
     );
-    if (packIds) {
+    if (packIds && packIds.length) {
       await syncPackCouleurs(result.insertId, packIds);
     } else {
       await syncPackCouleursByMin(result.insertId, pack_min_id || null, marque_id || null);
@@ -138,13 +138,13 @@ router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
 
 // UPDATE couleur
 router.post('/couleurs/:id', requireAuth, async (req, res) => {
-  const { marque_id, reference, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, active } = req.body;
+  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, active, couches } = req.body;
   const rawPc = req.body.pack_couleurs;
   const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
   try {
     await pool.query(
-      'UPDATE couleurs SET marque_id=?, reference=?, hex=?, r=?, g=?, b=?, hex_photo=?, r_photo=?, g_photo=?, b_photo=?, medium=?, pointe_id=?, pack_min_id=?, active=? WHERE id=?',
-      [marque_id, reference, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, active === '1', req.params.id]
+      'UPDATE couleurs SET marque_id=?, reference=?, reference_alt=?, hex=?, r=?, g=?, b=?, hex_photo=?, r_photo=?, g_photo=?, b_photo=?, medium=?, pointe_id=?, pack_min_id=?, active=?, couches=? WHERE id=?',
+      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, active === '1', couches ? parseInt(couches) : null, req.params.id]
     );
     if (packIds) {
       await syncPackCouleurs(req.params.id, packIds);
@@ -857,11 +857,16 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
             <input type="text" name="reference" value="${v.reference || ''}" required placeholder="ex: 601 ou BL-208">
           </div>
 
+          <div class="form-group">
+            <label>Référence alternative <small style="color:#999;font-weight:normal">(ancien pack / 2ᵉ référence)</small></label>
+            <input type="text" name="reference_alt" value="${v.reference_alt || ''}" placeholder="ex: Y111">
+          </div>
+
           <div class="form-group color-inputs">
             <div>
               <label>Hex (scanner)</label>
               <div class="hex-row">
-                <input type="color" id="color-picker" value="${v.hex || '#ffffff'}">
+                ${!edit ? `<input type="color" id="color-picker" value="${v.hex || '#ffffff'}" title="Choisir une couleur">` : ''}
                 <input type="text" name="hex" id="hex-input" value="${v.hex || ''}" required placeholder="#rrggbb" pattern="^#[0-9a-fA-F]{6}$">
               </div>
             </div>
@@ -911,6 +916,15 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
               </select>
               <button type="button" class="btn-add-inline" onclick="openModal('modal-medium')">+</button>
             </div>
+          </div>
+
+          <div class="form-group" id="field-couches">
+            <label>Couches (feutre à alcool)</label>
+            <select name="couches" id="select-couches">
+              <option value="">— Non précisé —</option>
+              <option value="1" ${v.couches == 1 ? 'selected' : ''}>1 couche</option>
+              <option value="2" ${v.couches == 2 ? 'selected' : ''}>2 couches</option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -1041,6 +1055,21 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
   <script src="/js/sampling.js"></script>
   <script src="/js/couleur-form.js"></script>
   <script>
+    ${!edit ? `
+    // Synchro color picker scanner → hex + RGB (new form only)
+    const pickerScanner = document.getElementById('color-picker');
+    pickerScanner.addEventListener('input', () => {
+      const hex = pickerScanner.value;
+      document.getElementById('hex-input').value = hex;
+      document.getElementById('r-input').value = parseInt(hex.slice(1,3),16);
+      document.getElementById('g-input').value = parseInt(hex.slice(3,5),16);
+      document.getElementById('b-input').value = parseInt(hex.slice(5,7),16);
+    });
+    document.getElementById('hex-input').addEventListener('input', () => {
+      const val = document.getElementById('hex-input').value;
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) pickerScanner.value = val;
+    });
+    ` : ''}
     // Synchro color picker photo ↔ hex_photo
     const pickerPhoto   = document.getElementById('color-picker-photo');
     const hexPhotoInput = document.getElementById('hex-photo-input');
@@ -1105,6 +1134,17 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
     document.querySelectorAll('.modal-backdrop').forEach(el => {
       el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
     });
+
+    // Affiche/masque le champ couches selon le medium
+    (function() {
+      const selMed = document.getElementById('select-medium');
+      const fieldCouches = document.getElementById('field-couches');
+      function toggleCouches() {
+        fieldCouches.style.display = selMed.value === 'Feutre à alcool' ? '' : 'none';
+      }
+      selMed.addEventListener('change', toggleCouches);
+      toggleCouches();
+    })();
 
     // Auto-slug
     document.getElementById('m-nom').addEventListener('input', e => {
@@ -1194,7 +1234,8 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
       const form = document.querySelector('.form-panel form');
       const data = {
         marque_id:   document.getElementById('select-marque').value,
-        reference:   form.querySelector('[name=reference]').value.trim(),
+        reference:     form.querySelector('[name=reference]').value.trim(),
+        reference_alt: form.querySelector('[name=reference_alt]').value.trim() || null,
         hex:         document.getElementById('hex-input').value,
         r:           document.getElementById('r-input').value,
         g:           document.getElementById('g-input').value,
@@ -1206,6 +1247,7 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
         medium:      form.querySelector('[name=medium]').value || 'acrylique',
         pointe_id:   form.querySelector('[name=pointe_id]').value,
         pack_min_id:   document.getElementById('select-pack').value,
+        couches:       document.getElementById('select-couches').value,
         pack_couleurs: [...document.getElementById('select-packs-multi').selectedOptions].map(o => Number(o.value)),
       };
       if (!data.marque_id || !data.reference || !data.hex) {
@@ -1237,7 +1279,8 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
 
     function resetColorFields() {
       const form = document.querySelector('.form-panel form');
-      form.querySelector('[name=reference]').value = '';
+      form.querySelector('[name=reference]').value     = '';
+      form.querySelector('[name=reference_alt]').value = '';
       document.getElementById('hex-input').value   = '';
       document.getElementById('r-input').value     = '';
       document.getElementById('g-input').value     = '';

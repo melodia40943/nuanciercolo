@@ -215,7 +215,7 @@ cv.addEventListener('mouseup', e => {
   if (!drawing) return; drawing=false;
   if (circleRadius<3/viewScale) {
     const img=canvasToImg(cvXY(e).x,cvXY(e).y);
-    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=10; render();
+    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=10/viewScale; render();
   }
   doSample();
 });
@@ -286,6 +286,20 @@ function updateSampleDisplay() {
   document.getElementById('sample-preview').style.background = corrHex;
   document.getElementById('sample-hex').textContent = corrHex.toUpperCase();
   document.getElementById('sample-rgb').textContent = `RGB(${corr.r}, ${corr.g}, ${corr.b})`;
+
+  // Sync automatique vers les champs scanner du formulaire (si présents)
+  const hexEl = document.getElementById('hex-input');
+  if (hexEl) {
+    hexEl.value = sampledColor.hex;
+    const rEl = document.getElementById('r-input');
+    const gEl = document.getElementById('g-input');
+    const bEl = document.getElementById('b-input');
+    if (rEl) rEl.value = sampledColor.r;
+    if (gEl) gEl.value = sampledColor.g;
+    if (bEl) bEl.value = sampledColor.b;
+    const cp = document.getElementById('color-picker');
+    if (cp) cp.value = sampledColor.hex;
+  }
 }
 
 // Sampling

@@ -28,10 +28,11 @@ router.get('/api/me', (req, res) => {
 router.get('/api/couleurs/all', async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT c.id, c.reference, c.hex, c.r, c.g, c.b,
+      SELECT c.id, c.reference, c.reference_alt, c.hex, c.r, c.g, c.b,
              c.hex_photo, c.r_photo, c.g_photo, c.b_photo,
              c.marque_id,
              m.nom AS marque,
+             c.medium, c.couches,
              c.pack_min_id,
              p.nb_couleurs AS pack_min_nb,
              (SELECT GROUP_CONCAT(pc.pack_id) FROM pack_couleurs pc WHERE pc.couleur_id = c.id) AS pack_ids
@@ -51,15 +52,50 @@ router.get('/api/couleurs/all', async (req, res) => {
   }
 });
 
-// API — marques avec leurs packs (pour le sélecteur de collection) — publique
-router.get('/api/marques-packs', async (req, res) => {
+// API — médiums qui ont au moins une couleur active — publique
+router.get('/api/mediums/active', async (req, res) => {
   try {
-    const [marques] = await pool.query(`SELECT id, nom FROM marques ORDER BY nom`);
-    const [packs]   = await pool.query(`
-      SELECT id, marque_id, nom, nb_couleurs
-      FROM packs
-      ORDER BY marque_id, nb_couleurs
+    const [rows] = await pool.query(`
+      SELECT DISTINCT c.medium
+      FROM couleurs c
+      WHERE c.active = TRUE AND c.medium IS NOT NULL AND c.medium != ''
+      ORDER BY c.medium
     `);
+    res.json(rows.map(r => r.medium));
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// API — marques avec leurs packs (pour le sélecteur de collection) — publique
+// ?medium=xxx → filtre sur les marques/packs ayant des couleurs de ce médium
+router.get('/api/marques-packs', async (req, res) => {
+  const { medium } = req.query;
+  try {
+    let marques, packs;
+    if (medium) {
+      [marques] = await pool.query(`
+        SELECT DISTINCT m.id, m.nom FROM marques m
+        JOIN couleurs c ON c.marque_id = m.id
+        WHERE c.medium = ? AND c.active = TRUE
+        ORDER BY m.nom
+      `, [medium]);
+      [packs] = await pool.query(`
+        SELECT DISTINCT p.id, p.marque_id, p.nom, p.nb_couleurs
+        FROM packs p
+        JOIN pack_couleurs pc ON pc.pack_id = p.id
+        JOIN couleurs c ON c.id = pc.couleur_id
+        WHERE c.medium = ? AND c.active = TRUE
+        ORDER BY p.marque_id, p.nb_couleurs
+      `, [medium]);
+    } else {
+      [marques] = await pool.query(`SELECT id, nom FROM marques ORDER BY nom`);
+      [packs]   = await pool.query(`
+        SELECT id, marque_id, nom, nb_couleurs
+        FROM packs
+        ORDER BY marque_id, nb_couleurs
+      `);
+    }
     const result = marques.map(m => ({
       ...m,
       packs: packs.filter(p => p.marque_id === m.id)

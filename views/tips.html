@@ -3,32 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Révélo — Guide feutres pour coloriage mystère et coloriage par numéro</title>
+  <title>Révélo — Ton partenaire pour le coloriage mystère</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="description" content="Conseils pour utiliser Révélo : photographier ton nuancier ou coloriage mystère, régler la balance des blancs et obtenir les meilleures correspondances de feutres Languo et Guangna.">
-  <meta property="og:title" content="Révélo — Guide feutres pour coloriage mystère et coloriage par numéro">
-  <meta property="og:description" content="Guide pratique pour trouver les feutres Languo et Guangna de ton coloriage mystère ou coloriage par numéro : photographier les couleurs, régler la balance des blancs et obtenir des correspondances précises.">
-  <meta property="og:url" content="https://revelo.studio/conseils">
+  <meta name="description" content="Révélo — trouve les feutres Languo et Guangna les plus proches de chaque couleur de ton coloriage mystère ou coloriage par numéro. Photographie, balance des blancs, correspondances précises.">
+  <meta property="og:title" content="Révélo — Ton partenaire pour le coloriage mystère">
+  <meta property="og:description" content="Trouve les feutres Languo et Guangna les plus proches de chaque couleur de ton coloriage mystère. Photographie, balance des blancs, correspondances précises.">
+  <meta property="og:url" content="https://revelo.studio/">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://revelo.studio/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://revelo.studio/og.png">
-  <meta name="twitter:title" content="Révélo — Guide feutres pour coloriage mystère et coloriage par numéro">
-  <meta name="twitter:description" content="Guide pratique pour identifier les feutres Languo et Guangna de ton coloriage mystère : photo, balance des blancs, résultats.">
-  <link rel="canonical" href="https://revelo.studio/conseils">
+  <meta name="twitter:title" content="Révélo — Ton partenaire pour le coloriage mystère">
+  <meta name="twitter:description" content="Trouve les feutres Languo et Guangna les plus proches de chaque couleur de ton coloriage mystère.">
+  <link rel="canonical" href="https://revelo.studio/">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "HowTo",
-    "name": "Comment trouver les feutres pour ton coloriage mystère avec Révélo",
-    "description": "Guide pas à pas pour identifier les feutres Languo et Guangna correspondant à tes couleurs de coloriage mystère ou coloriage par numéro.",
-    "url": "https://revelo.studio/conseils",
-    "step": [
-      {"@type": "HowToStep", "position": 1, "name": "Charge ton image", "text": "Ouvre la photo de ton coloriage mystère, de ton nuancier ou un PDF de référence dans Révélo."},
-      {"@type": "HowToStep", "position": 2, "name": "Règle la balance des blancs", "text": "Clique sur une zone blanche du papier pour calibrer la correction colorimétrique."},
-      {"@type": "HowToStep", "position": 3, "name": "Identifie une couleur", "text": "Dessine un cercle sur la couleur que tu cherches à identifier parmi les feutres disponibles."},
-      {"@type": "HowToStep", "position": 4, "name": "Consulte les correspondances", "text": "Révélo affiche les feutres Languo et Guangna les plus proches, triés par proximité colorimétrique (delta E)."}
-    ]
+    "@type": "WebApplication",
+    "name": "Révélo",
+    "url": "https://revelo.studio/",
+    "description": "Application web pour trouver les feutres Languo et Guangna correspondant aux couleurs de coloriage mystère ou coloriage par numéro.",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
   }
   </script>
   <link rel="manifest" href="/manifest.json">
@@ -36,109 +33,278 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Révélo">
   <link rel="apple-touch-icon" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tips.css">
   <script src="/js/i18n.js"></script>
 </head>
 <body>
 
-<header>
-  <select class="lang-select" onchange="setLang(this.value)">
-    <option value="fr">🇫🇷 FR</option>
-    <option value="en">🇬🇧 EN</option>
-    <option value="es">🇪🇸 ES</option>
-    <option value="nl">🇳🇱 NL</option>
-    <option value="de">🇩🇪 DE</option>
-  </select>
-  <h1 data-i18n="tips.h1">Avant de commencer</h1>
-  <p data-i18n="tips.subtitle">Quelques conseils pour des résultats fiables</p>
-</header>
+<!-- ──────────────────────────────────────
+     HUB PAGE
+────────────────────────────────────────── -->
+<div class="hub">
 
-<div class="tips">
-
-  <div class="tip highlight">
-    <div class="tip-icon">🎯</div>
-    <div class="tip-body">
-      <h2 data-i18n="tips.t1.h2">Le résultat n'est qu'un point de départ</h2>
-      <p data-i18n="tips.t1.p1">L'application a été conçu de manière tout à fait non officiel.</p>
-      <p data-i18n="tips.t1.p2">Je me suis servie des marqueurs que j'avais en ma possession pour créer le nuancier numérique le plus proche possible de la vérité.</p>
-      <p data-i18n-html="tips.t1.p3">Mais l'application ne donne que les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
-    </div>
+  <div class="hub-lang">
+    <select class="lang-select" onchange="setLang(this.value)">
+      <option value="fr">🇫🇷 FR</option>
+      <option value="en">🇬🇧 EN</option>
+      <option value="es">🇪🇸 ES</option>
+      <option value="nl">🇳🇱 NL</option>
+      <option value="de">🇩🇪 DE</option>
+    </select>
   </div>
 
-  <div class="tip highlight">
-    <div class="tip-icon">📄</div>
-    <div class="tip-body">
-      <h2 data-i18n="tips.t2.h2">Les PDFs de référence : la meilleure source</h2>
-      <p data-i18n-html="tips.t2.p">Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu'une photo — et <strong>pas besoin de balance des blancs</strong> : clique directement sur la case colorée.</p>
-      <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link">
-        🎨 Palettes de référence par Jeremy Mariez →
+  <div class="hub-inner">
+
+    <!-- Logo roue chromatique -->
+    <svg class="hub-logo" width="84" height="84" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M102.1 14.03A86 86 0 0 1 159.31 37.72L122.76 76.1A33 33 0 0 0 100.81 67.01Z" fill="#F72585"/>
+      <path d="M171.52 36.87A86 86 0 0 1 195.21 94.07L142.23 95.37A33 33 0 0 0 133.14 73.42Z" fill="#FF6635"/>
+      <path d="M185.97 102.1A86 86 0 0 1 162.28 159.31L123.9 122.76A33 33 0 0 0 132.99 100.81Z" fill="#FFD500"/>
+      <path d="M159.31 162.28A86 86 0 0 1 102.1 185.97L100.81 132.99A33 33 0 0 0 122.76 123.9Z" fill="#06D6A0"/>
+      <path d="M97.9 185.97A86 86 0 0 1 40.69 162.28L77.24 123.9A33 33 0 0 0 99.19 132.99Z" fill="#4CC9F0"/>
+      <path d="M37.72 159.31A86 86 0 0 1 14.03 102.1L67.01 100.81A33 33 0 0 0 76.1 122.76Z" fill="#4361EE"/>
+      <path d="M14.03 97.9A86 86 0 0 1 37.72 40.69L76.1 77.24A33 33 0 0 0 67.01 99.19Z" fill="#8B2FC9"/>
+      <path d="M40.69 37.72A86 86 0 0 1 97.9 14.03L99.19 67.01A33 33 0 0 0 77.24 76.1Z" fill="#FF5470"/>
+      <circle cx="100" cy="100" r="26" fill="#0E0F1A"/>
+    </svg>
+
+    <h1 class="hub-title">Révélo</h1>
+    <p class="hub-tagline" data-i18n="home.tagline">Ton partenaire pour le coloriage.</p>
+
+    <!-- Colonnes de cartes -->
+    <div class="hub-cards">
+
+      <!-- Carte outil principal -->
+      <a href="/recherche" class="tool-card">
+        <div class="tool-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <div class="tool-body">
+          <div class="tool-title" data-i18n="home.tool.title">Trouver mes feutres</div>
+          <div class="tool-desc" data-i18n="home.tool.desc">Photographie une couleur, vois les références les plus proches</div>
+        </div>
+        <div class="tool-chevron" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 6 6 6-6 6"/>
+          </svg>
+        </div>
       </a>
+
+      <!-- Carte partenaire -->
+      <div class="partner-card">
+        <div class="partner-label" data-i18n="partner.label">En partenariat avec</div>
+        <div class="partner-row">
+          <span class="partner-name">Popping Boutiques</span>
+          <span class="partner-badge" data-i18n="partner.badge">−10%</span>
+        </div>
+        <p class="partner-desc" data-i18n-html="partner.desc">
+          Révélo est soutenu par <strong>Popping Boutiques</strong>, boutique de produits dérivés et goodies sous licence, feutres & coloriages.<br>
+          <strong>Un grand merci à eux pour leur confiance ❤️</strong><br>
+          Profite de <strong>−10%*</strong> sur tout le site avec le code&nbsp;:
+        </p>
+        <div class="partner-code-row">
+          <span class="partner-code">REVELO</span>
+          <span class="partner-code-hint" data-i18n="partner.code.hint">à coller au paiement</span>
+        </div>
+        <a href="https://popping-boutiques.com/?ref=212QD95V&chn=1" target="_blank" rel="noopener" class="partner-btn" data-i18n="partner.btn">
+          Découvrir la boutique →
+        </a>
+        <p class="partner-note" data-i18n="partner.note">*Hors Mystery Bag, coloriages et TikTok Shop.</p>
+      </div>
+
     </div>
-  </div>
 
-  <div class="tip highlight">
-    <div class="tip-icon">💡</div>
-    <div class="tip-body">
-      <h2 data-i18n="tips.t3.h2">Éclairage — pour les photos uniquement</h2>
-      <p data-i18n-html="tips.t3.p">Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.<br>
-      Le flash crée des reflets qui faussent les couleurs.<br>
-      <strong>Avec un PDF Jeremy Mariez, l'éclairage n'a aucune importance.</strong></p>
+    <!-- Pied de page hub -->
+    <div class="hub-footer">
+      <a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener" class="btn-tipeee" data-i18n="home.support">
+        ☕ Soutenir le projet
+      </a>
+      <div class="social-links">
+        <a href="https://www.facebook.com/profile.php?id=61583097987882" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/melo_craft_and_colo/" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@melodia40943" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+        </a>
+      </div>
     </div>
-  </div>
 
-  <div class="tip highlight">
-    <div class="tip-icon">⚪</div>
-    <div class="tip-body">
-      <h2 data-i18n="tips.t4.h2">Balance des blancs — pour les photos uniquement</h2>
-      <p data-i18n-html="tips.t4.p">Les livres Hachette ont une <strong>bande blanche naturelle</strong> juste au-dessus de chaque case colorée — c'est ta référence parfaite.</p>
-      <div class="step"><span class="step-num">1</span> <span data-i18n="tips.t4.s1">Tape sur le bouton balance des blancs (⚪)</span></div>
-      <div class="step"><span class="step-num">2</span> <span data-i18n-html="tips.t4.s2">Clique sur la <strong>bande blanche au-dessus</strong> de la couleur à identifier</span></div>
-      <div class="step"><span class="step-num">3</span> <span data-i18n="tips.t4.s3">Échantillonne la couleur en dessinant un cercle dessus</span></div>
+  </div>
+</div><!-- /.hub -->
+
+
+<!-- ──────────────────────────────────────
+     PANNEAU CONSEILS (onboarding)
+────────────────────────────────────────── -->
+<div id="conseils-overlay" class="conseils-overlay" aria-hidden="true">
+  <div class="conseils-panel" role="dialog" aria-label="Conseils" aria-modal="true">
+
+    <button class="conseils-close" id="btn-close-conseils" aria-label="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="conseils-scroll">
+
+      <!-- Partenaire (répété depuis le hub) -->
+      <div class="partner-card">
+        <div class="partner-label" data-i18n="partner.label">En partenariat avec</div>
+        <div class="partner-row">
+          <span class="partner-name">Popping Boutiques</span>
+          <span class="partner-badge" data-i18n="partner.badge">−10%</span>
+        </div>
+        <p class="partner-desc" data-i18n-html="partner.desc">
+          Révélo est soutenu par <strong>Popping Boutiques</strong>, boutique de produits dérivés et goodies sous licence, feutres et coloriages.
+          <strong>Un grand merci à eux pour leur confiance ❤️</strong>
+          Profite de <strong>−10%*</strong> sur tout le site avec le code&nbsp;:
+        </p>
+        <div class="partner-code-row">
+          <span class="partner-code">REVELO</span>
+          <span class="partner-code-hint" data-i18n="partner.code.hint">à coller au paiement</span>
+        </div>
+        <a href="https://popping-boutiques.com/?ref=212QD95V&chn=1" target="_blank" rel="noopener" class="partner-btn" data-i18n="partner.btn">
+          Découvrir la boutique →
+        </a>
+        <p class="partner-note" data-i18n="partner.note">*Hors Mystery Bag, coloriages &amp; TikTok Shop.</p>
+      </div>
+
+      <!-- Titre section conseils -->
+      <div class="conseils-header">
+        <h2 data-i18n="tips.h1">Avant de commencer</h2>
+        <p data-i18n="tips.subtitle">Quelques conseils pour des résultats fiables</p>
+      </div>
+
+      <!-- 5 conseils -->
+      <div class="tips">
+
+        <div class="tip highlight">
+          <div class="tip-icon">🎯</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t1.h2">Le résultat n'est qu'un point de départ</h3>
+            <p data-i18n="tips.t1.p1">L'application a été conçue de manière tout à fait non officielle.</p>
+            <p data-i18n="tips.t1.p2">Je me suis servie des marqueurs que j'avais en ma possession pour créer le nuancier numérique le plus proche possible de la vérité.</p>
+            <p data-i18n-html="tips.t1.p3">Mais l'application ne donne que les <strong>meilleures correspondances perceptuelles</strong> — fais confiance à ton œil pour le choix final entre les premiers résultats.</p>
+          </div>
+        </div>
+
+        <div class="tip highlight">
+          <div class="tip-icon">📄</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t2.h2">Les PDFs de référence : la meilleure source</h3>
+            <p data-i18n-html="tips.t2.p">Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu'une photo — et <strong>pas besoin de balance des blancs</strong> : clique directement sur la case colorée.</p>
+            <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link">
+              🎨 Palettes de référence par Jeremy Mariez →
+            </a>
+          </div>
+        </div>
+
+        <div class="tip highlight">
+          <div class="tip-icon">💡</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t3.h2">Éclairage — pour les photos uniquement</h3>
+            <p data-i18n-html="tips.t3.p">Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.<br>
+            Le flash crée des reflets qui faussent les couleurs.<br>
+            <strong>Avec un PDF Jeremy Mariez, l'éclairage n'a aucune importance.</strong></p>
+          </div>
+        </div>
+
+        <div class="tip highlight">
+          <div class="tip-icon">⚪</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t4.h2">Balance des blancs — pour les photos uniquement</h3>
+            <p data-i18n-html="tips.t4.p">Les livres Hachette ont une <strong>bande blanche naturelle</strong> juste au-dessus de chaque case colorée — c'est ta référence parfaite.</p>
+            <div class="step"><span class="step-num">1</span> <span data-i18n="tips.t4.s1">Tape sur le bouton balance des blancs (⚪)</span></div>
+            <div class="step"><span class="step-num">2</span> <span data-i18n-html="tips.t4.s2">Clique sur la <strong>bande blanche au-dessus</strong> de la couleur à identifier</span></div>
+            <div class="step"><span class="step-num">3</span> <span data-i18n="tips.t4.s3">Échantillonne la couleur en dessinant un cercle dessus</span></div>
+          </div>
+        </div>
+
+        <div class="tip">
+          <div class="tip-icon">📸</div>
+          <div class="tip-body">
+            <h3 data-i18n="tips.t5.h2">Continue à partager tes colos !</h3>
+            <p data-i18n-html="tips.t5.p">Tu partages tes créations sur les réseaux ? <strong>On adore voir vos colos et les codes couleurs que vous utilisez</strong> — ça inspire toute la communauté. Continue à taguer et à partager !</p>
+          </div>
+        </div>
+
+      </div><!-- /.tips -->
+
+      <!-- Soutien -->
+      <div class="conseils-support">
+        <a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener" class="btn-tipeee" data-i18n="tips.cta.kofi">
+          ☕ Soutenir le projet sur Tipeee
+        </a>
+        <div class="social-links">
+          <a href="https://www.facebook.com/profile.php?id=61583097987882" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/melo_craft_and_colo/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@melodia40943" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /.conseils-scroll -->
+
+    <!-- Footer CTA -->
+    <div class="conseils-footer">
+      <a href="/recherche" class="btn-start" data-i18n="tips.cta.start">C'est parti →</a>
+      <button id="btn-install" style="display:none" data-i18n="tips.cta.install">Ajouter à l'écran d'accueil</button>
+      <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">
+        Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>
+      </p>
+      <p class="skip" data-i18n="tips.cta.skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
     </div>
-  </div>
 
-  <div class="tip">
-    <div class="tip-icon">📸</div>
-    <div class="tip-body">
-      <h2 data-i18n="tips.t5.h2">Continue à partager tes colos !</h2>
-      <p data-i18n-html="tips.t5.p">Tu partages tes créations sur les réseaux ? <strong>On adore voir vos colos et les codes couleurs que vous utilisez</strong> — ça inspire toute la communauté. Continue à taguer et à partager !</p>
-    </div>
-  </div>
+  </div><!-- /.conseils-panel -->
+</div><!-- /.conseils-overlay -->
 
-</div>
-
-<div class="cta">
-  <a href="/recherche" class="btn-start" data-i18n="tips.cta.start">C'est parti →</a>
-
-  <button id="btn-install" style="display:none" data-i18n="tips.cta.install">
-    Ajouter à l'écran d'accueil
-  </button>
-  <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">
-    Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>
-  </p>
-
-  <p class="skip" data-i18n="tips.cta.skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
-  <p class="kofi"><a href="https://fr.tipeee.com/revelo/" target="_blank" rel="noopener" data-i18n="tips.cta.kofi">☕ Soutenir le projet sur Tipeee</a></p>
-  <div class="social-links">
-    <a href="https://www.facebook.com/profile.php?id=61583097987882" target="_blank" rel="noopener" aria-label="Facebook">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-    </a>
-    <a href="https://www.instagram.com/melo_craft_and_colo/" target="_blank" rel="noopener" aria-label="Instagram">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
-    </a>
-    <a href="https://www.tiktok.com/@melodia40943" target="_blank" rel="noopener" aria-label="TikTok">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
-    </a>
-  </div>
-</div>
 
 <script>
-  // Android / Chrome — popup automatique
+  function openConseils() {
+    const overlay = document.getElementById('conseils-overlay');
+    overlay.classList.add('open');
+    overlay.removeAttribute('aria-hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeConseils() {
+    const overlay = document.getElementById('conseils-overlay');
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    localStorage.setItem('revelo_visited', '1');
+  }
+
+  document.getElementById('btn-close-conseils').addEventListener('click', closeConseils);
+
+  // Ferme en cliquant sur le backdrop (desktop)
+  document.getElementById('conseils-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeConseils();
+  });
+
+  // Auto-ouverture au 1er lancement
+  if (!localStorage.getItem('revelo_visited')) {
+    openConseils();
+  }
+
+  // PWA — Android / Chrome
   let deferredPrompt;
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredPrompt = e;
-    document.getElementById('btn-install').style.display = 'inline-block';
+    document.getElementById('btn-install').style.display = 'block';
   });
   document.getElementById('btn-install').addEventListener('click', async () => {
     if (!deferredPrompt) return;
@@ -148,12 +314,38 @@
     document.getElementById('btn-install').style.display = 'none';
   });
 
-  // iOS Safari — instructions manuelles
+  // PWA — iOS Safari
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isInStandalone = window.navigator.standalone;
   if (isIos && !isInStandalone) {
     document.getElementById('ios-install').style.display = 'block';
   }
+
+  // Copier le code promo au clic
+  document.querySelectorAll('.partner-code').forEach(el => {
+    el.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText('REVELO');
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = 'REVELO';
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      const hint = el.nextElementSibling;
+      const orig = hint.textContent;
+      el.classList.add('copied');
+      hint.textContent = '✓ Copié !';
+      hint.style.color = '#19C37D';
+      setTimeout(() => {
+        el.classList.remove('copied');
+        hint.textContent = orig;
+        hint.style.color = '';
+      }, 2000);
+    });
+  });
 </script>
 
 <script src="/js/cookie-consent.js"></script>
