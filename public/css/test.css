@@ -833,6 +833,8 @@ select.chrome-pill { min-width: 68px; }
 
 /* Desktop — layout côte à côte */
 @media (min-width: 768px) {
+  .conseils-panel { max-width: 480px; left: auto; }
+
   :root { --bottom-bar-h: 72px; }
   #canvas-panel { bottom: 0; right: 340px; }
   #top-chrome { right: calc(340px + 14px); }
@@ -1002,6 +1004,11 @@ select.chrome-pill { min-width: 68px; }
   overflow-y: auto;
   padding: 84px 20px 16px;
   -webkit-overflow-scrolling: touch;
+}
+.conseils-content {
+  max-width: 650px;
+  margin: 0 auto;
+  width: 100%;
 }
 .conseils-scroll .partner-card { margin-bottom: 20px; }
 .conseils-header { margin-bottom: 14px; }

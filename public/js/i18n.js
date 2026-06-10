@@ -40,7 +40,7 @@ const TRANSLATIONS = {
     'tips.t5.p':  'Tu partages tes créations sur les réseaux ? <strong>On adore voir vos colos et les codes couleurs que vous utilisez</strong> — ça inspire toute la communauté. Continue à taguer et à partager !',
 
     'tips.cta.start':   'C\'est parti →',
-    'tips.cta.install': 'Ajouter à l\'écran d\'accueil',
+    'tips.cta.install': 'Installer Révélo sur mon appareil',
     'tips.cta.ios':     'Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l\'écran d\'accueil"</strong>',
     'tips.cta.skip':    'Ces conseils sont accessibles depuis le menu à tout moment.',
     'tips.cta.kofi':    '☕ Soutenir le projet sur Tipeee',
@@ -58,6 +58,7 @@ const TRANSLATIONS = {
     'app.wb.done':        '✓ Blancs OK (retaper pour changer)',
     'app.wb.reset':       '⚪ Balance des blancs',
 
+    'drop.h1':            'Trouve tes feutres pour coloriage mystère et coloriage par numéro',
     'drop.text':          'Ouvre une photo ou un PDF du nuancier',
     'drop.sub':           'Images (jpg, png…) ou PDF couleurs',
     'drop.tips':          'Conseils pour de meilleurs résultats →',
@@ -206,7 +207,7 @@ const TRANSLATIONS = {
     'tips.t5.p':  'Do you share your creations on social media? <strong>We love seeing your colorings and the color codes you use</strong> — it inspires the whole community. Keep tagging and sharing!',
 
     'tips.cta.start':   'Let\'s go →',
-    'tips.cta.install': 'Add to home screen',
+    'tips.cta.install': 'Install Révélo on my device',
     'tips.cta.ios':     'On iPhone: tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong>',
     'tips.cta.skip':    'These tips are accessible from the menu at any time.',
     'tips.cta.kofi':    '☕ Support the project on Tipeee',
@@ -224,6 +225,7 @@ const TRANSLATIONS = {
     'app.wb.done':        '✓ White balance set (tap to change)',
     'app.wb.reset':       '⚪ White balance',
 
+    'drop.h1':            'Find your markers for mystery coloring and color-by-number',
     'drop.text':          'Open a photo or PDF of your color chart',
     'drop.sub':           'Images (jpg, png…) or color PDF',
     'drop.tips':          'Tips for better results →',
@@ -372,7 +374,7 @@ const TRANSLATIONS = {
     'tips.t5.p':  '¿Compartes tus creaciones en redes sociales? <strong>Nos encanta ver vuestros colorings y los códigos de color que usáis</strong> — inspira a toda la comunidad. ¡Sigue etiquetando y compartiendo!',
 
     'tips.cta.start':   '¡Empecemos →',
-    'tips.cta.install': 'Añadir a la pantalla de inicio',
+    'tips.cta.install': 'Instalar Révélo en mi dispositivo',
     'tips.cta.ios':     'En iPhone: toca <strong>Compartir</strong> y luego <strong>"En la pantalla de inicio"</strong>',
     'tips.cta.skip':    'Estos consejos son accesibles desde el menú en cualquier momento.',
     'tips.cta.kofi':    '☕ Apoyar el proyecto en Tipeee',
@@ -390,6 +392,7 @@ const TRANSLATIONS = {
     'app.wb.done':        '✓ Balance aplicado (tocar para cambiar)',
     'app.wb.reset':       '⚪ Balance de blancos',
 
+    'drop.h1':            'Encuentra tus rotuladores para colorear misterio y colorear por números',
     'drop.text':          'Abre una foto o PDF de tu tabla de colores',
     'drop.sub':           'Imágenes (jpg, png…) o PDF de colores',
     'drop.tips':          'Consejos para mejores resultados →',
@@ -538,7 +541,7 @@ const TRANSLATIONS = {
     'tips.t5.p':  'Deel je creaties op sociale media? <strong>We zien graag je kleurplaten en de kleurcodes die je gebruikt</strong> — het inspireert de hele gemeenschap. Blijf taggen en delen!',
 
     'tips.cta.start':   'Aan de slag →',
-    'tips.cta.install': 'Toevoegen aan startscherm',
+    'tips.cta.install': 'Révélo installeren op mijn apparaat',
     'tips.cta.ios':     'Op iPhone: tik op <strong>Delen</strong> en dan <strong>"Zet op beginscherm"</strong>',
     'tips.cta.skip':    'Deze tips zijn altijd toegankelijk via het menu.',
     'tips.cta.kofi':    '☕ Steun het project op Tipeee',
@@ -556,6 +559,7 @@ const TRANSLATIONS = {
     'app.wb.done':        '✓ Witbalans ingesteld (tik om te wijzigen)',
     'app.wb.reset':       '⚪ Witbalans',
 
+    'drop.h1':            'Vind je markers voor mysterie-kleurplaten en kleuren op nummer',
     'drop.text':          'Open een foto of PDF van je kleurenwaaier',
     'drop.sub':           'Afbeeldingen (jpg, png…) of kleur-PDF',
     'drop.tips':          'Tips voor betere resultaten →',
@@ -704,7 +708,7 @@ const TRANSLATIONS = {
     'tips.t5.p':  'Teilst du deine Kreationen in sozialen Medien? <strong>Wir sehen gerne eure Ausmalbilder und die Farbcodes, die ihr verwendet</strong> — das inspiriert die gesamte Community. Bleib am Taggen und Teilen!',
 
     'tips.cta.start':   'Los geht\'s →',
-    'tips.cta.install': 'Zum Startbildschirm hinzufügen',
+    'tips.cta.install': 'Révélo auf meinem Gerät installieren',
     'tips.cta.ios':     'Auf dem iPhone: tippe auf <strong>Teilen</strong> und dann <strong>"Zum Home-Bildschirm"</strong>',
     'tips.cta.skip':    'Diese Tipps sind jederzeit über das Menü zugänglich.',
     'tips.cta.kofi':    '☕ Das Projekt auf Tipeee unterstützen',
@@ -722,6 +726,7 @@ const TRANSLATIONS = {
     'app.wb.done':        '✓ Weißabgleich gesetzt (tippen zum Ändern)',
     'app.wb.reset':       '⚪ Weißabgleich',
 
+    'drop.h1':            'Finde deine Marker für Mystery-Ausmalen und Malen nach Zahlen',
     'drop.text':          'Öffne ein Foto oder PDF des Farbfächers',
     'drop.sub':           'Bilder (jpg, png…) oder Farb-PDF',
     'drop.tips':          'Tipps für bessere Ergebnisse →',

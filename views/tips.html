@@ -118,6 +118,12 @@
         <p class="partner-note" data-i18n="partner.note">*Hors Mystery Bag, coloriages et TikTok Shop.</p>
       </div>
 
+      <!-- Install PWA -->
+      <button id="btn-install" style="display:none" data-i18n="tips.cta.install">Ajouter à l'écran d'accueil</button>
+      <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">
+        Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>
+      </p>
+
     </div>
 
     <!-- Pied de page hub -->
@@ -260,10 +266,6 @@
     <!-- Footer CTA -->
     <div class="conseils-footer">
       <a href="/recherche" class="btn-start" data-i18n="tips.cta.start">C'est parti →</a>
-      <button id="btn-install" style="display:none" data-i18n="tips.cta.install">Ajouter à l'écran d'accueil</button>
-      <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">
-        Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>
-      </p>
       <p class="skip" data-i18n="tips.cta.skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
     </div>
 
@@ -293,11 +295,6 @@
   document.getElementById('conseils-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeConseils();
   });
-
-  // Auto-ouverture au 1er lancement
-  if (!localStorage.getItem('revelo_visited')) {
-    openConseils();
-  }
 
   // PWA — Android / Chrome
   let deferredPrompt;

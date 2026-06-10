@@ -88,7 +88,7 @@
 <!-- Canvas -->
 <div id="canvas-panel">
   <div id="drop-zone">
-    <h1 class="drop-h1">Trouve tes feutres pour coloriage mystère et coloriage par numéro</h1>
+    <h1 class="drop-h1" data-i18n="drop.h1">Trouve tes feutres pour coloriage mystère et coloriage par numéro</h1>
     <div class="ico">📷</div>
     <p data-i18n="drop.text">Ouvre une photo ou un PDF du nuancier</p>
     <span class="drop-sub" data-i18n="drop.sub">Images (jpg, png…) ou PDF couleurs</span>
@@ -285,6 +285,7 @@
     </button>
 
     <div class="conseils-scroll">
+      <div class="conseils-content">
 
       <!-- Partenaire -->
       <div class="partner-card">
@@ -379,12 +380,12 @@
         </div>
       </div>
 
+      </div><!-- /.conseils-content -->
     </div><!-- /.conseils-scroll -->
 
-    <!-- Footer install PWA uniquement -->
+    <!-- Footer conseils -->
     <div class="conseils-footer">
-      <button id="btn-install" style="display:none" data-i18n="tips.cta.install">Ajouter à l'écran d'accueil</button>
-      <p id="ios-install" style="display:none" class="skip" data-i18n-html="tips.cta.ios">Sur iPhone : appuie sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong></p>
+      <button id="btn-conseils-start" class="btn-start" data-i18n="tips.cta.start">C'est parti →</button>
       <p class="skip" data-i18n="tips.cta.skip">Ces conseils sont accessibles depuis le menu à tout moment.</p>
     </div>
 
@@ -791,7 +792,6 @@ document.getElementById('sl-bright').addEventListener('input', applyWbSliders);
 document.getElementById('sl-temp').addEventListener('input', applyWbSliders);
 document.getElementById('btn-wb-pick').addEventListener('click', ()=>{
   wbPending=true;
-  document.getElementById('wb-adj-panel').classList.remove('visible');
   toast(t('wb.pick.sub'));
 });
 document.getElementById('wbadj-done').addEventListener('click', ()=>{
@@ -816,10 +816,11 @@ document.getElementById('wbadj-reset').addEventListener('click', ()=>{
 
 function doWB(cvX,cvY) {
   wbPending=false;
+  document.getElementById('wb-adj-panel').classList.remove('visible');
   const img=canvasToImg(cvX,cvY);
   const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
     wbStatus='manuel';
-    onWbSet(white, black, true);
+    onWbSet(white, black, false);
     toast(t('toast.wb.def'));
   });
   if (!ok) toast(t('toast.wb.dark'));
@@ -1553,8 +1554,8 @@ fetch('/api/mediums/active').then(r => r.json()).then(mediums => {
   }
   document.getElementById('btn-collection').style.display = '';
   updateCollLabel();
-  // Première visite : ouvrir le panel automatiquement
-  if (!localStorage.getItem(MF_KEY)) openMfPanel();
+  // Ouvrir le panel MF uniquement si les conseils ont déjà été vus (sinon c'est btn-conseils-start qui le fait)
+  if (!localStorage.getItem(MF_KEY) && localStorage.getItem('revelo_visited')) openMfPanel();
 }).catch(() => toast(t('toast.coll.fail')));
 
 document.getElementById('btn-collection').addEventListener('click', openMfPanel);
@@ -1579,6 +1580,7 @@ document.getElementById('mf-select-marque').addEventListener('change', function(
   });
   packEl.disabled = false;
   packWrap.classList.add('mf-select-wrap--enabled');
+  document.getElementById('mf-scroll').scrollTo({ top: document.getElementById('mf-scroll').scrollHeight, behavior: 'smooth' });
 });
 
 document.getElementById('mf-select-pack').addEventListener('change', function() {
@@ -1602,6 +1604,7 @@ document.getElementById('btn-mf-add').addEventListener('click', () => {
   document.getElementById('btn-mf-add').disabled = true;
   renderMfDraft();
   renderMfFooter();
+  setTimeout(() => document.getElementById('mf-scroll').scrollTo({ top: document.getElementById('mf-scroll').scrollHeight, behavior: 'smooth' }), 50);
 });
 
 document.getElementById('btn-mf-apply').addEventListener('click', () => {
@@ -1643,6 +1646,7 @@ fetch('/api/me').then(r => r.json()).then(({ loggedIn }) => {
 }).catch(() => {});
 
 // ── Overlay Conseils ───────────────────────────────────────────────────────────
+let conseilsIsFirstVisit = false;
 function openConseils() {
   const ov=document.getElementById('conseils-overlay');
   ov.classList.add('open');
@@ -1653,15 +1657,21 @@ function closeConseils() {
   ov.classList.remove('open');
   ov.setAttribute('aria-hidden','true');
   localStorage.setItem('revelo_visited','1');
+  if (conseilsIsFirstVisit && !localStorage.getItem(MF_KEY)) openMfPanel();
+  conseilsIsFirstVisit = false;
 }
 document.getElementById('btn-conseils').addEventListener('click', openConseils);
 document.getElementById('btn-close-conseils').addEventListener('click', closeConseils);
+document.getElementById('btn-conseils-start').addEventListener('click', closeConseils);
 // Fermer via backdrop
 document.getElementById('conseils-overlay').addEventListener('click', e=>{
   if (e.target===e.currentTarget) closeConseils();
 });
 // Auto-open à la première visite
-if (!localStorage.getItem('revelo_visited')) openConseils();
+if (!localStorage.getItem('revelo_visited')) {
+  conseilsIsFirstVisit = true;
+  openConseils();
+}
 
 // Copier le code promo
 document.querySelector('.partner-code')?.addEventListener('click', function() {
@@ -1671,26 +1681,6 @@ document.querySelector('.partner-code')?.addEventListener('click', function() {
     setTimeout(()=>this.classList.remove('copied'), 2000);
   });
 });
-
-// PWA install
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt', e=>{
-  e.preventDefault();
-  deferredPrompt=e;
-  document.getElementById('btn-install').style.display='';
-});
-document.getElementById('btn-install').addEventListener('click', ()=>{
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(()=>{
-    deferredPrompt=null;
-    document.getElementById('btn-install').style.display='none';
-  });
-});
-// iOS install hint
-const isIos=()=>/iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches;
-if (isIos() && !isStandalone()) document.getElementById('ios-install').style.display='';
 
 // ── Utils ──────────────────────────────────────────────────────────────────────
 function toast(msg) {
