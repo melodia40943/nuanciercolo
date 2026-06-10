@@ -10,6 +10,7 @@ import couleursRoutes from './routes/couleurs.js';
 import marquesRoutes  from './routes/marques.js';
 import packsRoutes    from './routes/packs.js';
 import testRoutes     from './routes/test.js';
+import toolsRoutes    from './routes/tools.js';
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -45,6 +46,7 @@ app.use(couleursRoutes);
 app.use(marquesRoutes);
 app.use(packsRoutes);
 app.use(testRoutes);
+app.use(toolsRoutes);
 
 // Route inline (test de diagnostic — hors sub-router)
 app.get('/api/ping', (req, res) => res.json({ ok: true, pid: String(process.pid) }));
