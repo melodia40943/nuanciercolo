@@ -33,9 +33,12 @@ async function syncPackCouleursByMin(couleurId, packMinId, marqueId) {
 
 // Liste des couleurs
 router.get('/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, ref, active } = req.query;
+  const { marque_id, pack_id, ref, active } = req.query;
   try {
     const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resPacks]   = await pool.query(
+      'SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom'
+    );
 
     let sql = `
       SELECT c.*, m.nom AS marque_nom
@@ -44,15 +47,16 @@ router.get('/couleurs', requireAuth, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    if (marque_id)        { sql += ` AND c.marque_id = ?`; params.push(marque_id); }
-    if (ref)              { sql += ` AND c.reference LIKE ?`; params.push(`%${ref}%`); }
-    if (active === '1')   { sql += ` AND c.active = TRUE`; }
-    if (active === '0')   { sql += ` AND c.active = FALSE`; }
+    if (marque_id) { sql += ` AND c.marque_id = ?`; params.push(marque_id); }
+    if (pack_id)   { sql += ` AND EXISTS (SELECT 1 FROM pack_couleurs pc WHERE pc.couleur_id = c.id AND pc.pack_id = ?)`; params.push(pack_id); }
+    if (ref)       { sql += ` AND c.reference LIKE ?`; params.push(`%${ref}%`); }
+    if (active === '1') { sql += ` AND c.active = TRUE`; }
+    if (active === '0') { sql += ` AND c.active = FALSE`; }
     sql += ' ORDER BY m.nom, c.reference';
 
     const [resCouleurs] = await pool.query(sql, params);
 
-    res.send(renderCouleurs(resCouleurs, resMarques, { marque_id, ref, active }));
+    res.send(renderCouleurs(resCouleurs, resMarques, resPacks, { marque_id, pack_id, ref, active }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -639,9 +643,21 @@ function renderCorrection(couleurs, marques) {
 </html>`;
 }
 
-function renderCouleurs(couleurs, marques, filters) {
+function renderCouleurs(couleurs, marques, packs, filters) {
   const options = marques.map(m =>
     `<option value="${m.id}" ${filters.marque_id == m.id ? 'selected' : ''}>${m.nom}</option>`
+  ).join('');
+
+  // Packs groupés par marque pour le filtre
+  const packsByMarque = {};
+  packs.forEach(p => {
+    if (!packsByMarque[p.marque_nom]) packsByMarque[p.marque_nom] = [];
+    packsByMarque[p.marque_nom].push(p);
+  });
+  const packOptions = Object.entries(packsByMarque).map(([marqueNom, mPacks]) =>
+    `<optgroup label="${marqueNom}">${mPacks.map(p =>
+      `<option value="${p.id}" ${filters.pack_id == p.id ? 'selected' : ''}>${p.nom}</option>`
+    ).join('')}</optgroup>`
   ).join('');
 
   const rows = couleurs.map(c => `
@@ -689,6 +705,10 @@ function renderCouleurs(couleurs, marques, filters) {
       <select name="marque_id">
         <option value="">Toutes les marques</option>
         ${options}
+      </select>
+      <select name="pack_id">
+        <option value="">Tous les packs</option>
+        ${packOptions}
       </select>
       <input type="text" name="ref" placeholder="Référence..." value="${filters.ref || ''}">
       <select name="active">

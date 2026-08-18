@@ -29,7 +29,7 @@ skills-lock.json
 # Environnement de développement local
 .ddev/
 revelo.studio/
-
+comparaison-degrade/
 # Documentation locale (dev solo)
 *.md
 
