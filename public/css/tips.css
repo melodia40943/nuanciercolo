@@ -319,18 +319,25 @@ body {
 
 /* ── Sélecteur de langue ── */
 .lang-select {
-  background: rgba(255, 255, 255, .06);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 12px;
-  padding: 8px 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 13px;
+  background: rgba(15, 16, 26, .86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, .10);
+  color: #ECECF4;
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,.35);
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  font-family: inherit;
+  min-width: 68px;
 }
 
 

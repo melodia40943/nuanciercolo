@@ -1176,20 +1176,24 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
 .coll-modal-add-zone { display: flex; flex-direction: column; gap: 8px; }
 .coll-modal-select-wrap {
   position: relative; width: 100%;
-  background: var(--t-s2); border: 1px solid var(--t-border); border-radius: 10px;
 }
 .coll-modal-select-wrap select {
-  width: 100%; padding: 10px 12px; background: none; border: none;
-  color: var(--t-text); font-size: 14px; appearance: none; cursor: pointer;
-  font-family: inherit;
+  width: 100%; min-height: 52px; background: #20223A;
+  color: #ECECF4; border: 1.5px solid rgba(255,255,255,.10); border-radius: 12px;
+  padding: 0 44px 0 14px; font-size: 16px; font-weight: 600;
+  font-family: inherit; appearance: none; -webkit-appearance: none;
+  outline: none; cursor: pointer;
 }
-.coll-modal-select-wrap select option {
-  background: #fff;
-  color: #0A0E1A;
+.coll-modal-select-wrap select:disabled { opacity: .45; cursor: default; }
+.coll-modal-select-wrap select option { background: #20223A; color: #ECECF4; }
+.coll-modal-chevron {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: #6E7088; pointer-events: none;
 }
 .coll-modal-add-zone button {
-  padding: 10px; background: var(--t-blue); border: none; border-radius: 10px;
-  color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  min-height: 52px; background: var(--t-blue); border: none; border-radius: 12px;
+  color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+  padding: 0 18px; width: 100%;
 }
 .coll-modal-add-zone button:disabled { opacity: .45; cursor: not-allowed; }
 .coll-modal-footer {
