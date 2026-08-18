@@ -104,8 +104,8 @@
           </svg>
         </div>
         <div class="tool-body">
-          <div class="tool-title">Comparateur</div>
-          <div class="tool-desc">Trouve l'équivalent d'un feutre dans une autre gamme</div>
+          <div class="tool-title" data-i18n="home.cmp.title">Comparateur</div>
+          <div class="tool-desc" data-i18n="home.cmp.desc">Trouve l'équivalent d'un feutre dans une autre gamme</div>
         </div>
         <div class="tool-chevron tool-chevron--teal" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -122,8 +122,8 @@
           </svg>
         </div>
         <div class="tool-body">
-          <div class="tool-title">Dégradés</div>
-          <div class="tool-desc">Construis un fondu clair → foncé avec tes feutres</div>
+          <div class="tool-title" data-i18n="home.grad.title">Dégradés</div>
+          <div class="tool-desc" data-i18n="home.grad.desc">Construis un fondu clair → foncé avec tes feutres</div>
         </div>
         <div class="tool-chevron tool-chevron--orange" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -373,7 +373,7 @@
       const hint = el.nextElementSibling;
       const orig = hint.textContent;
       el.classList.add('copied');
-      hint.textContent = '✓ Copié !';
+      hint.textContent = t('tips.copied');
       hint.style.color = '#19C37D';
       setTimeout(() => {
         el.classList.remove('copied');

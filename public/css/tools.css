@@ -722,11 +722,91 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
 
 /* Ladder preview */
 .grad-bar {
-  height: 14px;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  height: 28px;
+  border-radius: 10px;
+  margin-bottom: 16px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
 }
+
+/* ── Gradient bar (modes B & C) — inspiré cssgradient.io ── */
+.gbar-wrap { user-select: none; -webkit-user-select: none; }
+.gbar-strip {
+  height: 44px;
+  border-radius: 12px;
+  background: var(--t-s2);
+  cursor: crosshair;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 2px 10px rgba(0,0,0,.28);
+}
+.gbar-track {
+  position: relative;
+  height: 36px;
+  margin: 0 10px;
+}
+.gbar-handle {
+  position: absolute;
+  transform: translateX(-50%);
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: grab;
+  touch-action: none;
+  z-index: 1;
+}
+.gbar-handle:active { cursor: grabbing; }
+.gbar-stem {
+  width: 2px;
+  height: 10px;
+  background: rgba(255,255,255,.35);
+  flex-shrink: 0;
+}
+.gbar-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.2), 0 1px 5px rgba(0,0,0,.45);
+  position: relative;
+  flex-shrink: 0;
+  transition: box-shadow .12s;
+}
+.gbar-handle--sel .gbar-dot {
+  box-shadow: 0 0 0 3px #fff, 0 2px 8px rgba(0,0,0,.5);
+}
+.gbar-del {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  border: none;
+  background: #c84040;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 2;
+  line-height: 1;
+}
+.gbar-del:hover { background: #e05050; }
+
+/* Mobile-friendly delete row for selected stop */
+.gbar-del-row { margin-top: 6px; display: flex; justify-content: center; }
+.gbar-del-row-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 18px; min-height: 44px;
+  background: rgba(200,64,64,.12);
+  border: 1px solid rgba(200,64,64,.28);
+  border-radius: 10px; color: #f07070;
+  font-size: 13.5px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: background .15s, border-color .15s;
+}
+.gbar-del-row-btn:hover { background: rgba(200,64,64,.22); border-color: rgba(200,64,64,.48); }
 
 .grad-ladder { display: flex; gap: 8px; }
 .grad-rung {
@@ -852,7 +932,7 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
 }
 .grad-preset-swatch { width: 26px; height: 12px; border-radius: 3px; }
 
-.grad-canvas-wrap { position: relative; }
+.grad-canvas-wrap { position: relative; overflow: hidden; border-radius: 14px; }
 .grad-canvas {
   width: 100%;
   height: 96px;
@@ -864,6 +944,72 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
 @media (min-width: 600px) {
   .grad-canvas { height: 120px; }
 }
+
+.grad-zoom-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.grad-zoom-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--t-border);
+  background: var(--t-s1);
+  color: var(--t-text);
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.grad-zoom-btn:hover { background: var(--t-s2); }
+.grad-zoom-reset { font-size: 14px; }
+.grad-zoom-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-text3);
+  min-width: 38px;
+  text-align: center;
+}
+
+.grad-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0 2px;
+}
+.grad-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.grad-chip-swatch {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.15), 0 2px 6px rgba(0,0,0,.4);
+  flex-shrink: 0;
+}
+.grad-chip-acts {
+  display: flex;
+  gap: 2px;
+}
+.grad-chip-btn {
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  border: none;
+  background: rgba(255,255,255,.1);
+  color: var(--t-text2);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.grad-chip-btn:hover { background: rgba(255,255,255,.2); }
+.grad-chip-del { color: #e06060; }
+.grad-chip-del:hover { background: rgba(224,96,96,.2); color: #f07070; }
+.grad-chip-btn--hide { visibility: hidden; pointer-events: none; }
 
 .grad-sample-pin {
   position: absolute;
@@ -952,6 +1098,7 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
 .grad-stepper-dot--dark  { background: #6E5A47; }
 .grad-mode-b-intro { font-size: 13.5px; color: var(--t-text2); line-height: 1.5; }
 
+
 /* ── Collection button in header ── */
 .tools-coll-btn {
   display: flex;
@@ -1036,6 +1183,10 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
   color: var(--t-text); font-size: 14px; appearance: none; cursor: pointer;
   font-family: inherit;
 }
+.coll-modal-select-wrap select option {
+  background: #fff;
+  color: #0A0E1A;
+}
 .coll-modal-add-zone button {
   padding: 10px; background: var(--t-blue); border: none; border-radius: 10px;
   color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
@@ -1086,6 +1237,24 @@ html, body { height: 100%; background: var(--t-bg); color: var(--t-text); font-f
   cursor: pointer; font-family: inherit;
 }
 .grad-wheel-add-btn:hover { background: var(--t-s3); }
+
+/* Hex input (mode C) */
+.grad-hex-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--t-s2); border: 1px solid var(--t-border);
+  border-radius: 10px; padding: 6px 10px;
+}
+.grad-hex-input {
+  flex: 1; background: none; border: none;
+  color: var(--t-text); font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; outline: none; padding: 4px 2px;
+  letter-spacing: 0.5px;
+}
+.grad-hex-input::placeholder { color: var(--t-text3); }
+.grad-hex-swatch {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--t-border); flex-shrink: 0;
+}
 .grad-cw-stops-row {
   display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
 }
@@ -1155,3 +1324,38 @@ button.tools-coll-lnk {
 .tools-coll-med--alcool    { color: var(--med-alcool); }
 .tools-coll-med--eau       { color: var(--med-eau); }
 .tools-coll-med--crayon    { color: var(--med-crayon); }
+
+/* Chips de sélection de médium dans la bannière */
+.tools-coll-med-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  min-height: 30px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--t-s2);
+  border: 1.5px solid var(--t-border);
+  color: var(--t-text2);
+  transition: background .15s, border-color .15s, color .15s;
+  --mc: #888;
+}
+.tools-coll-med-chip:hover {
+  border-color: var(--mc);
+  background: color-mix(in srgb, var(--mc) 8%, var(--t-s2));
+}
+.tools-coll-med-chip--on {
+  background: color-mix(in srgb, var(--mc) 14%, var(--t-s2));
+  border-color: var(--mc);
+  color: var(--t-text);
+}
+.tools-coll-med-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mc);
+  flex-shrink: 0;
+}

@@ -9,33 +9,38 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tools.css">
+  <script src="/js/i18n.js"></script>
 </head>
 <body class="tools-page">
 
   <header class="tools-header">
     <a href="/conseils" class="tools-back">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-      Accueil
+      <span data-i18n="grad.back">Accueil</span>
     </a>
     <button class="tools-coll-btn" id="btn-coll" aria-label="Gérer ma collection">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-      Mes feutres
+      <span data-i18n="grad.mycoll">Mes feutres</span>
     </button>
     <div class="tools-header-title">
-      <h1>Dégradés</h1>
-      <p>Construis un fondu avec tes feutres</p>
+      <h1 data-i18n="grad.h1">Dégradés</h1>
+      <p data-i18n="grad.subtitle">Construis un fondu avec tes feutres</p>
     </div>
   </header>
 
   <div class="grad-body">
     <div class="grad-content">
 
+      <!-- Collection active -->
+      <div class="tools-coll-banner" id="tools-coll-banner"></div>
+
       <!-- Tabs -->
       <div class="grad-tabs" role="tablist">
-        <button class="grad-tab" id="tab-image" role="tab" aria-selected="false" aria-controls="panel-image">À partir d'une image</button>
-        <button class="grad-tab" id="tab-couleur" role="tab" aria-selected="false" aria-controls="panel-couleur">À partir d'une couleur</button>
-        <button class="grad-tab grad-tab--on" id="tab-feutre" role="tab" aria-selected="true" aria-controls="panel-feutre">À partir d'un feutre</button>
+        <button class="grad-tab" id="tab-image" role="tab" aria-selected="false" aria-controls="panel-image" data-i18n="grad.tab.image">À partir d'une image</button>
+        <button class="grad-tab" id="tab-couleur" role="tab" aria-selected="false" aria-controls="panel-couleur" data-i18n="grad.tab.couleur">À partir d'une couleur</button>
+        <button class="grad-tab grad-tab--on" id="tab-feutre" role="tab" aria-selected="true" aria-controls="panel-feutre" data-i18n="grad.tab.feutre">À partir d'un feutre</button>
       </div>
+
 
       <!-- ── MODE A : à partir d'un feutre ── -->
       <div class="grad-panel grad-panel--on" id="panel-feutre" role="tabpanel" aria-labelledby="tab-feutre">
@@ -44,7 +49,7 @@
         <div class="grad-basecard">
           <div class="t-swatch" id="g-base-swatch"></div>
           <div class="grad-basecard-info">
-            <div class="t-label t-label--sm">Feutre de base</div>
+            <div class="t-label t-label--sm" data-i18n="grad.base.label">Feutre de base</div>
             <div class="grad-basecard-ref" id="g-base-ref">—</div>
             <div class="grad-basecard-meta">
               <span class="grad-basecard-brand" id="g-base-brand"></span>
@@ -56,7 +61,7 @@
           </div>
           <button class="cmp-change-btn" id="g-open-picker" aria-label="Changer le feutre de base">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 3 8l4 4"/><path d="M3 8h13a4 4 0 0 1 4 4v0"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8a4 4 0 0 1-4-4v0"/></svg>
-            Changer
+            <span data-i18n="grad.base.change">Changer</span>
           </button>
         </div>
 
@@ -65,7 +70,7 @@
           <div class="grad-stepper">
             <div class="grad-stepper-label">
               <span class="grad-stepper-dot grad-stepper-dot--light"></span>
-              Plus claires
+              <span data-i18n="grad.lighter">Plus claires</span>
             </div>
             <div class="grad-stepper-row">
               <button class="grad-stepper-btn" id="g-light-minus" aria-label="Moins de teintes claires">
@@ -80,7 +85,7 @@
           <div class="grad-stepper">
             <div class="grad-stepper-label">
               <span class="grad-stepper-dot grad-stepper-dot--dark"></span>
-              Plus foncées
+              <span data-i18n="grad.darker">Plus foncées</span>
             </div>
             <div class="grad-stepper-row">
               <button class="grad-stepper-btn" id="g-dark-minus" aria-label="Moins de teintes foncées">
@@ -94,19 +99,11 @@
           </div>
         </div>
 
-        <!-- Scope -->
-        <div class="grad-scope">
-          <button class="grad-scope-btn grad-scope-btn--on" id="g-scope-same" data-scope="same">Même médium</button>
-          <button class="grad-scope-btn" id="g-scope-all" data-scope="all">Toutes mes gammes</button>
-        </div>
-
-        <div class="tools-coll-banner" id="tools-coll-banner"></div>
-
         <div class="grad-divider"></div>
 
         <!-- Result ladder -->
         <div id="g-ladder-wrap">
-          <div class="t-label" id="g-ladder-title">Ton dégradé</div>
+          <div class="t-label" id="g-ladder-title" data-i18n="grad.result.title">Ton dégradé</div>
           <div class="grad-bar" id="g-grad-bar"></div>
           <div class="grad-ladder" id="g-ladder"></div>
           <div id="g-lack-msg"></div>
@@ -117,8 +114,8 @@
       <!-- ── MODE B : à partir d'une image ── -->
       <div class="grad-panel" id="panel-image" role="tabpanel" aria-labelledby="tab-image">
 
-        <p class="grad-mode-b-intro">
-          Touche l'image pour piocher des couleurs le long du fondu — on te donne le feutre le plus proche dans la sélection.
+        <p class="grad-mode-b-intro" data-i18n="grad.mode.b.intro">
+          Clique sur l'image pour piocher une couleur avec la pipette. Zoome avec la molette ou en pinçant.
         </p>
 
         <!-- Upload zone (visible quand pas d'image) -->
@@ -126,24 +123,43 @@
           <span class="grad-upload-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </span>
-          <span class="grad-upload-label">Charger une image</span>
-          <span class="grad-upload-hint">JPG, PNG, WebP…</span>
+          <span class="grad-upload-label" data-i18n="grad.upload.label">Charger une image</span>
+          <span class="grad-upload-hint" data-i18n="grad.upload.hint">JPG, PNG, WebP…</span>
           <input type="file" accept="image/*" id="g-file-input" class="hidden" aria-label="Choisir une image">
         </div>
 
         <!-- Canvas (visible quand image chargée) -->
         <div class="grad-canvas-wrap hidden" id="g-canvas-wrap">
           <canvas class="grad-canvas" id="g-canvas"></canvas>
-          <div id="g-pins"></div>
-          <button class="grad-canvas-change-btn" id="g-canvas-change-btn">Changer l'image</button>
+          <button class="grad-canvas-change-btn" id="g-canvas-change-btn" data-i18n="grad.canvas.change">Changer l'image</button>
+        </div>
+
+        <!-- Zoom controls -->
+        <div class="grad-zoom-bar hidden" id="g-zoom-bar">
+          <button class="grad-zoom-btn" id="g-zoom-out" aria-label="Dézoomer">−</button>
+          <span class="grad-zoom-label" id="g-zoom-label">100%</span>
+          <button class="grad-zoom-btn" id="g-zoom-in" aria-label="Zoomer">+</button>
+          <button class="grad-zoom-btn grad-zoom-reset" id="g-zoom-reset" aria-label="Réinitialiser le zoom">↺</button>
+        </div>
+
+        <!-- Gradient bar — couleurs sélectionnées -->
+        <div class="gbar-wrap hidden" id="g-bar-b">
+          <div class="gbar-strip"></div>
+          <div class="gbar-track"></div>
+          <div class="gbar-del-row hidden">
+            <button class="gbar-del-row-btn" id="g-bar-b-del-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              <span data-i18n="grad.del.point">Supprimer ce point</span>
+            </button>
+          </div>
         </div>
 
         <!-- Stops header -->
         <div class="grad-stops-header">
-          <div class="grad-stops-count" id="g-stops-count">Tes points · 0/6</div>
+          <div class="grad-stops-count" id="g-stops-count"><span data-i18n="grad.stops.count">Couleurs</span> · 0/6</div>
           <button class="grad-clear-btn hidden" id="g-clear-btn">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-            Vider
+            <span data-i18n="grad.clear">Vider</span>
           </button>
         </div>
 
@@ -153,7 +169,7 @@
             <span class="grad-stops-empty-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>
             </span>
-            Touche le dégradé ci-dessus<br>pour commencer à piocher.
+            <span data-i18n="grad.empty.b">Clique sur l'image ci-dessus<br>pour commencer à piocher.</span>
           </div>
         </div>
 
@@ -168,25 +184,34 @@
         </div>
         <!-- Slider luminosité -->
         <div class="grad-wheel-controls">
-          <label class="grad-wheel-l-label" for="g-wheel-l">Luminosité</label>
+          <label class="grad-wheel-l-label" for="g-wheel-l" data-i18n="grad.wheel.l">Luminosité</label>
           <input type="range" id="g-wheel-l" min="10" max="90" value="50" class="grad-wheel-slider">
           <div class="grad-wheel-preview" id="g-wheel-preview"></div>
         </div>
+        <!-- Saisie hex directe -->
+        <div class="grad-hex-row">
+          <input type="text" id="g-hex-input" class="grad-hex-input" placeholder="#FF6635" maxlength="7" autocomplete="off" spellcheck="false">
+          <div class="grad-hex-swatch" id="g-hex-swatch"></div>
+        </div>
         <!-- Bouton ajouter -->
-        <button class="grad-wheel-add-btn" id="g-wheel-add">+ Ajouter au dégradé</button>
-        <!-- Liste des stops ajoutés -->
-        <div class="grad-cw-stops-row" id="g-cw-stops-row"></div>
-        <!-- Canvas du dégradé résultant -->
-        <div class="grad-canvas-wrap hidden" id="g-cw-canvas-wrap">
-          <canvas class="grad-canvas" id="g-cw-canvas"></canvas>
-          <div id="g-cw-pins"></div>
+        <button class="grad-wheel-add-btn" id="g-wheel-add" data-i18n="grad.wheel.add">+ Ajouter au dégradé</button>
+        <!-- Gradient bar — couleurs sélectionnées -->
+        <div class="gbar-wrap hidden" id="g-bar-c">
+          <div class="gbar-strip"></div>
+          <div class="gbar-track"></div>
+          <div class="gbar-del-row hidden">
+            <button class="gbar-del-row-btn" id="g-bar-c-del-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              <span data-i18n="grad.del.point">Supprimer ce point</span>
+            </button>
+          </div>
         </div>
         <!-- Stops header (compteur + vider) -->
         <div class="grad-stops-header hidden" id="g-cw-stops-header">
-          <div class="grad-stops-count" id="g-cw-stops-count">Tes points · 0/6</div>
+          <div class="grad-stops-count" id="g-cw-stops-count"><span data-i18n="grad.cw.count">Tes points</span> · 0/6</div>
           <button class="grad-clear-btn hidden" id="g-cw-clear-btn">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-            Vider
+            <span data-i18n="grad.clear">Vider</span>
           </button>
         </div>
         <!-- Résultats -->
@@ -204,15 +229,15 @@
         <div class="picker-nav">
           <button class="picker-back-btn hidden" id="g-picker-back" aria-label="Étape précédente">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-            Retour
+            <span data-i18n="grad.picker.back">Retour</span>
           </button>
-          <div class="grad-picker-title" id="g-picker-title">Quel médium ?</div>
+          <div class="grad-picker-title" id="g-picker-title" data-i18n="grad.picker.title">Quel médium ?</div>
         </div>
         <div class="grad-picker-search-wrap hidden" id="g-picker-search-wrap">
           <span class="grad-picker-search-icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           </span>
-          <input class="grad-picker-input" id="g-picker-input" type="search" placeholder="Numéro ou référence…" autocomplete="off">
+          <input class="grad-picker-input" id="g-picker-input" type="search" placeholder="Numéro ou référence…" data-i18n-placeholder="grad.picker.search" autocomplete="off">
         </div>
       </div>
       <div class="grad-picker-list" id="g-picker-list"></div>
@@ -224,36 +249,36 @@
   <div class="coll-modal hidden" id="coll-modal" role="dialog" aria-modal="true" aria-label="Mes feutres">
     <div class="coll-modal-head">
       <div>
-        <div class="coll-modal-title">Mes feutres</div>
-        <div class="coll-modal-sub">Choisis ton médium, puis tes packs</div>
+        <div class="coll-modal-title" data-i18n="tools.coll.title">Mes feutres</div>
+        <div class="coll-modal-sub" data-i18n="tools.coll.sub">Choisis ton médium, puis tes packs</div>
       </div>
       <button class="coll-modal-close" id="coll-modal-close" aria-label="Fermer">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="coll-modal-body" id="coll-modal-body">
-      <div class="coll-modal-section-label">Type de feutre</div>
+      <div class="coll-modal-section-label" data-i18n="tools.coll.type">Type de feutre</div>
       <div class="coll-modal-med-grid" id="coll-med-grid"></div>
       <div class="coll-modal-coll-header" id="coll-coll-header"></div>
       <div id="coll-coll-list"></div>
-      <div class="coll-modal-section-label" id="coll-add-label">Ajouter une marque</div>
+      <div class="coll-modal-section-label" id="coll-add-label" data-i18n="tools.coll.add.label">Ajouter une marque</div>
       <div class="coll-modal-add-zone" id="coll-add-zone">
         <div class="coll-modal-select-wrap">
           <select id="coll-sel-marque">
-            <option value="">— Choisir une marque —</option>
+            <option value="" data-i18n="tools.coll.add.marque">— Choisir une marque —</option>
           </select>
         </div>
         <div class="coll-modal-select-wrap" id="coll-pack-wrap">
           <select id="coll-sel-pack" disabled>
-            <option value="">— Choisir un pack —</option>
+            <option value="" data-i18n="tools.coll.add.pack">— Choisir un pack —</option>
           </select>
         </div>
-        <button id="coll-btn-add" disabled>+ Ajouter à ma collection</button>
+        <button id="coll-btn-add" disabled data-i18n="tools.coll.add.btn">+ Ajouter à ma collection</button>
       </div>
     </div>
     <div class="coll-modal-footer">
       <div class="coll-modal-footer-info" id="coll-footer-info"></div>
-      <button class="coll-modal-apply-btn" id="coll-btn-apply">Appliquer</button>
+      <button class="coll-modal-apply-btn" id="coll-btn-apply" data-i18n="tools.coll.apply">Appliquer</button>
     </div>
   </div>
 
@@ -271,47 +296,68 @@ function rgbToLab(rgb){
 function dist(a,b){const A=rgbToLab(hx(a)),B=rgbToLab(hx(b));return Math.sqrt((A[0]-B[0])**2+(A[1]-B[1])**2+(A[2]-B[2])**2);}
 function gradL(hex){return rgbToLab(hx(hex))[0];}
 function qual(d){return d<6?'proche':d<13?'correct':'loin';}
-function qualLabel(q){return{proche:'Proche',correct:'Correct',loin:'Éloigné'}[q];}
+function qualLabel(q){return{proche:t('match.great'),correct:t('match.good'),loin:t('match.ok')}[q]||q;}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // ── Medium definitions ────────────────────────────────────────────────────────
-const MEDIUMS=[
-  {id:'acrylique',label:'Acrylique',      color:'#FF6635'},
-  {id:'gel',      label:'Gel',            color:'#06D6A0'},
-  {id:'crayon',   label:'Crayon',         color:'#FFD500'},
-  {id:'alcool',   label:'Marqueur alcool',color:'#4CC9F0'},
-  {id:'eau',      label:'Feutre à eau',   color:'#7C9CFF'},
-];
-function medById(id){return MEDIUMS.find(m=>m.id===id)||{label:id,color:'#888'};}
+function getMEDIUMS(){return[
+  {id:'acrylique',label:t('mf.med.acrylique')||'Acrylique',      color:'#FF6635'},
+  {id:'gel',      label:t('mf.med.gel')||'Gel',                  color:'#06D6A0'},
+  {id:'crayon',   label:t('mf.med.crayon')||'Crayon',            color:'#FFD500'},
+  {id:'alcool',   label:t('mf.med.alcool')||'Marqueur alcool',   color:'#4CC9F0'},
+  {id:'eau',      label:t('mf.med.eau')||'Feutre à eau',         color:'#7C9CFF'},
+];}
+function medById(id){return getMEDIUMS().find(m=>m.id===id)||{label:id,color:'#888'};}
 
 // ── Collection ────────────────────────────────────────────────────────────────
 const MF_KEY_COLL='revelo_collection_v2';
 const MED_FULL={acrylique:'Feutre acrylique',gel:'Feutre gel',alcool:'Feutre à alcool',eau:'Feutre à eau',crayon:'Crayon de couleur'};
 function loadColl(){return JSON.parse(localStorage.getItem(MF_KEY_COLL)||'{}');}
 function colorInColl(c,coll){
+  const hasAnyColl=Object.values(coll).some(v=>v&&v.length>0);
+  if(!hasAnyColl)return true; // collection vide → tout montrer
   const label=MED_FULL[c.medium];
   const packs=label?(coll[label]||[]):[];
-  if(!packs.length)return true;
+  if(!packs.length)return false; // médium absent de la collection → exclure
   const owned=new Set(packs.map(s=>s.pack_id));
   if(!c.pack_ids||!c.pack_ids.length)return true;
   return c.pack_ids.some(pid=>owned.has(pid));
 }
 function renderCollBanner(coll){
-  const el=document.getElementById('tools-coll-banner');
-  if(!el)return;
+  const els=document.querySelectorAll('.tools-coll-banner');
+  if(!els.length)return;
   const entries=Object.entries(coll).filter(([,v])=>v&&v.length>0);
   if(!entries.length){
-    el.innerHTML=`<svg class="tools-coll-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span class="tools-coll-txt">Toute la base de données</span><button class="tools-coll-lnk" onclick="openCollModal()">Définir ma collection</button>`;
-    el.classList.add('tools-coll-banner--empty');
-  }else{
-    const parts=entries.map(([label,packs])=>{
-      const mid=Object.entries(MED_FULL).find(([,v])=>v===label)?.[0];
-      const n=packs.length;
-      return `${n}&nbsp;pack${n>1?'s':''} <span class="tools-coll-med--${mid||''}">${label}</span>`;
-    });
-    el.innerHTML=`<svg class="tools-coll-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="tools-coll-txt">${parts.join(' · ')}</span><button class="tools-coll-lnk" onclick="openCollModal()">Modifier</button>`;
-    el.classList.remove('tools-coll-banner--empty');
+    const html=`<svg class="tools-coll-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span class="tools-coll-txt">${t('grad.coll.empty')}</span><button class="tools-coll-lnk" onclick="openCollModal()">${t('grad.coll.configure')}</button>`;
+    els.forEach(el=>{el.innerHTML=html;el.classList.add('tools-coll-banner--empty');});
+    return;
   }
+  // Chips cliquables par médium
+  const chips=entries.map(([label])=>{
+    const mid=Object.entries(MED_FULL).find(([,v])=>v===label)?.[0];
+    const color=mid?medById(mid).color:'#888';
+    const isActive=label===collActiveMedium;
+    return `<button class="tools-coll-med-chip${isActive?' tools-coll-med-chip--on':''}" data-medium="${label}" style="--mc:${color}"><span class="tools-coll-med-chip-dot"></span>${mid?medById(mid).label:label}</button>`;
+  }).join('');
+  els.forEach(el=>{
+    el.innerHTML=chips+`<button class="tools-coll-lnk" onclick="openCollModal()">${t('grad.coll.edit')}</button>`;
+    el.classList.remove('tools-coll-banner--empty');
+    el.querySelectorAll('.tools-coll-med-chip').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        if(collActiveMedium===btn.dataset.medium)return;
+        collActiveMedium=btn.dataset.medium;
+        localStorage.setItem(MF_MED_KEY,collActiveMedium);
+        const newPool=getActivePool();
+        if(!base||!newPool.find(c=>c.ref===base.ref&&c.brand===base.brand&&c.medium===base.medium)){
+          base=newPool[0]||allColors[0];
+        }
+        renderCollBanner(loadColl());
+        renderModeA();
+        if(stops.length)renderStops();
+        if(cwStops.length)renderCwStopsRow();
+      });
+    });
+  });
 }
 
 // ── DB colors (loaded from API) ───────────────────────────────────────────────
@@ -334,20 +380,27 @@ function gradNearest(hex,pool){
   return best;
 }
 
+// Renvoie les couleurs filtrées par le médium actif (collActiveMedium)
+function getActivePool(){
+  if(!collActiveMedium)return allColors;
+  return allColors.filter(c=>MED_FULL[c.medium]===collActiveMedium);
+}
+
 // ── Mode A state ──────────────────────────────────────────────────────────────
 let base=null;
-let nLight=2,nDark=1,sameMed=true;
+let nLight=2,nDark=1;
 
 // ── Mode B state ──────────────────────────────────────────────────────────────
 let stops=[];
-let loadedImage=null; // HTMLImageElement when an image is loaded
-let imgOffsetX=0,imgOffsetY=0;
+let selectedStopId=null;
+let loadedImage=null;
+let imgZoom=1,imgPanX=0,imgPanY=0;
 
 // ── Mode C state ──────────────────────────────────────────────────────────────
 let cwHex='#FF6635';
 let cwL=50;
 let cwStops=[];
-let cwSamples=[];
+let cwSelectedId=null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function computeLadder(){
@@ -358,19 +411,19 @@ function computeLadder(){
   const baseHue=hueOfHex(base.hex);
 
   // Build candidate pool with precomputed L*
-  const pool=allColors.filter(c=>{
-    if(sameMed&&c.medium!==base.medium)return false;
+  const pool=getActivePool().filter(c=>{
     const lab=rgbToLab(hx(c.hex));
     const cChroma=Math.sqrt(lab[1]**2+lab[2]**2);
     const abDist=Math.sqrt((lab[1]-baseA)**2+(lab[2]-baseB)**2);
-    if(baseChroma>=12&&baseHue>=0){
-      // Chromatic: both hue proximity AND a*b* distance, exclude near-grays
-      if(cChroma<8)return false;
+    if(baseChroma>=8&&baseHue>=0){
+      // Couleur teintée (même sourde) : filtre teinte + distance a*b*
+      // On exclut les quasi-gris mais on accepte les tons un peu désaturés (cChroma≥5)
+      if(cChroma<5)return false;
       const h=hueOfHex(c.hex);
-      return h>=0&&hueDelta(h,baseHue)<=25&&abDist<=30;
+      return h>=0&&hueDelta(h,baseHue)<=20&&abDist<=22;
     }else{
-      // Near-neutral: tight a*b* proximity only
-      return abDist<=12;
+      // Vrai gris/neutre : proximité a*b* seule
+      return abDist<=10;
     }
   }).map(c=>{const l=rgbToLab(hx(c.hex));return{...c,_L:l[0]};});
 
@@ -383,14 +436,22 @@ function computeLadder(){
   const darkerPool =pool.filter(c=>c._L<baseL-0.5).sort((a,b)=>a._L-b._L); // darkest first
 
   // Pick n colors evenly spread across the L* range [base → extreme]
+  // Score combiné : 70% proximité L* + 30% proximité teinte (pour éviter les mélanges incohérents)
   function pickEvenly(arr,n){
     if(!arr.length)return[];
     if(arr.length<=n)return arr;
-    const extremeL=arr[0]._L; // most extreme L* (furthest from base)
+    const extremeL=arr[0]._L;
+    const maxLRange=Math.max(Math.abs(extremeL-baseL),1);
     const picked=[];
     for(let i=1;i<=n;i++){
       const targetL=baseL+(extremeL-baseL)*i/(n+1);
-      const best=arr.reduce((p,c)=>Math.abs(c._L-targetL)<Math.abs(p._L-targetL)?c:p);
+      const best=arr.reduce((p,c)=>{
+        const lS_c=Math.abs(c._L-targetL)/maxLRange;
+        const lS_p=Math.abs(p._L-targetL)/maxLRange;
+        const hS_c=baseHue>=0?hueDelta(hueOfHex(c.hex),baseHue)/20:0;
+        const hS_p=baseHue>=0?hueDelta(hueOfHex(p.hex),baseHue)/20:0;
+        return(lS_c*0.7+hS_c*0.3)<(lS_p*0.7+hS_p*0.3)?c:p;
+      });
       if(!picked.some(r=>r.ref===best.ref&&r.brand===best.brand))picked.push(best);
     }
     return picked;
@@ -430,24 +491,17 @@ function renderSteppers(){
   document.getElementById('g-dark-plus').disabled=nDark>=4;
 }
 
-function renderScope(){
-  document.getElementById('g-scope-same').classList.toggle('grad-scope-btn--on',sameMed);
-  document.getElementById('g-scope-all').classList.toggle('grad-scope-btn--on',!sameMed);
-  const scopeSameBtn=document.getElementById('g-scope-same');
-  const med=medById(base.medium);
-  scopeSameBtn.textContent='Même médium ('+med.label.toLowerCase()+')';
-}
 
 function renderLadder(){
   const{ladder,lackLight,lackDark}=computeLadder();
   const swH=118;
-  document.getElementById('g-ladder-title').textContent='Ton dégradé';
+  document.getElementById('g-ladder-title').textContent=t('grad.result.title');
   document.getElementById('g-grad-bar').style.background='linear-gradient(90deg,'+ladder.map(c=>c.hex).join(',')+')';
   const ladderEl=document.getElementById('g-ladder');
   ladderEl.innerHTML=ladder.map(c=>{
     const isBase=c.role==='base';
     const layersHtml=c.couches?`<div class="grad-rung-layers"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/></svg>${c.couches}c</div>`:'';
-    const tagHtml=isBase?`<span class="grad-rung-tag">Ton feutre</span>`:'';
+    const tagHtml=isBase?`<span class="grad-rung-tag">${t('grad.marker.tag')}</span>`:'';
     return `<div class="grad-rung">
       <div class="grad-rung-swatch${isBase?' grad-rung-swatch--base':''}" style="height:${swH}px;background:${c.hex}">${tagHtml}</div>
       <div class="grad-rung-label">
@@ -460,9 +514,9 @@ function renderLadder(){
   const lackEl=document.getElementById('g-lack-msg');
   if(lackLight||lackDark){
     lackEl.innerHTML=`<div class="grad-lack">
-      ${lackLight?`<div>· Tu n'as pas assez de teintes <strong>plus claires</strong> dans cette gamme.</div>`:''}
-      ${lackDark?`<div>· Tu n'as pas assez de teintes <strong>plus foncées</strong> dans cette gamme.</div>`:''}
-      <div class="grad-lack-tip">Essaie « Toutes mes gammes » pour élargir.</div>
+      ${lackLight?`<div>${t('grad.lack.lighter')}</div>`:''}
+      ${lackDark?`<div>${t('grad.lack.darker')}</div>`:''}
+      <div class="grad-lack-tip">${t('grad.lack.tip')}</div>
     </div>`;
   }else{
     lackEl.innerHTML='';
@@ -472,20 +526,63 @@ function renderLadder(){
 function renderModeA(){
   renderBaseCard();
   renderSteppers();
-  renderScope();
   renderLadder();
 }
 
+// ── Gradient bar (modes B & C) ────────────────────────────────────────────────
+function renderGradBar(wrapId,items,selectedId){
+  const wrap=document.getElementById(wrapId);
+  if(!wrap)return;
+  wrap.classList.toggle('hidden',!items.length);
+  if(!items.length)return;
+  const sorted=[...items].sort((a,b)=>a.barPos-b.barPos);
+  const strip=wrap.querySelector('.gbar-strip');
+  strip.style.background=items.length===1
+    ?items[0].hex
+    :`linear-gradient(90deg,${sorted.map(s=>`${s.hex} ${Math.round(s.barPos*100)}%`).join(',')})`;
+  const track=wrap.querySelector('.gbar-track');
+  const sid=String(selectedId);
+  track.innerHTML=items.map(s=>{
+    const sel=String(s.id)===sid;
+    return `<div class="gbar-handle${sel?' gbar-handle--sel':''}" data-id="${s.id}" style="left:${Math.round(s.barPos*100)}%">
+      <div class="gbar-stem"></div>
+      <div class="gbar-dot" style="background:${s.hex}">${sel?`<button class="gbar-del" data-id="${s.id}" aria-label="Supprimer">×</button>`:''}</div>
+    </div>`;
+  }).join('');
+  const delRow=wrap.querySelector('.gbar-del-row');
+  if(delRow)delRow.classList.toggle('hidden',!items.some(s=>String(s.id)===sid));
+}
+
 // ── Render Mode B ─────────────────────────────────────────────────────────────
+function imgGeom(cv){
+  const w=cv.width||cv.clientWidth*2||600, h=cv.height||cv.clientHeight*2||200;
+  const baseScale=Math.min(w/loadedImage.width,h/loadedImage.height);
+  const scale=baseScale*imgZoom;
+  const sw=loadedImage.width*scale, sh=loadedImage.height*scale;
+  const ox=(w-sw)/2+imgPanX, oy=(h-sh)/2+imgPanY;
+  return {w,h,sw,sh,ox,oy};
+}
+function clampPan(cv){
+  if(!loadedImage)return;
+  const {w,h,sw,sh}=imgGeom(cv);
+  const maxPX=Math.max(0,(sw-w)/2), maxPY=Math.max(0,(sh-h)/2);
+  imgPanX=Math.max(-maxPX,Math.min(maxPX,imgPanX));
+  imgPanY=Math.max(-maxPY,Math.min(maxPY,imgPanY));
+}
 function drawCanvas(){
   if(!loadedImage)return;
   const cv=document.getElementById('g-canvas');
-  const w=cv.width=cv.clientWidth*2||600,h=cv.height=cv.clientHeight*2||200;
+  cv.width=cv.clientWidth*2||600; cv.height=cv.clientHeight*2||200;
+  const {w,h,sw,sh,ox,oy}=imgGeom(cv);
   const ctx=cv.getContext('2d',{willReadFrequently:true});
   ctx.clearRect(0,0,w,h);
-  const scale=Math.max(w/loadedImage.width,h/loadedImage.height);
-  const sw=loadedImage.width*scale,sh=loadedImage.height*scale;
-  ctx.drawImage(loadedImage,(w-sw)/2+imgOffsetX,(h-sh)/2+imgOffsetY,sw,sh);
+  ctx.drawImage(loadedImage,ox,oy,sw,sh);
+  stops.forEach(s=>{
+    const mx=ox+s.imgX*sw, my=oy+s.imgY*sh;
+    ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);
+    ctx.fillStyle=s.hex;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.88)';ctx.lineWidth=4;ctx.stroke();
+  });
 }
 
 function loadImageFile(file){
@@ -494,49 +591,45 @@ function loadImageFile(file){
   const img=new Image();
   img.onload=()=>{
     loadedImage=img;
-    imgOffsetX=0;imgOffsetY=0;
-    document.getElementById('g-canvas').classList.add('grad-canvas--draggable');
+    imgZoom=1; imgPanX=0; imgPanY=0;
+    const cv=document.getElementById('g-canvas');
+    const wrap=document.getElementById('g-canvas-wrap');
+    const containerW=wrap.clientWidth||document.querySelector('.grad-content').clientWidth||340;
+    const maxH=Math.min(window.innerHeight*0.6,440);
+    cv.style.height=Math.min(containerW*img.height/img.width,maxH)+'px';
     stops=[];
     document.getElementById('g-upload-zone').classList.add('hidden');
-    document.getElementById('g-canvas-wrap').classList.remove('hidden');
+    wrap.classList.remove('hidden');
+    document.getElementById('g-zoom-bar').classList.remove('hidden');
+    document.getElementById('g-zoom-label').textContent='100%';
     setTimeout(()=>{drawCanvas();renderStops();},50);
   };
   img.src=url;
 }
 
 function renderStops(){
-  document.getElementById('g-stops-count').textContent='Tes points · '+stops.length+'/6';
-  const clearBtn=document.getElementById('g-clear-btn');
-  clearBtn.classList.toggle('hidden',stops.length===0);
-
-  // Render pins on canvas
-  const pinsEl=document.getElementById('g-pins');
-  pinsEl.innerHTML=stops.map(s=>`
-    <div class="grad-sample-pin" style="left:${s.x*100}%">
-      <span class="grad-sample-line"></span>
-      <span class="grad-sample-dot" style="background:${s.hex}"></span>
-    </div>`).join('');
-
-  // Render matched colors list
+  document.getElementById('g-stops-count').innerHTML=`<span data-i18n="grad.stops.count">${t('grad.stops.count')}</span> · ${stops.length}/6`;
+  document.getElementById('g-clear-btn').classList.toggle('hidden',stops.length===0);
+  renderGradBar('g-bar-b',stops,selectedStopId);
   const body=document.getElementById('g-stops-body');
   if(!stops.length){
     body.innerHTML=`<div class="grad-stops-empty">
       <span class="grad-stops-empty-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></span>
-      Touche le dégradé ci-dessus<br>pour commencer à piocher.
+      ${t('grad.empty.b').replace('\n','<br>')}
     </div>`;
     return;
   }
-  const pool=allColors.length?allColors:[];
-  const matched=stops.map(s=>({...s,m:gradNearest(s.hex,pool)}));
-  body.innerHTML='<div class="grad-match-list">'+matched.map(s=>{
-    const q=qual(s.m.d),med=medById(s.m.medium);
-    const layersTxt=s.m.couches?' · '+s.m.couches+' couche'+(s.m.couches>1?'s':''):'';
+  const pool=getActivePool();
+  const sorted=[...stops].sort((a,b)=>a.barPos-b.barPos);
+  body.innerHTML='<div class="grad-match-list">'+sorted.map(s=>{
+    const m=gradNearest(s.hex,pool),q=qual(m.d),med=medById(m.medium);
+    const layersTxt=m.couches?' · '+t('couches.'+m.couches):'';
     return `<div class="grad-match-row">
       <div class="t-swatch" style="width:32px;height:32px;background:${s.hex}"></div>
       <span class="grad-match-arrow">→</span>
-      <div class="t-swatch t-swatch--ring-${s.m.medium}" style="width:40px;height:40px;background:${s.m.hex}"></div>
+      <div class="t-swatch t-swatch--ring-${m.medium}" style="width:40px;height:40px;background:${m.hex}"></div>
       <div class="grad-match-info">
-        <div class="grad-match-ref">${escHtml(s.m.ref)} <span class="grad-match-brand">· ${escHtml(s.m.brand)}</span></div>
+        <div class="grad-match-ref">${escHtml(m.ref)} <span class="grad-match-brand">· ${escHtml(m.brand)}</span></div>
         <div class="grad-match-med">
           <span class="grad-match-med-dot dot--${med.id}"></span>
           <span class="grad-match-med-txt">${med.label}${layersTxt}</span>
@@ -548,17 +641,23 @@ function renderStops(){
 }
 
 function sampleCanvas(e){
-  if(!loadedImage)return;
+  if(!loadedImage||stops.length>=6)return;
   const cv=document.getElementById('g-canvas');
   const r=cv.getBoundingClientRect();
   const _pt=e.changedTouches?e.changedTouches[0]:(e.touches&&e.touches[0]?e.touches[0]:e);
-  const cx=_pt.clientX-r.left;
-  const x=Math.max(0,Math.min(1,cx/r.width));
+  const ratio=cv.width/r.width;
+  const cx=(_pt.clientX-r.left)*ratio;
+  const cy=(_pt.clientY-r.top)*ratio;
+  const {sw,sh,ox,oy}=imgGeom(cv);
+  const imgX=(cx-ox)/sw, imgY=(cy-oy)/sh;
+  if(imgX<0||imgX>1||imgY<0||imgY>1)return;
   const ctx=cv.getContext('2d',{willReadFrequently:true});
-  const px=ctx.getImageData(Math.min(cv.width-1,Math.round(x*cv.width)),Math.floor(cv.height/2),1,1).data;
+  const px=ctx.getImageData(Math.min(cv.width-1,Math.round(cx)),Math.min(cv.height-1,Math.round(cy)),1,1).data;
+  if(px[3]<128)return;
   const hex='#'+[px[0],px[1],px[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
-  stops=[...stops,{x,hex}].slice(-6).sort((a,b)=>a.x-b.x);
+  stops=[...stops,{id:Date.now(),hex,imgX,imgY,barPos:imgX}];
   renderStops();
+  drawCanvas();
 }
 
 // ── Mode C — Color wheel ──────────────────────────────────────────────────────
@@ -616,89 +715,49 @@ function pickWheelColor(e){
   document.getElementById('g-wheel-preview').style.background=cwHex;
 }
 
-function drawCwGradient(){
-  const cv=document.getElementById('g-cw-canvas');
-  if(!cv||cwStops.length<2)return;
-  const w=cv.width=cv.clientWidth*2||600;
-  const h=cv.height=cv.clientHeight*2||200;
-  const ctx=cv.getContext('2d',{willReadFrequently:true});
-  const g=ctx.createLinearGradient(0,0,w,0);
-  cwStops.forEach((s,i)=>g.addColorStop(i/(cwStops.length-1),s.hex));
-  ctx.fillStyle=g;
-  ctx.fillRect(0,0,w,h);
+function cwAutoBarPos(){
+  // Place le nouveau stop dans le plus grand espace libre
+  if(!cwStops.length) return 0.5;
+  const sorted=[...cwStops].sort((a,b)=>a.barPos-b.barPos);
+  let maxGap=0,pos=0.5;
+  for(let i=0;i<=sorted.length;i++){
+    const l=i===0?0:sorted[i-1].barPos;
+    const r=i===sorted.length?1:sorted[i].barPos;
+    if(r-l>maxGap){maxGap=r-l;pos=l+(r-l)/2;}
+  }
+  return pos;
 }
 
 function renderCwStopsRow(){
-  const row=document.getElementById('g-cw-stops-row');
-  const wrapCanvas=document.getElementById('g-cw-canvas-wrap');
   const header=document.getElementById('g-cw-stops-header');
-  row.innerHTML=cwStops.map((s,i)=>`
-    <div class="grad-cw-stop-chip">
-      <span class="grad-cw-stop-dot" style="background:${s.hex}"></span>
-      <button class="grad-cw-stop-del" data-i="${i}" aria-label="Supprimer">×</button>
-    </div>`).join('');
-  row.querySelectorAll('.grad-cw-stop-del').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      cwStops.splice(Number(btn.dataset.i),1);
-      cwSamples=[];
-      renderCwStopsRow();
-      renderCwMatches();
-    });
-  });
-  const hasGrad=cwStops.length>=2;
-  wrapCanvas.classList.toggle('hidden',!hasGrad);
-  header.classList.toggle('hidden',!hasGrad);
-  if(hasGrad){
-    setTimeout(drawCwGradient,50);
-  }
-}
-
-function sampleCwCanvas(e){
-  const cv=document.getElementById('g-cw-canvas');
-  const r=cv.getBoundingClientRect();
-  const _pt2=e.changedTouches?e.changedTouches[0]:(e.touches&&e.touches[0]?e.touches[0]:e);
-  const cx=_pt2.clientX-r.left;
-  const x=Math.max(0,Math.min(1,cx/r.width));
-  const ctx=cv.getContext('2d',{willReadFrequently:true});
-  const px=ctx.getImageData(Math.min(cv.width-1,Math.round(x*cv.width)),Math.floor(cv.height/2),1,1).data;
-  const hex='#'+[px[0],px[1],px[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
-  cwSamples=[...cwSamples,{x,hex}].slice(-6).sort((a,b)=>a.x-b.x);
+  const has=cwStops.length>0;
+  header.classList.toggle('hidden',!has);
+  document.getElementById('g-cw-clear-btn').classList.toggle('hidden',!has);
+  document.getElementById('g-cw-stops-count').innerHTML=`<span data-i18n="grad.cw.count">${t('grad.cw.count')}</span> · ${cwStops.length}/6`;
+  renderGradBar('g-bar-c',cwStops,cwSelectedId);
   renderCwMatches();
 }
 
 function renderCwMatches(){
-  const pinsEl=document.getElementById('g-cw-pins');
-  const countEl=document.getElementById('g-cw-stops-count');
-  const clearBtn=document.getElementById('g-cw-clear-btn');
   const body=document.getElementById('g-cw-stops-body');
-
-  pinsEl.innerHTML=cwSamples.map(s=>`
-    <div class="grad-sample-pin" style="left:${s.x*100}%">
-      <span class="grad-sample-line"></span>
-      <span class="grad-sample-dot" style="background:${s.hex}"></span>
-    </div>`).join('');
-
-  countEl.textContent='Tes points · '+cwSamples.length+'/6';
-  clearBtn.classList.toggle('hidden',cwSamples.length===0);
-
-  if(!cwSamples.length){
+  if(!cwStops.length){
     body.innerHTML=`<div class="grad-stops-empty">
       <span class="grad-stops-empty-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></span>
-      Touche le dégradé ci-dessus<br>pour commencer à piocher.
+      ${t('grad.empty.c').replace('\n','<br>')}
     </div>`;
     return;
   }
-  const pool=allColors.length?allColors:[];
-  const matched=cwSamples.map(s=>({...s,m:gradNearest(s.hex,pool)}));
-  body.innerHTML='<div class="grad-match-list">'+matched.map(s=>{
-    const q=qual(s.m.d),med=medById(s.m.medium);
-    const layersTxt=s.m.couches?' · '+s.m.couches+' couche'+(s.m.couches>1?'s':''):'';
+  const pool=getActivePool();
+  const sorted=[...cwStops].sort((a,b)=>a.barPos-b.barPos);
+  body.innerHTML='<div class="grad-match-list">'+sorted.map(s=>{
+    const m=gradNearest(s.hex,pool),q=qual(m.d),med=medById(m.medium);
+    const layersTxt=m.couches?' · '+t('couches.'+m.couches):'';
     return `<div class="grad-match-row">
       <div class="t-swatch" style="width:32px;height:32px;background:${s.hex}"></div>
       <span class="grad-match-arrow">→</span>
-      <div class="t-swatch t-swatch--ring-${s.m.medium}" style="width:40px;height:40px;background:${s.m.hex}"></div>
+      <div class="t-swatch t-swatch--ring-${m.medium}" style="width:40px;height:40px;background:${m.hex}"></div>
       <div class="grad-match-info">
-        <div class="grad-match-ref">${escHtml(s.m.ref)} <span class="grad-match-brand">· ${escHtml(s.m.brand)}</span></div>
+        <div class="grad-match-ref">${escHtml(m.ref)} <span class="grad-match-brand">· ${escHtml(m.brand)}</span></div>
         <div class="grad-match-med">
           <span class="grad-match-med-dot dot--${med.id}"></span>
           <span class="grad-match-med-txt">${med.label}${layersTxt}</span>
@@ -730,18 +789,19 @@ function renderGradPicker(){
   searchWrap.classList.toggle('hidden',gPickerStep!==2);
 
   if(gPickerStep===0){
-    titleEl.textContent='Quel médium ?';
+    titleEl.textContent=t('grad.picker.title');
     const presentIds=new Set(rawColors.map(c=>c.medium));
-    const meds=MEDIUMS.filter(m=>presentIds.has(m.id));
+    const meds=getMEDIUMS().filter(m=>presentIds.has(m.id));
     listEl.innerHTML=meds.map(m=>{
       const n=rawColors.filter(c=>c.medium===m.id).length;
+      const nLabel=n>1?t('grad.n.colors'):t('grad.n.color');
       return `<button class="picker-med-btn" data-med="${m.id}">
         <span class="picker-med-icon">
           <span class="picker-med-dot"></span>
         </span>
         <span class="picker-flex-body">
           <span class="picker-med-name">${m.label}</span>
-          <span class="picker-med-count">${n} couleur${n>1?'s':''}</span>
+          <span class="picker-med-count">${n} ${nLabel}</span>
         </span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="picker-chevron" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
       </button>`;
@@ -756,10 +816,11 @@ function renderGradPicker(){
     const brands=[...new Set(rawColors.filter(c=>c.medium===gPickerMedium).map(c=>c.brand))].sort();
     listEl.innerHTML=brands.map(b=>{
       const n=rawColors.filter(c=>c.medium===gPickerMedium&&c.brand===b).length;
+      const nLabel=n>1?t('grad.n.colors'):t('grad.n.color');
       return `<button class="picker-brand-btn" data-brand="${escHtml(b)}">
         <span class="picker-flex-body">
           <span class="picker-brand-name">${escHtml(b)}</span>
-          <span class="picker-brand-count">${n} couleur${n>1?'s':''}</span>
+          <span class="picker-brand-count">${n} ${nLabel}</span>
         </span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="picker-chevron" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
       </button>`;
@@ -785,7 +846,7 @@ function renderGradPicker(){
           ${c.refAlt?`<div class="grad-picker-item-fam">ex. ${escHtml(c.refAlt)}</div>`:''}
         </div>
       </button>`;
-    }).join(''):`<div class="grad-picker-none">Aucune référence trouvée.</div>`;
+    }).join(''):`<div class="grad-picker-none">${t('grad.picker.none')}</div>`;
     listEl.querySelectorAll('.grad-picker-item').forEach(btn=>{
       btn.addEventListener('click',()=>{
         const found=rawColors.find(c=>c.ref===btn.dataset.ref&&c.brand===btn.dataset.brand&&c.medium===btn.dataset.medium);
@@ -827,7 +888,7 @@ function collRenderMedGrid(){
     const sel=name===collActiveMedium;
     return `<button class="coll-med-btn${sel?' coll-med-btn--on':''}" data-medium="${name}" style="--mc:${color}">
       <span class="coll-med-label">${name}</span>
-      <span class="coll-med-count" style="${count?'color:'+color:''}">${count?count+' pack'+(count>1?'s':''):'Aucun'}</span>
+      <span class="coll-med-count" style="${count?'color:'+color:''}">${count?count+' pack'+(count>1?'s':''):t('grad.med.none')}</span>
     </button>`;
   }).join('');
   grid.querySelectorAll('.coll-med-btn').forEach(btn=>{
@@ -848,7 +909,7 @@ function collRenderDraft(){
   const list=document.getElementById('coll-coll-list');
   if(!collDraft.length){
     if(collActiveMedium){
-      list.innerHTML=`<div class="coll-empty">Aucun pack ajouté pour <strong style="color:#ECECF4">${collActiveMedium}</strong></div>`;
+      list.innerHTML=`<div class="coll-empty">${t('tools.coll.none.packs')} <strong style="color:#ECECF4">${collActiveMedium}</strong></div>`;
     }else{list.innerHTML='';}
     return;
   }
@@ -877,15 +938,15 @@ function collRenderFooter(){
   if(!collActiveMedium){el.innerHTML='';return;}
   const color=collGetColor(collActiveMedium);
   const count=collDraft.length;
-  el.innerHTML=`<strong style="color:${color}">${collActiveMedium}</strong> · ${count} pack${count!==1?'s':''}`;
+  el.innerHTML=`<strong style="color:${color}">${collActiveMedium}</strong> · ${count} ${count!==1?t('tools.coll.n.packs'):t('tools.coll.n.pack')}`;
 }
 
 async function collLoadMarques(){
   if(!collActiveMedium)return;
   const marqEl=document.getElementById('coll-sel-marque');
   const packEl=document.getElementById('coll-sel-pack');
-  marqEl.innerHTML='<option value="">— Choisir une marque —</option>';
-  packEl.innerHTML='<option value="">— Choisir un pack —</option>';
+  marqEl.innerHTML=`<option value="">${t('tools.coll.add.marque')}</option>`;
+  packEl.innerHTML=`<option value="">${t('tools.coll.add.pack')}</option>`;
   packEl.disabled=true;
   document.getElementById('coll-btn-add').disabled=true;
   try{
@@ -929,8 +990,20 @@ function closeCollModal(){
   document.getElementById('coll-modal-overlay').classList.add('hidden');
   const coll=loadColl();
   allColors=rawColors.filter(c=>colorInColl(c,coll));
+  // Si le médium actif n'est plus dans la collection, passer au premier disponible
+  const configuredMeds=Object.entries(coll).filter(([,v])=>v&&v.length>0).map(([k])=>k);
+  if(collActiveMedium&&!configuredMeds.includes(collActiveMedium)){
+    collActiveMedium=configuredMeds[0]||null;
+    localStorage.setItem(MF_MED_KEY,collActiveMedium||'');
+  }
+  const newPool=getActivePool();
+  if(!base||!newPool.find(c=>c.ref===base.ref&&c.brand===base.brand&&c.medium===base.medium)){
+    base=newPool[0]||allColors[0];
+  }
   renderCollBanner(coll);
   renderModeA();
+  if(stops.length)renderStops();
+  if(cwStops.length)renderCwStopsRow();
 }
 
 // ── Wire events ───────────────────────────────────────────────────────────────
@@ -970,43 +1043,127 @@ document.getElementById('g-light-plus').addEventListener('click',()=>{nLight=Mat
 document.getElementById('g-dark-minus').addEventListener('click',()=>{nDark=Math.max(0,nDark-1);renderModeA();});
 document.getElementById('g-dark-plus').addEventListener('click',()=>{nDark=Math.min(4,nDark+1);renderModeA();});
 
-document.getElementById('g-scope-same').addEventListener('click',()=>{sameMed=true;renderModeA();});
-document.getElementById('g-scope-all').addEventListener('click',()=>{sameMed=false;renderModeA();});
 
-// Image canvas: drag to reposition, tap/click to sample
+// Image canvas: zoom (wheel + pinch) + pan (drag quand zoomé) + pipette (clic/tap)
 (function(){
   const cv=document.getElementById('g-canvas');
-  let ds=null;
-  function ep(e,ch){const l=ch?e.changedTouches:e.touches;return l&&l.length?{x:l[0].clientX,y:l[0].clientY}:{x:e.clientX,y:e.clientY};}
+  let ds=null, pinch=null;
+
+  function ep(e){const l=e.touches;return l&&l.length?{x:l[0].clientX,y:l[0].clientY}:{x:e.clientX,y:e.clientY};}
+  function pinchDist(e){const t=e.touches;return t.length<2?0:Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
+  function pinchMid(e){
+    const t=e.touches,r=cv.getBoundingClientRect();
+    return t.length<2?null:{x:(t[0].clientX+t[1].clientX)/2-r.left,y:(t[0].clientY+t[1].clientY)/2-r.top};
+  }
+  function applyZoom(newZ,pivotCx,pivotCy){
+    if(!loadedImage)return;
+    newZ=Math.max(1,Math.min(5,newZ));
+    const zf=newZ/imgZoom;
+    // Pivot point in internal canvas coords
+    const mx=pivotCx*(cv.width/cv.clientWidth||2);
+    const my=pivotCy*(cv.height/cv.clientHeight||2);
+    const {ox:oxOld,oy:oyOld}=imgGeom(cv);
+    imgZoom=newZ;
+    const {ox:oxNew,oy:oyNew}=imgGeom(cv);
+    imgPanX+=(mx-oxNew)-(mx-oxOld)*zf;
+    imgPanY+=(my-oyNew)-(my-oyOld)*zf;
+    clampPan(cv);
+    document.getElementById('g-zoom-label').textContent=Math.round(imgZoom*100)+'%';
+    drawCanvas();
+  }
+
+  // Wheel zoom
+  cv.addEventListener('wheel',e=>{
+    if(!loadedImage)return;
+    e.preventDefault();
+    const r=cv.getBoundingClientRect();
+    applyZoom(imgZoom*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top);
+  },{passive:false});
+
+  // Mouse: drag to pan (always), click to pick
   cv.addEventListener('mousedown',e=>{
     if(!loadedImage)return;
-    const p=ep(e);ds={sx:p.x,sy:p.y,ox:imgOffsetX,oy:imgOffsetY,moved:false};
-    cv.classList.replace('grad-canvas--draggable','grad-canvas--grabbing');
+    const p=ep(e);
+    ds={sx:p.x,sy:p.y,px:imgPanX,py:imgPanY,moved:false};
+    cv.style.cursor='grabbing';
   });
   document.addEventListener('mousemove',e=>{
-    if(!ds)return;const p=ep(e);const dx=p.x-ds.sx,dy=p.y-ds.sy;
+    if(!ds)return;
+    const p=ep(e);const dx=p.x-ds.sx,dy=p.y-ds.sy;
     if(Math.abs(dx)>3||Math.abs(dy)>3)ds.moved=true;
-    if(ds.moved){const r=cv.width/cv.clientWidth||2;imgOffsetX=ds.ox+dx*r;imgOffsetY=ds.oy+dy*r;drawCanvas();}
+    if(ds.moved){
+      const r=cv.getBoundingClientRect();const ratio=cv.width/r.width;
+      imgPanX=ds.px+dx*ratio;imgPanY=ds.py+dy*ratio;
+      clampPan(cv);drawCanvas();
+    }
   });
   document.addEventListener('mouseup',e=>{
     if(!ds)return;
     if(!ds.moved)sampleCanvas(e);
-    cv.classList.replace('grad-canvas--grabbing','grad-canvas--draggable');
+    cv.style.cursor='crosshair';
     ds=null;
   });
+
+  // Touch: pinch to zoom, single drag to pan, tap to pick
   cv.addEventListener('touchstart',e=>{
-    if(!loadedImage)return;e.preventDefault();
-    const p=ep(e);ds={sx:p.x,sy:p.y,ox:imgOffsetX,oy:imgOffsetY,moved:false};
+    if(!loadedImage)return;
+    e.preventDefault();
+    if(e.touches.length===2){
+      ds=null;
+      const m=pinchMid(e);
+      pinch={dist:pinchDist(e),zoom:imgZoom,panX:imgPanX,panY:imgPanY,mx:m?m.x:0,my:m?m.y:0};
+    } else {
+      pinch=null;
+      const p=ep(e);
+      ds={sx:p.x,sy:p.y,px:imgPanX,py:imgPanY,moved:false};
+    }
   },{passive:false});
   cv.addEventListener('touchmove',e=>{
-    if(!ds)return;e.preventDefault();const p=ep(e);const dx=p.x-ds.sx,dy=p.y-ds.sy;
-    if(Math.abs(dx)>5||Math.abs(dy)>5)ds.moved=true;
-    if(ds.moved){const r=cv.width/cv.clientWidth||2;imgOffsetX=ds.ox+dx*r;imgOffsetY=ds.oy+dy*r;drawCanvas();}
+    if(!loadedImage)return;
+    e.preventDefault();
+    if(pinch&&e.touches.length===2){
+      const d=pinchDist(e),m=pinchMid(e);
+      const newZ=Math.max(1,Math.min(5,pinch.zoom*(d/pinch.dist)));
+      imgZoom=newZ;
+      if(m){const r=cv.getBoundingClientRect();const ratio=cv.width/r.width;
+        imgPanX=pinch.panX+(m.x-pinch.mx)*ratio;imgPanY=pinch.panY+(m.y-pinch.my)*ratio;}
+      clampPan(cv);
+      document.getElementById('g-zoom-label').textContent=Math.round(imgZoom*100)+'%';
+      drawCanvas();
+    } else if(ds&&e.touches.length===1){
+      const p=ep(e);const dx=p.x-ds.sx,dy=p.y-ds.sy;
+      if(Math.abs(dx)>5||Math.abs(dy)>5)ds.moved=true;
+      if(ds.moved){const r=cv.getBoundingClientRect();const ratio=cv.width/r.width;
+        imgPanX=ds.px+dx*ratio;imgPanY=ds.py+dy*ratio;clampPan(cv);drawCanvas();}
+    }
   },{passive:false});
   cv.addEventListener('touchend',e=>{
-    e.preventDefault();if(!ds)return;
-    if(!ds.moved)sampleCanvas(e);
+    e.preventDefault();
+    if(e.touches.length>0){pinch=null;ds=null;return;}
+    if(pinch){pinch=null;return;}
+    if(ds&&!ds.moved)sampleCanvas(e);
     ds=null;
+  });
+})();
+
+// Zoom buttons
+(function(){
+  function getCanvas(){return document.getElementById('g-canvas');}
+  function updateLabel(){document.getElementById('g-zoom-label').textContent=Math.round(imgZoom*100)+'%';}
+  document.getElementById('g-zoom-in').addEventListener('click',()=>{
+    if(!loadedImage)return;
+    imgZoom=Math.max(1,Math.min(5,imgZoom*1.25));
+    clampPan(getCanvas());updateLabel();drawCanvas();
+  });
+  document.getElementById('g-zoom-out').addEventListener('click',()=>{
+    if(!loadedImage)return;
+    imgZoom=Math.max(1,Math.min(5,imgZoom/1.25));
+    if(imgZoom===1){imgPanX=0;imgPanY=0;}else clampPan(getCanvas());
+    updateLabel();drawCanvas();
+  });
+  document.getElementById('g-zoom-reset').addEventListener('click',()=>{
+    if(!loadedImage)return;
+    imgZoom=1;imgPanX=0;imgPanY=0;updateLabel();drawCanvas();
   });
 })();
 document.getElementById('g-clear-btn').addEventListener('click',()=>{stops=[];renderStops();});
@@ -1054,14 +1211,156 @@ document.getElementById('g-wheel-l').addEventListener('input',e=>{
   }
 });
 document.getElementById('g-wheel-add').addEventListener('click',()=>{
-  cwStops.push({hex:cwHex});
-  cwSamples=[];
+  if(cwStops.length>=6)return;
+  cwStops.push({id:Date.now(),hex:cwHex,barPos:cwAutoBarPos()});
+  cwSelectedId=null;
   renderCwStopsRow();
-  renderCwMatches();
 });
-document.getElementById('g-cw-canvas').addEventListener('click',sampleCwCanvas);
-document.getElementById('g-cw-canvas').addEventListener('touchend',e=>{e.preventDefault();sampleCwCanvas(e);});
-document.getElementById('g-cw-clear-btn').addEventListener('click',()=>{cwSamples=[];renderCwMatches();});
+document.getElementById('g-cw-clear-btn').addEventListener('click',()=>{
+  cwStops=[];cwSelectedId=null;renderCwStopsRow();
+});
+document.getElementById('g-hex-input').addEventListener('input',e=>{
+  let v=e.target.value.trim();
+  if(v.length&&!v.startsWith('#'))v='#'+v;
+  const valid=/^#[0-9a-fA-F]{6}$/.test(v);
+  const sw=document.getElementById('g-hex-swatch');
+  sw.style.background=valid?v:'';
+  if(valid){cwHex=v.toLowerCase();document.getElementById('g-wheel-preview').style.background=cwHex;}
+});
+document.getElementById('g-bar-b-del-btn').addEventListener('click',()=>{
+  if(!selectedStopId)return;
+  stops=stops.filter(s=>String(s.id)!==String(selectedStopId));
+  selectedStopId=null;renderStops();drawCanvas();
+});
+document.getElementById('g-bar-c-del-btn').addEventListener('click',()=>{
+  if(!cwSelectedId)return;
+  cwStops=cwStops.filter(s=>String(s.id)!==String(cwSelectedId));
+  cwSelectedId=null;renderCwStopsRow();
+});
+
+// ── Interpolation couleur sur la barre de dégradé ────────────────────────────
+function interpolateGradColor(sortedStops,pos){
+  if(sortedStops.length<2)return null;
+  const first=sortedStops[0],last=sortedStops[sortedStops.length-1];
+  if(pos<=first.barPos)return first.hex;
+  if(pos>=last.barPos)return last.hex;
+  let lo=first,hi=last;
+  for(let i=0;i<sortedStops.length-1;i++){
+    if(pos>=sortedStops[i].barPos&&pos<=sortedStops[i+1].barPos){lo=sortedStops[i];hi=sortedStops[i+1];break;}
+  }
+  const range=hi.barPos-lo.barPos;
+  const t=range>0?(pos-lo.barPos)/range:0;
+  const [lr,lg,lb]=hx(lo.hex),[hr,hg,hb]=hx(hi.hex);
+  const r=Math.round(lr+(hr-lr)*t),g=Math.round(lg+(hg-lg)*t),b=Math.round(lb+(hb-lb)*t);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Gradient bar interactions (drag + select + delete + strip-click) ──────────
+(function(){
+  let gbd=null; // {barId, stopId, moved, sx}
+
+  function getStops(barId){return barId==='g-bar-b'?stops:cwStops;}
+  function getSel(barId){return barId==='g-bar-b'?selectedStopId:cwSelectedId;}
+  function setSel(barId,id){if(barId==='g-bar-b')selectedStopId=id;else cwSelectedId=id;}
+  function rerender(barId,full){
+    if(barId==='g-bar-b'){renderStops();if(full)drawCanvas();}
+    else renderCwStopsRow();
+  }
+
+  // Drag start (mousedown / touchstart on handle)
+  function onStart(e,cx){
+    if(e.target.closest('.gbar-del'))return;
+    const h=e.target.closest('.gbar-handle');
+    if(!h)return;
+    const wrap=h.closest('#g-bar-b,#g-bar-c');
+    if(!wrap)return;
+    gbd={barId:wrap.id,stopId:h.dataset.id,moved:false,sx:cx};
+  }
+  document.addEventListener('mousedown',e=>onStart(e,e.clientX));
+  document.addEventListener('touchstart',e=>{if(e.touches.length===1)onStart(e,e.touches[0].clientX);},{passive:true});
+
+  // Drag move
+  function onMove(cx){
+    if(!gbd)return;
+    if(Math.abs(cx-gbd.sx)>4)gbd.moved=true;
+    if(!gbd.moved)return;
+    const wrap=document.getElementById(gbd.barId);
+    const r=wrap.getBoundingClientRect();
+    const newPos=Math.max(0,Math.min(1,(cx-r.left)/r.width));
+    const s=getStops(gbd.barId).find(s=>String(s.id)===gbd.stopId);
+    if(s)s.barPos=newPos;
+    renderGradBar(gbd.barId,getStops(gbd.barId),getSel(gbd.barId));
+    if(gbd.barId==='g-bar-b')drawCanvas();
+  }
+  document.addEventListener('mousemove',e=>onMove(e.clientX));
+  document.addEventListener('touchmove',e=>{if(gbd&&e.touches.length===1)onMove(e.touches[0].clientX);},{passive:true});
+
+  // Drag end / tap
+  function onEnd(){
+    if(!gbd)return;
+    if(!gbd.moved){
+      // Tap = toggle selection
+      const cur=getSel(gbd.barId);
+      setSel(gbd.barId,cur===gbd.stopId?null:gbd.stopId);
+    }
+    rerender(gbd.barId,true);
+    gbd=null;
+  }
+  document.addEventListener('mouseup',onEnd);
+  document.addEventListener('touchend',onEnd);
+
+  // Delete via × button on handle
+  document.addEventListener('click',e=>{
+    const del=e.target.closest('.gbar-del');
+    if(!del)return;
+    e.stopPropagation();
+    const id=del.dataset.id;
+    const wrap=del.closest('#g-bar-b,#g-bar-c');
+    if(!wrap)return;
+    if(wrap.id==='g-bar-b'){
+      stops=stops.filter(s=>String(s.id)!==id);
+      selectedStopId=null;
+      renderStops();drawCanvas();
+    } else {
+      cwStops=cwStops.filter(s=>String(s.id)!==id);
+      cwSelectedId=null;
+      renderCwStopsRow();
+    }
+  });
+
+  // Click sur la barre de dégradé : si ≥2 stops, interpole la couleur et insère un nouveau stop
+  document.addEventListener('click',e=>{
+    if(!e.target.classList.contains('gbar-strip'))return;
+    const wrap=e.target.closest('#g-bar-b,#g-bar-c');
+    if(!wrap||gbd)return;
+    const r=e.target.getBoundingClientRect();
+    const pos=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    if(wrap.id==='g-bar-b'){
+      if(stops.length<2){selectedStopId=null;renderStops();return;}
+      if(stops.length>=6)return;
+      const sorted=[...stops].sort((a,b)=>a.barPos-b.barPos);
+      const hex=interpolateGradColor(sorted,pos);
+      if(!hex)return;
+      // Interpoler imgY entre les stops encadrants pour placer le point sur l'image
+      let lo=sorted[0],hi=sorted[sorted.length-1];
+      for(let i=0;i<sorted.length-1;i++){
+        if(pos>=sorted[i].barPos&&pos<=sorted[i+1].barPos){lo=sorted[i];hi=sorted[i+1];break;}
+      }
+      const range=hi.barPos-lo.barPos;
+      const t=range>0?(pos-lo.barPos)/range:0;
+      const imgY=lo.imgY+(hi.imgY-lo.imgY)*t;
+      stops=[...stops,{id:Date.now(),hex,imgX:pos,imgY,barPos:pos}];
+      selectedStopId=null;renderStops();drawCanvas();
+    } else {
+      if(cwStops.length<2||cwStops.length>=6)return;
+      const sorted=[...cwStops].sort((a,b)=>a.barPos-b.barPos);
+      const hex=interpolateGradColor(sorted,pos);
+      if(!hex)return;
+      cwStops=[...cwStops,{id:Date.now(),hex,barPos:pos}];
+      cwSelectedId=null;renderCwStopsRow();
+    }
+  });
+})();
 
 // Collection modal events
 document.getElementById('btn-coll').addEventListener('click',openCollModal);
@@ -1073,7 +1372,7 @@ document.getElementById('coll-btn-apply').addEventListener('click',()=>{
 });
 document.getElementById('coll-sel-marque').addEventListener('change',function(){
   const packEl=document.getElementById('coll-sel-pack');
-  packEl.innerHTML='<option value="">— Choisir un pack —</option>';
+  packEl.innerHTML=`<option value="">${t('tools.coll.add.pack')}</option>`;
   packEl.disabled=true;
   document.getElementById('coll-btn-add').disabled=true;
   const marque=collMarques.find(m=>m.id===Number(this.value));
@@ -1100,7 +1399,7 @@ document.getElementById('coll-btn-add').addEventListener('click',()=>{
   collDraft.push({marque_id:marque.id,marque_nom:marque.nom,pack_id:packId,pack_nom:selOpt.dataset.nom,pack_nb:Number(selOpt.dataset.nb)});
   collSave();
   marqEl.value='';
-  packEl.innerHTML='<option value="">— Choisir un pack —</option>';
+  packEl.innerHTML=`<option value="">${t('tools.coll.add.pack')}</option>`;
   packEl.disabled=true;
   document.getElementById('coll-btn-add').disabled=true;
   collRenderDraft();
@@ -1123,8 +1422,14 @@ fetch('/api/comparateur/couleurs')
     rawColors=data;
     const coll=loadColl();
     allColors=rawColors.filter(c=>colorInColl(c,coll));
+    // Si le médium actif n'est pas dans la collection, prendre le premier disponible
+    const configuredMeds=Object.entries(coll).filter(([,v])=>v&&v.length>0).map(([k])=>k);
+    if(configuredMeds.length&&(!collActiveMedium||!configuredMeds.includes(collActiveMedium))){
+      collActiveMedium=configuredMeds[0];
+      localStorage.setItem(MF_MED_KEY,collActiveMedium);
+    }
     renderCollBanner(coll);
-    base=allColors.find(c=>c.brand==='Guangna'&&c.ref==='620')||rawColors[0];
+    base=getActivePool().find(c=>c.brand==='Guangna'&&c.ref==='620')||getActivePool()[0]||allColors[0];
     renderModeA();
   });
 
