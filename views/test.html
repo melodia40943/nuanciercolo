@@ -94,6 +94,8 @@
     <span class="drop-sub" data-i18n="drop.sub">Images (jpg, png…) ou PDF couleurs</span>
     <div class="drop-links">
       <a href="http://jeremymariez.free.fr/npainter.htm" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()" data-i18n="drop.ref">🎨 PDFs de référence par Jeremy Mariez →</a>
+      <a href="https://alexandrekrm.wixsite.com/index/items/vaiana?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAdGRleAUiDH1leHRuA2FlbQIxMQBwZG9mAmZkaWQWUPCY9u8coUJxQPnwmk-vMXg473VNDnNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABp6zAAERIhf0poKfQj7FuFOHqXX2G5vIfl1HCQ1YGp2cXsQQPJ3aYxUmOfrZ1_aem_5R8bftpwMCQ2aJztGZRMeg" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()" data-i18n="drop.ref2">🎨 Palettes de référence par Alexandre Karam →</a>
+      <a href="https://app.jotform.com/262176199540362?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAdGRleAUiDKlleHRuA2FlbQIxMQBwZG9mAmZkaWQWUPCp_7ULLMAfWfQqdn5-VzveoD0o5HNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABpyG-ShGT-txZzb9qvrlBw6eY9tVRhpcugvNYsn44CmN04v8e54bFtX7gGy9r_aem_8srN5wFquLL_dGVbjbTRkg&utm_id=97760_v0_s00_e0_tv3" class="link-ref" target="_blank" rel="noopener" onclick="event.stopPropagation()" data-i18n="drop.ref3">🎨 Palettes de référence par Alicia Dombrofsky →</a>
     </div>
   </div>
   <div id="canvas-wrap">
@@ -182,7 +184,7 @@
   </button>
 </div>
 
-<div id="tip" data-i18n="canvas.tip">Tap = échantillonner · Drag = naviguer · Pinch = zoom</div>
+
 
 <!-- Sheet résultats — tiroir droit -->
 <div id="sheet">
@@ -233,6 +235,12 @@
       <div class="mf-select-wrap">
         <select id="mf-select-marque">
           <option value="">— Choisir une marque —</option>
+        </select>
+        <svg class="mf-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="mf-select-wrap hidden" id="mf-pointe-wrap">
+        <select id="mf-select-pointe">
+          <option value="">— Type de pointe —</option>
         </select>
         <svg class="mf-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
       </div>
@@ -332,6 +340,8 @@
             <h3 data-i18n="tips.t2.h2">Les PDFs de référence : la meilleure source</h3>
             <p data-i18n-html="tips.t2.p">Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu'ils avaient en tête.</p>
             <a href="http://jeremymariez.free.fr/npainter.htm" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link">🎨 Palettes de référence par Jeremy Mariez →</a>
+            <a href="https://alexandrekrm.wixsite.com/index/items/vaiana?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAdGRleAUiDH1leHRuA2FlbQIxMQBwZG9mAmZkaWQWUPCY9u8coUJxQPnwmk-vMXg473VNDnNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABp6zAAERIhf0poKfQj7FuFOHqXX2G5vIfl1HCQ1YGp2cXsQQPJ3aYxUmOfrZ1_aem_5R8bftpwMCQ2aJztGZRMeg" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link2">🎨 Palettes de référence par Alexandre Karam →</a>
+            <a href="https://app.jotform.com/262176199540362?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAdGRleAUiDKlleHRuA2FlbQIxMQBwZG9mAmZkaWQWUPCp_7ULLMAfWfQqdn5-VzveoD0o5HNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABpyG-ShGT-txZzb9qvrlBw6eY9tVRhpcugvNYsn44CmN04v8e54bFtX7gGy9r_aem_8srN5wFquLL_dGVbjbTRkg&utm_id=97760_v0_s00_e0_tv3" target="_blank" rel="noopener" class="link-ref" data-i18n="tips.t2.link3">🎨 Palettes de référence par Alicia Dombrofsky→</a>
           </div>
         </div>
 
@@ -1512,13 +1522,16 @@ function renderMfFooter() {
 
 async function loadMfMarques() {
   if (!activeMedium) return;
-  const marqueEl = document.getElementById('mf-select-marque');
-  const packEl   = document.getElementById('mf-select-pack');
+  const marqueEl  = document.getElementById('mf-select-marque');
+  const packEl    = document.getElementById('mf-select-pack');
+  const pointeEl  = document.getElementById('mf-select-pointe');
   marqueEl.innerHTML = `<option value="">${t('mf.add.marque')}</option>`;
   packEl.innerHTML   = `<option value="">${t('mf.add.pack')}</option>`;
+  pointeEl.innerHTML = `<option value="">${t('mf.add.pointe')}</option>`;
   packEl.disabled    = true;
   document.getElementById('btn-mf-add').disabled = true;
   document.getElementById('mf-pack-wrap').classList.remove('mf-select-wrap--enabled');
+  document.getElementById('mf-pointe-wrap').classList.add('hidden');
   try {
     const data = await fetch(`/api/marques-packs?medium=${encodeURIComponent(activeMedium)}`).then(r => r.json());
     mfMarques = data;
@@ -1528,6 +1541,30 @@ async function loadMfMarques() {
       marqueEl.appendChild(opt);
     });
   } catch(e) {}
+}
+
+function mfPopulatePacks(marque, pointeId) {
+  const packEl   = document.getElementById('mf-select-pack');
+  const packWrap = document.getElementById('mf-pack-wrap');
+  packEl.innerHTML = `<option value="">${t('mf.add.pack')}</option>`;
+  packEl.disabled  = true;
+  packWrap.classList.remove('mf-select-wrap--enabled');
+  document.getElementById('btn-mf-add').disabled = true;
+  let packs = marque.packs;
+  if (pointeId) {
+    const f = packs.filter(p => !p.pointes.length || p.pointes.some(pt => pt.id === pointeId));
+    if (f.length) packs = f;
+  }
+  if (!packs.length) return;
+  packs.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id; opt.textContent = p.nom;
+    opt.dataset.nb = p.nb_couleurs; opt.dataset.nom = p.nom;
+    packEl.appendChild(opt);
+  });
+  packEl.disabled = false;
+  packWrap.classList.add('mf-select-wrap--enabled');
+  document.getElementById('mf-scroll').scrollTo({ top: document.getElementById('mf-scroll').scrollHeight, behavior: 'smooth' });
 }
 
 function switchMfMedium(name) {
@@ -1581,25 +1618,32 @@ document.getElementById('btn-collection').addEventListener('click', openMfPanel)
 document.getElementById('btn-mf-close').addEventListener('click', closeMfPanel);
 
 document.getElementById('mf-select-marque').addEventListener('change', function() {
-  const marqueId = Number(this.value);
-  const packEl   = document.getElementById('mf-select-pack');
-  const packWrap = document.getElementById('mf-pack-wrap');
-  packEl.innerHTML = `<option value="">${t('mf.add.pack')}</option>`;
-  packEl.disabled  = true;
-  packWrap.classList.remove('mf-select-wrap--enabled');
+  const pointeWrap = document.getElementById('mf-pointe-wrap');
+  const pointeEl   = document.getElementById('mf-select-pointe');
+  pointeEl.innerHTML = `<option value="">${t('mf.add.pointe')}</option>`;
+  document.getElementById('mf-select-pack').innerHTML = `<option value="">${t('mf.add.pack')}</option>`;
+  document.getElementById('mf-select-pack').disabled  = true;
+  document.getElementById('mf-pack-wrap').classList.remove('mf-select-wrap--enabled');
   document.getElementById('btn-mf-add').disabled = true;
-  if (!marqueId) return;
-  const marque = mfMarques.find(m => m.id === marqueId);
-  if (!marque || !marque.packs.length) return;
-  marque.packs.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.id; opt.textContent = p.nom;
-    opt.dataset.nb = p.nb_couleurs; opt.dataset.nom = p.nom;
-    packEl.appendChild(opt);
-  });
-  packEl.disabled = false;
-  packWrap.classList.add('mf-select-wrap--enabled');
-  document.getElementById('mf-scroll').scrollTo({ top: document.getElementById('mf-scroll').scrollHeight, behavior: 'smooth' });
+  const marque = mfMarques.find(m => m.id === Number(this.value));
+  if (!marque) { pointeWrap.classList.add('hidden'); return; }
+  if (marque.pointes && marque.pointes.length > 1) {
+    marque.pointes.forEach(pt => {
+      const opt = document.createElement('option');
+      opt.value = pt.id; opt.textContent = pt.nom;
+      pointeEl.appendChild(opt);
+    });
+    pointeWrap.classList.remove('hidden');
+  } else {
+    pointeWrap.classList.add('hidden');
+    mfPopulatePacks(marque, null);
+  }
+});
+
+document.getElementById('mf-select-pointe').addEventListener('change', function() {
+  const marque = mfMarques.find(m => m.id === Number(document.getElementById('mf-select-marque').value));
+  if (!marque) return;
+  mfPopulatePacks(marque, Number(this.value) || null);
 });
 
 document.getElementById('mf-select-pack').addEventListener('change', function() {

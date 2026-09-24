@@ -56,10 +56,11 @@ router.get('/api/couleurs/all', async (req, res) => {
 router.get('/api/mediums/active', async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT DISTINCT c.medium
-      FROM couleurs c
-      WHERE c.active = TRUE AND c.medium IS NOT NULL AND c.medium != ''
-      ORDER BY c.medium
+      SELECT DISTINCT cm.medium
+      FROM couleur_mediums cm
+      JOIN couleurs c ON c.id = cm.couleur_id
+      WHERE c.active = TRUE
+      ORDER BY cm.medium
     `);
     res.json(rows.map(r => r.medium));
   } catch (err) {
@@ -77,7 +78,8 @@ router.get('/api/marques-packs', async (req, res) => {
       [marques] = await pool.query(`
         SELECT DISTINCT m.id, m.nom FROM marques m
         JOIN couleurs c ON c.marque_id = m.id
-        WHERE c.medium = ? AND c.active = TRUE
+        JOIN couleur_mediums cm ON cm.couleur_id = c.id
+        WHERE cm.medium = ? AND c.active = TRUE
         ORDER BY m.nom
       `, [medium]);
       [packs] = await pool.query(`
@@ -85,7 +87,8 @@ router.get('/api/marques-packs', async (req, res) => {
         FROM packs p
         JOIN pack_couleurs pc ON pc.pack_id = p.id
         JOIN couleurs c ON c.id = pc.couleur_id
-        WHERE c.medium = ? AND c.active = TRUE
+        JOIN couleur_mediums cm ON cm.couleur_id = c.id
+        WHERE cm.medium = ? AND c.active = TRUE
         ORDER BY p.marque_id, p.nb_couleurs
       `, [medium]);
     } else {
@@ -96,10 +99,37 @@ router.get('/api/marques-packs', async (req, res) => {
         ORDER BY marque_id, nb_couleurs
       `);
     }
-    const result = marques.map(m => ({
-      ...m,
-      packs: packs.filter(p => p.marque_id === m.id)
-    }));
+
+    // Pointes par pack
+    const ptParams = medium ? [medium] : [];
+    const ptJoin   = medium ? 'JOIN couleur_mediums cm ON cm.couleur_id = c.id' : '';
+    const ptWhere  = medium ? 'AND cm.medium = ?' : '';
+    const [packPtRows] = await pool.query(`
+      SELECT pc.pack_id, c.pointe_id, po.nom AS pointe_nom
+      FROM pack_couleurs pc
+      JOIN couleurs c ON c.id = pc.couleur_id
+      JOIN pointes po ON po.id = c.pointe_id
+      ${ptJoin}
+      WHERE c.active = TRUE AND c.pointe_id IS NOT NULL ${ptWhere}
+      GROUP BY pc.pack_id, c.pointe_id, po.nom
+      ORDER BY po.nom
+    `, ptParams);
+    const packPtMap = {};
+    packPtRows.forEach(r => {
+      if (!packPtMap[r.pack_id]) packPtMap[r.pack_id] = [];
+      if (!packPtMap[r.pack_id].find(p => p.id === r.pointe_id))
+        packPtMap[r.pack_id].push({ id: r.pointe_id, nom: r.pointe_nom });
+    });
+
+    const result = marques.map(m => {
+      const mPacks = packs.filter(p => p.marque_id === m.id).map(p => ({
+        ...p, pointes: packPtMap[p.id] || []
+      }));
+      const ptMap = {};
+      mPacks.forEach(p => p.pointes.forEach(pt => { ptMap[pt.id] = pt.nom; }));
+      const marquePointes = Object.entries(ptMap).map(([id, nom]) => ({ id: Number(id), nom }));
+      return { ...m, pointes: marquePointes, packs: mPacks };
+    });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur' });

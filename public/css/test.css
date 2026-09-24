@@ -538,6 +538,7 @@ select.chrome-pill { min-width: 68px; }
 }
 .mf-select-wrap--pack select { opacity: 0.45; cursor: default; }
 .mf-select-wrap--pack.mf-select-wrap--enabled select { opacity: 1; cursor: pointer; }
+.mf-select-wrap.hidden { display: none; }
 .mf-chevron {
   position: absolute;
   right: 14px;
@@ -872,6 +873,9 @@ select.chrome-pill { min-width: 68px; }
 .drop-links a { font-size: 0.78rem; text-decoration: none; }
 .drop-links a.link-tips { color: #4a6cf7; }
 .drop-links a.link-ref  { color: #27ae60; }
+@media (max-width: 767px) {
+  .drop-links { gap: 12px; }
+}
 
 /* Navigation PDF */
 #pdf-nav {

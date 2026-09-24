@@ -52,13 +52,26 @@ function loadFile(f) {
 }
 
 function mountImage(img) {
-  imgEl = img; natW = img.naturalWidth; natH = img.naturalHeight;
+  const MAX_PX = 2500;
+  let srcW = img.naturalWidth, srcH = img.naturalHeight;
+  const scale = Math.min(1, MAX_PX / Math.max(srcW, srcH));
+  natW = Math.round(srcW * scale); natH = Math.round(srcH * scale);
+
   const oc = document.createElement('canvas');
   oc.width = natW; oc.height = natH;
-  oc.getContext('2d').drawImage(img, 0, 0);
+  oc.getContext('2d').drawImage(img, 0, 0, natW, natH);
   imgData = oc.getContext('2d').getImageData(0, 0, natW, natH);
+
+  // imgEl pointe sur un canvas redimensionné pour l'affichage
+  imgEl = oc;
   dropZone.style.display   = 'none';
   canvasWrap.style.display = 'block';
+  // Reset sliders au chargement d'une nouvelle image seulement
+  const brightEl = document.getElementById('sample-bright');
+  const tempEl   = document.getElementById('sample-temp');
+  if (brightEl) brightEl.value = 0;
+  if (tempEl)   tempEl.value   = 0;
+  rawSampledColor = null; sampledColor = null;
   resizeCanvas(); fitView(); render();
   document.getElementById('btn-wb').disabled = false;
   document.getElementById('sampling-controls').style.display = 'block';
@@ -146,6 +159,12 @@ function render() {
     ctx.fillStyle='rgba(74,108,247,0.15)'; ctx.fill();
   }
   ctx.restore();
+  // Bandeau de comparaison en bas du canvas (coordonnées écran)
+  if (sampledColor) {
+    const bh = 28;
+    ctx.fillStyle = sampledColor.hex;
+    ctx.fillRect(0, cv.height - bh, cv.width, bh);
+  }
 }
 
 function canvasToImg(cx,cy) { return {x:(cx-viewX)/viewScale, y:(cy-viewY)/viewScale}; }
@@ -215,7 +234,7 @@ cv.addEventListener('mouseup', e => {
   if (!drawing) return; drawing=false;
   if (circleRadius<3/viewScale) {
     const img=canvasToImg(cvXY(e).x,cvXY(e).y);
-    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=10/viewScale; render();
+    circleCenter={imgX:img.x,imgY:img.y}; circleRadius=Math.min(10/viewScale,30); render();
   }
   doSample();
 });
@@ -300,6 +319,7 @@ function updateSampleDisplay() {
     const cp = document.getElementById('color-picker');
     if (cp) cp.value = sampledColor.hex;
   }
+  render(); // met à jour le bandeau de comparaison
 }
 
 // Sampling
@@ -308,12 +328,6 @@ function doSample() {
   const result=sampleCircle(circleCenter.imgX,circleCenter.imgY,circleRadius,imgData,natW,natH);
   if (!result) { showToast('⚠️ Zone invalide — réessaie'); return; }
   rawSampledColor = result;
-
-  // Remettre les sliders à zéro pour chaque nouvel échantillon
-  const brightEl = document.getElementById('sample-bright');
-  const tempEl   = document.getElementById('sample-temp');
-  if (brightEl) brightEl.value = 0;
-  if (tempEl)   tempEl.value   = 0;
 
   // Quadrants
   if (result.quads) result.quads.forEach((q,i) => {

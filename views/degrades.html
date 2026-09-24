@@ -99,6 +99,16 @@
           </div>
         </div>
 
+        <!-- Température -->
+        <div class="grad-temp-row">
+          <div class="grad-stepper-label" data-i18n="grad.temp.label">Température</div>
+          <div class="grad-temp-btns">
+            <button class="grad-temp-btn" id="g-temp-cool" data-i18n="grad.temp.cool">Froid</button>
+            <button class="grad-temp-btn grad-temp-btn--on" id="g-temp-auto" data-i18n="grad.temp.auto">Auto</button>
+            <button class="grad-temp-btn" id="g-temp-warm" data-i18n="grad.temp.warm">Chaud</button>
+          </div>
+        </div>
+
         <div class="grad-divider"></div>
 
         <!-- Result ladder -->
@@ -269,6 +279,12 @@
           </select>
           <svg class="coll-modal-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
         </div>
+        <div class="coll-modal-select-wrap hidden" id="coll-pointe-wrap">
+          <select id="coll-sel-pointe">
+            <option value="" data-i18n="tools.coll.add.pointe">— Type de pointe —</option>
+          </select>
+          <svg class="coll-modal-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
         <div class="coll-modal-select-wrap" id="coll-pack-wrap">
           <select id="coll-sel-pack" disabled>
             <option value="" data-i18n="tools.coll.add.pack">— Choisir un pack —</option>
@@ -391,6 +407,7 @@ function getActivePool(){
 // ── Mode A state ──────────────────────────────────────────────────────────────
 let base=null;
 let nLight=2,nDark=1;
+let tempBias='auto'; // 'cool' | 'auto' | 'warm'
 
 // ── Mode B state ──────────────────────────────────────────────────────────────
 let stops=[];
@@ -412,22 +429,41 @@ function computeLadder(){
   const baseChroma=Math.sqrt(baseA**2+baseB**2);
   const baseHue=hueOfHex(base.hex);
 
-  // Build candidate pool with precomputed L*
-  const pool=getActivePool().filter(c=>{
+  // Source du pool : active pool si le médium de la base y est représenté,
+  // sinon fallback sur tous les feutres du même médium que la base
+  const activePool=getActivePool();
+  const baseInActive=activePool.some(c=>c.medium===base.medium);
+  const poolSource=baseInActive?activePool:allColors.filter(c=>c.medium===base.medium);
+
+  let pool=poolSource.filter(c=>{
     const lab=rgbToLab(hx(c.hex));
     const cChroma=Math.sqrt(lab[1]**2+lab[2]**2);
     const abDist=Math.sqrt((lab[1]-baseA)**2+(lab[2]-baseB)**2);
     if(baseChroma>=8&&baseHue>=0){
-      // Couleur teintée (même sourde) : filtre teinte + distance a*b*
-      // On exclut les quasi-gris mais on accepte les tons un peu désaturés (cChroma≥5)
       if(cChroma<5)return false;
       const h=hueOfHex(c.hex);
       return h>=0&&hueDelta(h,baseHue)<=20&&abDist<=22;
     }else{
-      // Vrai gris/neutre : proximité a*b* seule
       return abDist<=10;
     }
   }).map(c=>{const l=rgbToLab(hx(c.hex));return{...c,_L:l[0]};});
+
+  // Filtre température : direction stricte par rapport au b* de la base
+  // chaud → couleurs avec b* >= baseB (même temp ou plus chaud), tolérance 2 unités
+  // froid → couleurs avec b* <= baseB (même temp ou plus froid), tolérance 2 unités
+  if(tempBias!=='auto'){
+    const TOLERANCE=2;
+    const filtered=pool.filter(c=>{
+      const b=rgbToLab(hx(c.hex))[2];
+      if(tempBias==='warm')return b>=baseB-TOLERANCE;
+      if(tempBias==='cool')return b<=baseB+TOLERANCE;
+      return true;
+    });
+    // Fallback si le filtre vide complètement un côté (pas assez de feutres dans cette direction)
+    if(filtered.filter(c=>c._L>baseL+0.5).length>0||filtered.filter(c=>c._L<baseL-0.5).length>0){
+      pool=filtered;
+    }
+  }
 
   if(!pool.find(c=>c.ref===base.ref&&c.brand===base.brand&&c.medium===base.medium)){
     return{ladder:[{...base,role:'base'}],lackLight:nLight>0,lackDark:nDark>0};
@@ -947,9 +983,12 @@ async function collLoadMarques(){
   if(!collActiveMedium)return;
   const marqEl=document.getElementById('coll-sel-marque');
   const packEl=document.getElementById('coll-sel-pack');
+  const pointeEl=document.getElementById('coll-sel-pointe');
   marqEl.innerHTML=`<option value="">${t('tools.coll.add.marque')}</option>`;
   packEl.innerHTML=`<option value="">${t('tools.coll.add.pack')}</option>`;
+  pointeEl.innerHTML=`<option value="">${t('tools.coll.add.pointe')}</option>`;
   packEl.disabled=true;
+  document.getElementById('coll-pointe-wrap').classList.add('hidden');
   document.getElementById('coll-btn-add').disabled=true;
   try{
     const data=await fetch(`/api/marques-packs?medium=${encodeURIComponent(collActiveMedium)}`).then(r=>r.json());
@@ -1044,6 +1083,14 @@ document.getElementById('g-light-minus').addEventListener('click',()=>{nLight=Ma
 document.getElementById('g-light-plus').addEventListener('click',()=>{nLight=Math.min(4,nLight+1);renderModeA();});
 document.getElementById('g-dark-minus').addEventListener('click',()=>{nDark=Math.max(0,nDark-1);renderModeA();});
 document.getElementById('g-dark-plus').addEventListener('click',()=>{nDark=Math.min(4,nDark+1);renderModeA();});
+
+['cool','auto','warm'].forEach(val=>{
+  document.getElementById('g-temp-'+val).addEventListener('click',()=>{
+    tempBias=val;
+    ['cool','auto','warm'].forEach(v=>document.getElementById('g-temp-'+v).classList.toggle('grad-temp-btn--on',v===val));
+    renderModeA();
+  });
+});
 
 
 // Image canvas: zoom (wheel + pinch) + pan (drag quand zoomé) + pipette (clic/tap)
@@ -1372,20 +1419,51 @@ document.getElementById('coll-btn-apply').addEventListener('click',()=>{
   localStorage.setItem(MF_MED_KEY,collActiveMedium||'');
   closeCollModal();
 });
-document.getElementById('coll-sel-marque').addEventListener('change',function(){
+function collPopulatePacks(marque,pointeId){
   const packEl=document.getElementById('coll-sel-pack');
   packEl.innerHTML=`<option value="">${t('tools.coll.add.pack')}</option>`;
   packEl.disabled=true;
   document.getElementById('coll-btn-add').disabled=true;
-  const marque=collMarques.find(m=>m.id===Number(this.value));
-  if(!marque||!marque.packs.length)return;
-  marque.packs.forEach(p=>{
+  let packs=marque.packs;
+  if(pointeId){
+    const f=packs.filter(p=>!p.pointes.length||p.pointes.some(pt=>pt.id===pointeId));
+    if(f.length)packs=f;
+  }
+  if(!packs.length)return;
+  packs.forEach(p=>{
     const opt=document.createElement('option');
     opt.value=p.id;opt.textContent=p.nom;
     opt.dataset.nb=p.nb_couleurs;opt.dataset.nom=p.nom;
     packEl.appendChild(opt);
   });
   packEl.disabled=false;
+}
+document.getElementById('coll-sel-marque').addEventListener('change',function(){
+  const pointeWrap=document.getElementById('coll-pointe-wrap');
+  const pointeEl=document.getElementById('coll-sel-pointe');
+  pointeEl.innerHTML=`<option value="">${t('tools.coll.add.pointe')}</option>`;
+  document.getElementById('coll-sel-pack').innerHTML=`<option value="">${t('tools.coll.add.pack')}</option>`;
+  document.getElementById('coll-sel-pack').disabled=true;
+  document.getElementById('coll-btn-add').disabled=true;
+  const marque=collMarques.find(m=>m.id===Number(this.value));
+  if(!marque){pointeWrap.classList.add('hidden');return;}
+  if(marque.pointes&&marque.pointes.length>1){
+    marque.pointes.forEach(pt=>{
+      const opt=document.createElement('option');
+      opt.value=pt.id;opt.textContent=pt.nom;
+      pointeEl.appendChild(opt);
+    });
+    pointeWrap.classList.remove('hidden');
+  }else{
+    pointeWrap.classList.add('hidden');
+    collPopulatePacks(marque,null);
+  }
+});
+document.getElementById('coll-sel-pointe').addEventListener('change',function(){
+  const marqEl=document.getElementById('coll-sel-marque');
+  const marque=collMarques.find(m=>m.id===Number(marqEl.value));
+  if(!marque)return;
+  collPopulatePacks(marque,Number(this.value)||null);
 });
 document.getElementById('coll-sel-pack').addEventListener('change',function(){
   document.getElementById('coll-btn-add').disabled=!this.value;

@@ -65,12 +65,18 @@ function renderMarques(marques) {
 </head>
 <body>
   <nav>
-    <span>Nuancier — Back office</span>
+    <div style="display:flex;align-items:center;gap:1.25rem;">
+      <a href="/" class="nav-back-app">← App</a>
+      <span class="nav-bo-label">Back office</span>
+    </div>
     <div>
       <a href="/dashboard">Dashboard</a>
       <a href="/couleurs">Couleurs</a>
-      <a href="/marques">Marques</a>
+      <a href="/couleurs/new">+ Ajouter</a>
+      <a href="/couleurs/bulk">Édition masse</a>
+      <a href="/couleurs/correction">Correction batch</a>
       <a href="/packs">Packs</a>
+      <a href="/marques">Marques</a>
       <form method="POST" action="/logout" style="display:inline">
         <button type="submit">Déconnexion</button>
       </form>

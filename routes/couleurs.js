@@ -11,6 +11,13 @@ async function syncPackCouleurs(couleurId, packIds) {
   await pool.query('INSERT INTO pack_couleurs (couleur_id, pack_id) VALUES ?', [packIds.map(id => [couleurId, id])]);
 }
 
+async function syncCouleurMediums(couleurId, mediums) {
+  await pool.query('DELETE FROM couleur_mediums WHERE couleur_id = ?', [couleurId]);
+  if (!mediums || !mediums.length) return;
+  const vals = mediums.filter(Boolean).map(m => [couleurId, m]);
+  if (vals.length) await pool.query('INSERT INTO couleur_mediums (couleur_id, medium) VALUES ?', [vals]);
+}
+
 // Recalcule pack_couleurs depuis pack_min_id : inclut le pack min et tous les packs
 // plus grands de la même marque. Si pack_min_id est null, inclut tous les packs de la marque.
 async function syncPackCouleursByMin(couleurId, packMinId, marqueId) {
@@ -66,11 +73,14 @@ router.get('/couleurs', requireAuth, async (req, res) => {
 // Formulaire ajout
 router.get('/couleurs/new', requireAuth, async (req, res) => {
   try {
-    const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
-    const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
-    const [resPacks]   = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
-    const [resMediums] = await pool.query('SELECT * FROM mediums ORDER BY nom');
-    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: null, packCouleurs: [] }));
+    const [resMarques]    = await pool.query('SELECT * FROM marques ORDER BY nom');
+    const [resPointes]    = await pool.query('SELECT * FROM pointes ORDER BY nom');
+    const [resPacks]      = await pool.query('SELECT p.*, m.nom AS marque_nom FROM packs p JOIN marques m ON m.id = p.marque_id ORDER BY m.nom, p.nom');
+    const [resMediums]    = await pool.query('SELECT * FROM mediums ORDER BY nom');
+    const [resPackPts]    = await pool.query('SELECT pc.pack_id, c.pointe_id FROM pack_couleurs pc JOIN couleurs c ON c.id = pc.couleur_id WHERE c.pointe_id IS NOT NULL GROUP BY pc.pack_id, c.pointe_id');
+    const packPointes = {};
+    resPackPts.forEach(r => { if (!packPointes[r.pack_id]) packPointes[r.pack_id] = []; packPointes[r.pack_id].push(r.pointe_id); });
+    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: null, packCouleurs: [], packPointes, couleurMediums: [] }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -79,14 +89,19 @@ router.get('/couleurs/new', requireAuth, async (req, res) => {
 
 // INSERT couleur (form classique → redirect)
 router.post('/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches } = req.body;
+  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches, active } = req.body;
   const rawPc = req.body.pack_couleurs;
   const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
+  const rawExtra = req.body.medium_extra;
+  const mediumsExtra = rawExtra ? (Array.isArray(rawExtra) ? rawExtra : [rawExtra]) : [];
+  const primaryMedium = medium || 'Feutre acrylique';
+  const allMediums = [primaryMedium, ...mediumsExtra.filter(m => m !== primaryMedium)];
   try {
     const [result] = await pool.query(
-      'INSERT INTO couleurs (marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, couches ? parseInt(couches) : null]
+      'INSERT INTO couleurs (marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches, active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, primaryMedium, pointe_id || null, pack_min_id || null, couches ? parseInt(couches) : null, active === '1' ? 1 : 0]
     );
+    await syncCouleurMediums(result.insertId, allMediums);
     if (packIds) {
       await syncPackCouleurs(result.insertId, packIds);
     } else {
@@ -101,15 +116,20 @@ router.post('/couleurs', requireAuth, async (req, res) => {
 
 // INSERT couleur (API JSON → pas de redirect, pour ajout multiple)
 router.post('/api/couleurs', requireAuth, async (req, res) => {
-  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches } = req.body;
+  const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches, active } = req.body;
   if (!marque_id || !reference || !hex) return res.status(400).json({ error: 'Champs manquants' });
   const rawPc = req.body.pack_couleurs;
   const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
+  const rawExtra = req.body.medium_extra || [];
+  const mediumsExtra = Array.isArray(rawExtra) ? rawExtra : [rawExtra];
+  const primaryMedium = medium || 'Feutre acrylique';
+  const allMediums = [primaryMedium, ...mediumsExtra.filter(m => m !== primaryMedium)];
   try {
     const [result] = await pool.query(
-      'INSERT INTO couleurs (marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, couches ? parseInt(couches) : null]
+      'INSERT INTO couleurs (marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, couches, active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, primaryMedium, pointe_id || null, pack_min_id || null, couches ? parseInt(couches) : null, active !== false && active !== '0']
     );
+    await syncCouleurMediums(result.insertId, allMediums);
     if (packIds && packIds.length) {
       await syncPackCouleurs(result.insertId, packIds);
     } else {
@@ -133,7 +153,12 @@ router.get('/couleurs/:id/edit', requireAuth, async (req, res) => {
     const [resMediums]     = await pool.query('SELECT * FROM mediums ORDER BY nom');
     const [resPackCouleurs] = await pool.query('SELECT pack_id FROM pack_couleurs WHERE couleur_id = ?', [req.params.id]);
     const packCouleurs = resPackCouleurs.map(r => r.pack_id);
-    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: resCouleur[0], packCouleurs }));
+    const [resPackPts]    = await pool.query('SELECT pc.pack_id, c.pointe_id FROM pack_couleurs pc JOIN couleurs c ON c.id = pc.couleur_id WHERE c.pointe_id IS NOT NULL GROUP BY pc.pack_id, c.pointe_id');
+    const packPointes = {};
+    resPackPts.forEach(r => { if (!packPointes[r.pack_id]) packPointes[r.pack_id] = []; packPointes[r.pack_id].push(r.pointe_id); });
+    const [resCouleurMediums] = await pool.query('SELECT medium FROM couleur_mediums WHERE couleur_id = ?', [req.params.id]);
+    const couleurMediums = resCouleurMediums.map(r => r.medium);
+    res.send(renderForm({ marques: resMarques, pointes: resPointes, packs: resPacks, mediums: resMediums, couleur: resCouleur[0], packCouleurs, packPointes, couleurMediums }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -145,11 +170,16 @@ router.post('/couleurs/:id', requireAuth, async (req, res) => {
   const { marque_id, reference, reference_alt, hex, r, g, b, hex_photo, r_photo, g_photo, b_photo, medium, pointe_id, pack_min_id, active, couches } = req.body;
   const rawPc = req.body.pack_couleurs;
   const packIds = rawPc ? (Array.isArray(rawPc) ? rawPc : [rawPc]).map(Number).filter(Boolean) : null;
+  const rawExtra = req.body.medium_extra;
+  const mediumsExtra = rawExtra ? (Array.isArray(rawExtra) ? rawExtra : [rawExtra]) : [];
+  const primaryMedium = medium || 'Feutre acrylique';
+  const allMediums = [primaryMedium, ...mediumsExtra.filter(m => m !== primaryMedium)];
   try {
     await pool.query(
       'UPDATE couleurs SET marque_id=?, reference=?, reference_alt=?, hex=?, r=?, g=?, b=?, hex_photo=?, r_photo=?, g_photo=?, b_photo=?, medium=?, pointe_id=?, pack_min_id=?, active=?, couches=? WHERE id=?',
-      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, medium || 'Feutre acrylique', pointe_id || null, pack_min_id || null, active === '1', couches ? parseInt(couches) : null, req.params.id]
+      [marque_id, reference, reference_alt || null, hex, r, g, b, hex_photo || null, r_photo || null, g_photo || null, b_photo || null, primaryMedium, pointe_id || null, pack_min_id || null, active === '1', couches ? parseInt(couches) : null, req.params.id]
     );
+    await syncCouleurMediums(req.params.id, allMediums);
     if (packIds) {
       await syncPackCouleurs(req.params.id, packIds);
     } else {
@@ -162,10 +192,14 @@ router.post('/couleurs/:id', requireAuth, async (req, res) => {
   }
 });
 
-// TOGGLE active
+// TOGGLE active — supporte POST classique et fetch JSON
 router.post('/couleurs/:id/toggle-active', requireAuth, async (req, res) => {
   try {
     await pool.query('UPDATE couleurs SET active = NOT active WHERE id = ?', [req.params.id]);
+    const [[row]] = await pool.query('SELECT active FROM couleurs WHERE id = ?', [req.params.id]);
+    if (req.headers['x-requested-with'] === 'fetch') {
+      return res.json({ active: !!row.active });
+    }
     res.redirect(req.get('Referer') || '/couleurs');
   } catch (err) {
     console.error(err);
@@ -187,7 +221,7 @@ router.post('/couleurs/:id/delete', requireAuth, async (req, res) => {
 
 // Page édition en masse
 router.get('/couleurs/bulk', requireAuth, async (req, res) => {
-  const { marque_id } = req.query;
+  const { marque_id, pack_id } = req.query;
   try {
     const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
     const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
@@ -205,10 +239,11 @@ router.get('/couleurs/bulk', requireAuth, async (req, res) => {
     `;
     const params = [];
     if (marque_id) { sql += ` AND c.marque_id = ?`; params.push(marque_id); }
+    if (pack_id)   { sql += ` AND EXISTS (SELECT 1 FROM pack_couleurs pc WHERE pc.couleur_id = c.id AND pc.pack_id = ?)`; params.push(pack_id); }
     sql += ' ORDER BY m.nom, c.reference';
 
     const [resCouleurs] = await pool.query(sql, params);
-    res.send(renderBulkEdit(resCouleurs, resMarques, resPointes, resPacks, { marque_id }));
+    res.send(renderBulkEdit(resCouleurs, resMarques, resPointes, resPacks, { marque_id, pack_id }));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -239,6 +274,19 @@ router.post('/api/couleurs/bulk', requireAuth, async (req, res) => {
         await syncPackCouleursByMin(id, pack_min_id || null, marqueId);
       }
     }
+    res.json({ updated: result.affectedRows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// API publication/dépublication en masse
+router.post('/api/couleurs/bulk-active', requireAuth, async (req, res) => {
+  const { ids, active } = req.body;
+  if (!ids || !ids.length) return res.status(400).json({ error: 'Aucune couleur sélectionnée' });
+  try {
+    const [result] = await pool.query('UPDATE couleurs SET active = ? WHERE id IN (?)', [active ? 1 : 0, ids]);
     res.json({ updated: result.affectedRows });
   } catch (err) {
     console.error(err);
@@ -338,12 +386,18 @@ router.post('/api/couleurs/correction', requireAuth, async (req, res) => {
 function nav() {
   return `
     <nav>
-      <span>Nuancier — Back office</span>
+      <div style="display:flex;align-items:center;gap:1.25rem;">
+        <a href="/" class="nav-back-app">← App</a>
+        <span class="nav-bo-label">Back office</span>
+      </div>
       <div>
         <a href="/dashboard">Dashboard</a>
         <a href="/couleurs">Couleurs</a>
+        <a href="/couleurs/new">+ Ajouter</a>
+        <a href="/couleurs/bulk">Édition masse</a>
         <a href="/couleurs/correction">Correction batch</a>
         <a href="/packs">Packs</a>
+        <a href="/marques">Marques</a>
         <form method="POST" action="/logout" style="display:inline">
           <button type="submit">Déconnexion</button>
         </form>
@@ -661,18 +715,17 @@ function renderCouleurs(couleurs, marques, packs, filters) {
   ).join('');
 
   const rows = couleurs.map(c => `
-    <tr style="${!c.active ? 'opacity:0.45' : ''}">
+    <tr id="row-${c.id}" style="${!c.active ? 'opacity:0.45' : ''}">
       <td><span class="color-swatch" style="background:${c.hex}"></span></td>
       <td>${c.marque_nom}</td>
       <td>${c.reference}</td>
       <td>${c.hex}</td>
       <td>${c.r} / ${c.g} / ${c.b}</td>
       <td>
-        <form method="POST" action="/couleurs/${c.id}/toggle-active" style="display:inline">
-          <button type="submit" style="background:${c.active ? '#e8f8ee;color:#27ae60' : '#fff0f0;color:#e74c3c'}">
-            ${c.active ? '✓ Publiée' : '✗ Masquée'}
-          </button>
-        </form>
+        <button class="btn-toggle-active" data-id="${c.id}" data-active="${c.active ? '1' : '0'}"
+          style="background:${c.active ? '#e8f8ee;color:#27ae60' : '#fff0f0;color:#e74c3c'}">
+          ${c.active ? '✓ Publiée' : '✗ Masquée'}
+        </button>
       </td>
       <td>
         <a href="/couleurs/${c.id}/edit">Modifier</a>
@@ -720,6 +773,8 @@ function renderCouleurs(couleurs, marques, packs, filters) {
       <a href="/couleurs">Réinitialiser</a>
     </form>
 
+    <p class="results-count">${couleurs.length} couleur${couleurs.length !== 1 ? 's' : ''} trouvée${couleurs.length !== 1 ? 's' : ''}</p>
+
     <table>
       <thead>
         <tr>
@@ -737,11 +792,54 @@ function renderCouleurs(couleurs, marques, packs, filters) {
       </tbody>
     </table>
   </main>
+  <script>
+    // Filtrage dynamique du select pack selon la marque dans le formulaire de filtre
+    (function() {
+      const ALL_PACKS_LIST = ${JSON.stringify(packs.map(p => ({ id: p.id, marque_id: p.marque_id, nom: p.nom })))};
+      const marqSel = document.querySelector('form.filters select[name="marque_id"]');
+      const packSel = document.querySelector('form.filters select[name="pack_id"]');
+      if (!marqSel || !packSel) return;
+      const origPackHTML = packSel.innerHTML;
+      function rebuildPacks(marqueId) {
+        if (!marqueId) { packSel.innerHTML = origPackHTML; return; }
+        const cur = packSel.value;
+        const filtered = ALL_PACKS_LIST.filter(p => p.marque_id == marqueId);
+        packSel.innerHTML = '<option value="">Tous les packs</option>' +
+          filtered.map(p => \`<option value="\${p.id}"\${p.id == cur ? ' selected' : ''}>\${p.nom}</option>\`).join('');
+        if (!filtered.find(p => p.id == cur)) packSel.value = '';
+      }
+      marqSel.addEventListener('change', function() { rebuildPacks(this.value); });
+      if (marqSel.value) rebuildPacks(marqSel.value);
+    })();
+
+    document.querySelectorAll('.btn-toggle-active').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        btn.disabled = true;
+        try {
+          const res = await fetch('/couleurs/' + id + '/toggle-active', {
+            method: 'POST',
+            headers: { 'x-requested-with': 'fetch' }
+          });
+          const { active } = await res.json();
+          btn.dataset.active = active ? '1' : '0';
+          btn.textContent = active ? '✓ Publiée' : '✗ Masquée';
+          btn.style.background = active ? '#e8f8ee' : '#fff0f0';
+          btn.style.color = active ? '#27ae60' : '#e74c3c';
+          const row = document.getElementById('row-' + id);
+          if (row) row.style.opacity = active ? '1' : '0.45';
+        } catch(e) {
+          alert('Erreur lors du changement de statut');
+        }
+        btn.disabled = false;
+      });
+    });
+  </script>
 </body>
 </html>`;
 }
 
-function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = [] }) {
+function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = [], packPointes = {}, couleurMediums = [] }) {
   const edit = !!couleur;
   const v = couleur || {};
   const action = edit ? `/couleurs/${v.id}` : '/couleurs';
@@ -873,6 +971,11 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
           </div>
 
           <div class="form-group">
+            <label>Type de pointe</label>
+            <select name="pointe_id" id="select-pointe">${optPointes}</select>
+          </div>
+
+          <div class="form-group">
             <label>Référence</label>
             <input type="text" name="reference" value="${v.reference || ''}" required placeholder="ex: 601 ou BL-208">
           </div>
@@ -927,7 +1030,7 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
           </div>
 
           <div class="form-group">
-            <label>Medium</label>
+            <label>Medium principal</label>
             <div class="select-with-add">
               <select name="medium" id="select-medium">
                 ${(mediums || []).map(m =>
@@ -938,6 +1041,18 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
             </div>
           </div>
 
+          <div class="form-group">
+            <label>Aussi disponible en</label>
+            <div id="mediums-extra-list" class="checkboxes-inline">
+              ${(mediums || []).map(m =>
+                `<label class="checkbox-label${(v.medium || 'Feutre acrylique') === m.nom ? ' hidden-medium-cb' : ''}" data-medium="${m.nom.replace(/"/g, '&quot;')}">
+                  <input type="checkbox" name="medium_extra" value="${m.nom.replace(/"/g, '&quot;')}" ${couleurMediums.includes(m.nom) && (v.medium || 'Feutre acrylique') !== m.nom ? 'checked' : ''}>
+                  ${m.nom}
+                </label>`
+              ).join('')}
+            </div>
+          </div>
+
           <div class="form-group" id="field-couches">
             <label>Couches (feutre à alcool)</label>
             <select name="couches" id="select-couches">
@@ -945,11 +1060,6 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
               <option value="1" ${v.couches == 1 ? 'selected' : ''}>1 couche</option>
               <option value="2" ${v.couches == 2 ? 'selected' : ''}>2 couches</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label>Pointe</label>
-            <select name="pointe_id">${optPointes}</select>
           </div>
 
           <div class="form-group">
@@ -1126,7 +1236,39 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
     });
   </script>
   <script>
-    const ALL_PACKS = ${JSON.stringify(packs.map(p => ({ id: p.id, marque_id: p.marque_id, nb_couleurs: p.nb_couleurs || null })))};
+    const ALL_PACKS = ${JSON.stringify(packs.map(p => ({ id: p.id, marque_id: p.marque_id, nom: p.nom, nb_couleurs: p.nb_couleurs || null })))};
+    const PACK_POINTES = ${JSON.stringify(packPointes)};
+
+    function filterPacks() {
+      const marqueId = Number(document.getElementById('select-marque').value) || null;
+      const pointeId = Number(document.getElementById('select-pointe').value) || null;
+
+      let filtered = marqueId ? ALL_PACKS.filter(p => p.marque_id === marqueId) : ALL_PACKS;
+
+      if (pointeId) {
+        const withPointe = filtered.filter(p => {
+          const pts = PACK_POINTES[p.id];
+          return !pts || pts.includes(pointeId);
+        });
+        if (withPointe.length > 0) filtered = withPointe;
+      }
+
+      const packSel = document.getElementById('select-pack');
+      const prevPack = packSel.value;
+      packSel.innerHTML = '<option value="">— Aucun —</option>' +
+        filtered.map(p => \`<option value="\${p.id}"\${p.id == prevPack ? ' selected' : ''}>\${p.nom}</option>\`).join('');
+      if (!filtered.find(p => p.id == prevPack)) packSel.value = '';
+
+      const multiSel = document.getElementById('select-packs-multi');
+      const prevMulti = new Set(Array.from(multiSel.selectedOptions).map(o => o.value));
+      multiSel.innerHTML = filtered.map(p =>
+        \`<option value="\${p.id}"\${prevMulti.has(String(p.id)) ? ' selected' : ''}>\${p.nom}</option>\`
+      ).join('');
+    }
+
+    document.getElementById('select-marque').addEventListener('change', filterPacks);
+    document.getElementById('select-pointe').addEventListener('change', filterPacks);
+    filterPacks();
 
     function autoCalcPacks() {
       const packMinId = Number(document.getElementById('select-pack').value);
@@ -1155,15 +1297,26 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
       el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
     });
 
-    // Affiche/masque le champ couches selon le medium
+    // Affiche/masque le champ couches selon le medium + sync checkboxes "Aussi disponible en"
     (function() {
       const selMed = document.getElementById('select-medium');
       const fieldCouches = document.getElementById('field-couches');
       function toggleCouches() {
         fieldCouches.style.display = selMed.value === 'Feutre à alcool' ? '' : 'none';
       }
-      selMed.addEventListener('change', toggleCouches);
+      function syncExtraMediumCheckboxes(primaryVal) {
+        document.querySelectorAll('#mediums-extra-list .checkbox-label').forEach(lbl => {
+          const isSelected = lbl.dataset.medium === primaryVal;
+          lbl.classList.toggle('hidden-medium-cb', isSelected);
+          if (isSelected) lbl.querySelector('input').checked = false;
+        });
+      }
+      selMed.addEventListener('change', function() {
+        toggleCouches();
+        syncExtraMediumCheckboxes(this.value);
+      });
       toggleCouches();
+      syncExtraMediumCheckboxes(selMed.value);
     })();
 
     // Auto-slug
@@ -1215,6 +1368,13 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
       const sel = document.getElementById('select-medium');
       const opt = new Option(medium.nom, medium.nom, true, true);
       sel.appendChild(opt);
+      // Ajouter la checkbox "Aussi disponible en"
+      const list = document.getElementById('mediums-extra-list');
+      const lbl = document.createElement('label');
+      lbl.className = 'checkbox-label hidden-medium-cb';
+      lbl.dataset.medium = medium.nom;
+      lbl.innerHTML = \`<input type="checkbox" name="medium_extra" value="\${medium.nom}"> \${medium.nom}\`;
+      list.appendChild(lbl);
       closeModal('modal-medium');
       document.getElementById('med-nom').value = '';
     }
@@ -1264,11 +1424,13 @@ function renderForm({ marques, pointes, packs, mediums, couleur, packCouleurs = 
         r_photo:     document.getElementById('r-photo-input').value   || null,
         g_photo:     document.getElementById('g-photo-input').value   || null,
         b_photo:     document.getElementById('b-photo-input').value   || null,
-        medium:      form.querySelector('[name=medium]').value || 'acrylique',
+        medium:        form.querySelector('[name=medium]').value || 'Feutre acrylique',
+        medium_extra:  [...form.querySelectorAll('[name=medium_extra]:checked')].map(cb => cb.value),
         pointe_id:   form.querySelector('[name=pointe_id]').value,
         pack_min_id:   document.getElementById('select-pack').value,
         couches:       document.getElementById('select-couches').value,
         pack_couleurs: [...document.getElementById('select-packs-multi').selectedOptions].map(o => Number(o.value)),
+        active:        form.querySelector('[name=active]').checked ? '1' : '0',
       };
       if (!data.marque_id || !data.reference || !data.hex) {
         alert('Marque, référence et couleur sont requis.');
@@ -1334,12 +1496,26 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
     `<option value="${m.id}" ${filters.marque_id == m.id ? 'selected' : ''}>${m.nom}</option>`
   ).join('');
 
+  // Optgroups pour le filtre par pack (form GET)
+  const packsByMarque = {};
+  packs.forEach(p => {
+    if (!packsByMarque[p.marque_nom]) packsByMarque[p.marque_nom] = [];
+    packsByMarque[p.marque_nom].push(p);
+  });
+  const optPacksFilter = Object.entries(packsByMarque).map(([marqueNom, mPacks]) =>
+    `<optgroup label="${marqueNom}">${mPacks.map(p =>
+      `<option value="${p.id}" ${filters.pack_id == p.id ? 'selected' : ''}>${p.nom}</option>`
+    ).join('')}</optgroup>`
+  ).join('');
+
   const optPointes = ['<option value="">— Inchangée —</option>', '<option value="null">— Aucune —</option>',
     ...pointes.map(p => `<option value="${p.id}">${p.nom}</option>`)
   ].join('');
 
+  // Bulk-bar pack select : filtré par marque si filtre actif
+  const bulkPacks = filters.marque_id ? packs.filter(p => p.marque_id == filters.marque_id) : packs;
   const optPacks = ['<option value="">— Inchangé —</option>', '<option value="null">— Aucun —</option>',
-    ...packs.map(p => `<option value="${p.id}">${p.marque_nom} — ${p.nom}</option>`)
+    ...bulkPacks.map(p => `<option value="${p.id}">${filters.marque_id ? p.nom : p.marque_nom + ' — ' + p.nom}</option>`)
   ].join('');
 
   const rows = couleurs.map(c => `
@@ -1393,9 +1569,13 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
     </div>
 
     <form method="GET" action="/couleurs/bulk" class="filters">
-      <select name="marque_id">
+      <select name="marque_id" id="bulk-filter-marque">
         <option value="">Toutes les marques</option>
         ${optMarques}
+      </select>
+      <select name="pack_id" id="bulk-filter-pack">
+        <option value="">Tous les packs</option>
+        ${optPacksFilter}
       </select>
       <button type="submit">Filtrer</button>
       <a href="/couleurs/bulk">Réinitialiser</a>
@@ -1412,6 +1592,9 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
       <div class="sep"></div>
       <button type="button" id="btn-select-all" class="btn-secondary">Tout sélectionner</button>
       <button type="button" id="btn-deselect-all" class="btn-secondary">Tout désélectionner</button>
+      <div class="sep"></div>
+      <button type="button" id="btn-publish-bulk" class="btn-secondary" disabled>Publier les sélectionnées</button>
+      <button type="button" id="btn-unpublish-bulk" class="btn-secondary" disabled>Dépublier les sélectionnées</button>
       <div class="sep"></div>
       <button type="button" id="btn-delete-bulk" class="btn-delete" disabled>Supprimer les sélectionnées</button>
       <span id="bulk-status" class="bulk-status-msg"></span>
@@ -1437,9 +1620,42 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
   </main>
 
   <script>
+    // Filtrage dynamique des selects pack selon la marque
+    const ALL_PACKS_BULK = ${JSON.stringify(packs.map(p => ({ id: p.id, marque_id: p.marque_id, nom: p.nom, marque_nom: p.marque_nom })))};
+    (function() {
+      const marqSel = document.getElementById('bulk-filter-marque');
+      const packSel = document.getElementById('bulk-filter-pack');
+      const bulkPackSel = document.getElementById('bulk-pack');
+      const origFilterHTML = packSel.innerHTML;
+
+      function rebuildFilterPacks(marqueId) {
+        if (!marqueId) { packSel.innerHTML = origFilterHTML; return; }
+        const cur = packSel.value;
+        const filtered = ALL_PACKS_BULK.filter(p => p.marque_id == marqueId);
+        packSel.innerHTML = '<option value="">Tous les packs</option>' +
+          filtered.map(p => \`<option value="\${p.id}"\${p.id == cur ? ' selected' : ''}>\${p.nom}</option>\`).join('');
+        if (!filtered.find(p => p.id == cur)) packSel.value = '';
+      }
+
+      function rebuildBulkBarPacks(marqueId) {
+        const cur = bulkPackSel.value;
+        const filtered = marqueId ? ALL_PACKS_BULK.filter(p => p.marque_id == marqueId) : ALL_PACKS_BULK;
+        bulkPackSel.innerHTML = '<option value="">— Inchangé —</option><option value="null">— Aucun —</option>' +
+          filtered.map(p => \`<option value="\${p.id}"\${p.id == cur ? ' selected' : ''}>\${marqueId ? p.nom : p.marque_nom + ' — ' + p.nom}</option>\`).join('');
+      }
+
+      marqSel.addEventListener('change', function() {
+        rebuildFilterPacks(this.value);
+        rebuildBulkBarPacks(this.value);
+      });
+      if (marqSel.value) rebuildFilterPacks(marqSel.value);
+    })();
+
     const checkAll = document.getElementById('check-all');
     const btnApply = document.getElementById('btn-apply-bulk');
     const btnDelete = document.getElementById('btn-delete-bulk');
+    const btnPublish = document.getElementById('btn-publish-bulk');
+    const btnUnpublish = document.getElementById('btn-unpublish-bulk');
     const btnSelAll = document.getElementById('btn-select-all');
     const btnDeselAll = document.getElementById('btn-deselect-all');
     const selCount = document.getElementById('sel-count');
@@ -1461,6 +1677,8 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
       selCount.textContent = n;
       btnApply.disabled = n === 0;
       btnDelete.disabled = n === 0;
+      btnPublish.disabled = n === 0;
+      btnUnpublish.disabled = n === 0;
     }
 
     document.querySelectorAll('.row-check').forEach(cb => {
@@ -1514,6 +1732,31 @@ function renderBulkEdit(couleurs, marques, pointes, packs, filters) {
       }
       btnApply.disabled = getChecked().length === 0;
     });
+
+    async function toggleActiveBulk(active) {
+      const ids = getChecked();
+      if (!ids.length) return;
+      btnPublish.disabled = true;
+      btnUnpublish.disabled = true;
+      const r = await fetch('/api/couleurs/bulk-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, active })
+      });
+      const data = await r.json();
+      if (r.ok) {
+        document.querySelectorAll('.row-check:checked').forEach(cb => {
+          cb.closest('tr').style.opacity = active ? '1' : '0.45';
+        });
+        showStatus('✓ ' + data.updated + ' couleur(s) ' + (active ? 'publiée(s)' : 'dépubliée(s)'));
+      } else {
+        alert('Erreur : ' + (data.error || 'inconnue'));
+      }
+      updateUI();
+    }
+
+    btnPublish.addEventListener('click', () => toggleActiveBulk(true));
+    btnUnpublish.addEventListener('click', () => toggleActiveBulk(false));
 
     btnDelete.addEventListener('click', async () => {
       const ids = getChecked();

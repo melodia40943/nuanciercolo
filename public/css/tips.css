@@ -269,6 +269,9 @@ body {
   align-items: center;
   gap: 32px;
 }
+@media (min-width: 384px) {
+  .hub-footer { flex-direction: row; justify-content: center; gap: 24px; }
+}
 
 /* ── Bouton Tipeee ── */
 .btn-tipeee {
