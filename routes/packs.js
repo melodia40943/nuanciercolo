@@ -35,7 +35,9 @@ router.get('/packs/:id/edit', requireAuth, async (req, res) => {
     const [resMarques] = await pool.query('SELECT * FROM marques ORDER BY nom');
     const [resPointes] = await pool.query('SELECT * FROM pointes ORDER BY nom');
     const [resMediums] = await pool.query('SELECT * FROM mediums ORDER BY nom');
-    res.send(renderPackForm(pack, resMarques, resPointes, resMediums));
+    const [resPackMediums] = await pool.query('SELECT medium FROM pack_mediums WHERE pack_id = ?', [req.params.id]);
+    const packMediums = resPackMediums.map(r => r.medium);
+    res.send(renderPackForm(pack, resMarques, resPointes, resMediums, packMediums));
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
@@ -45,11 +47,18 @@ router.get('/packs/:id/edit', requireAuth, async (req, res) => {
 // Mettre à jour un pack
 router.post('/packs/:id', requireAuth, async (req, res) => {
   const { marque_id, nom, nb_couleurs, prix_approx, lien_temu, lien_amazon, medium, pointe_id } = req.body;
+  const rawExtra = req.body.medium_extra;
+  const mediumsExtra = rawExtra ? (Array.isArray(rawExtra) ? rawExtra : [rawExtra]) : [];
+  const allMediums = medium ? [medium, ...mediumsExtra.filter(m => m !== medium)] : mediumsExtra;
   try {
     await pool.query(
       `UPDATE packs SET marque_id=?, nom=?, nb_couleurs=?, prix_approx=?, lien_temu=?, lien_amazon=?, medium=?, pointe_id=? WHERE id=?`,
       [marque_id, nom, nb_couleurs || null, prix_approx || null, lien_temu || null, lien_amazon || null, medium || null, pointe_id || null, req.params.id]
     );
+    await pool.query('DELETE FROM pack_mediums WHERE pack_id = ?', [req.params.id]);
+    if (allMediums.length) {
+      await pool.query('INSERT INTO pack_mediums (pack_id, medium) VALUES ?', [allMediums.map(m => [req.params.id, m])]);
+    }
     res.redirect('/packs');
   } catch (err) {
     console.error(err);
@@ -252,7 +261,7 @@ function renderPacks(packs, marques, pointes, mediums) {
 </html>`;
 }
 
-function renderPackForm(pack, marques, pointes, mediums) {
+function renderPackForm(pack, marques, pointes, mediums, packMediums = []) {
   const optMarques = marques.map(m =>
     `<option value="${m.id}" ${pack.marque_id == m.id ? 'selected' : ''}>${m.nom}</option>`
   ).join('');
@@ -297,8 +306,17 @@ function renderPackForm(pack, marques, pointes, mediums) {
             <input type="number" name="nb_couleurs" value="${pack.nb_couleurs ?? ''}" min="1">
           </div>
           <div class="form-group">
-            <label>Medium</label>
+            <label>Medium (affiché sur les cartes)</label>
             <select name="medium">${optMediums}</select>
+          </div>
+          <div class="form-group">
+            <label>Aussi visible sous <small style="color:#999;font-weight:normal">(filtres de collection)</small></label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+              ${mediums.map(m => `<label style="display:flex;align-items:center;gap:4px;font-weight:normal;cursor:pointer">
+                <input type="checkbox" name="medium_extra" value="${m.nom}" ${packMediums.includes(m.nom) && m.nom !== pack.medium ? 'checked' : ''}>
+                ${m.nom}
+              </label>`).join('')}
+            </div>
           </div>
           <div class="form-group">
             <label>Type de pointe</label>

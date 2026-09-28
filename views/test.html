@@ -1619,7 +1619,7 @@ function getMediumColor(name) {
 
 function getFilteredColors() {
   let colors = dbColors;
-  if (activeMedium) colors = colors.filter(c => c.medium === activeMedium);
+  if (activeMedium) colors = colors.filter(c => c.all_mediums && c.all_mediums.includes(activeMedium));
   const ownedPacks = (activeMedium && collByMedium[activeMedium]) || [];
   const activePacks = ownedPacks.filter(s => s.active !== false);
   if (activePacks.length > 0) {

@@ -35,7 +35,8 @@ router.get('/api/couleurs/all', async (req, res) => {
              p.medium AS medium, c.couches,
              c.pack_min_id,
              p.nb_couleurs AS pack_min_nb,
-             (SELECT GROUP_CONCAT(pc.pack_id) FROM pack_couleurs pc WHERE pc.couleur_id = c.id) AS pack_ids
+             (SELECT GROUP_CONCAT(pc.pack_id) FROM pack_couleurs pc WHERE pc.couleur_id = c.id) AS pack_ids,
+             (SELECT GROUP_CONCAT(DISTINCT pm.medium) FROM pack_mediums pm JOIN pack_couleurs pc2 ON pc2.pack_id = pm.pack_id WHERE pc2.couleur_id = c.id) AS all_mediums
       FROM couleurs c
       JOIN marques m ON m.id = c.marque_id
       LEFT JOIN packs p ON p.id = c.pack_min_id
@@ -44,7 +45,8 @@ router.get('/api/couleurs/all', async (req, res) => {
     `);
     const colors = rows.map(c => ({
       ...c,
-      pack_ids: c.pack_ids ? c.pack_ids.split(',').map(Number) : []
+      pack_ids: c.pack_ids ? c.pack_ids.split(',').map(Number) : [],
+      all_mediums: c.all_mediums ? c.all_mediums.split(',') : (c.medium ? [c.medium] : [])
     }));
     res.json(colors);
   } catch (err) {
@@ -56,12 +58,12 @@ router.get('/api/couleurs/all', async (req, res) => {
 router.get('/api/mediums/active', async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT DISTINCT p.medium
-      FROM packs p
-      JOIN pack_couleurs pc ON pc.pack_id = p.id
+      SELECT DISTINCT pm.medium
+      FROM pack_mediums pm
+      JOIN pack_couleurs pc ON pc.pack_id = pm.pack_id
       JOIN couleurs c ON c.id = pc.couleur_id
-      WHERE c.active = TRUE AND p.medium IS NOT NULL
-      ORDER BY p.medium
+      WHERE c.active = TRUE
+      ORDER BY pm.medium
     `);
     res.json(rows.map(r => r.medium));
   } catch (err) {
@@ -79,17 +81,19 @@ router.get('/api/marques-packs', async (req, res) => {
       [marques] = await pool.query(`
         SELECT DISTINCT m.id, m.nom FROM marques m
         JOIN packs p ON p.marque_id = m.id
+        JOIN pack_mediums pm ON pm.pack_id = p.id
         JOIN pack_couleurs pc ON pc.pack_id = p.id
         JOIN couleurs c ON c.id = pc.couleur_id
-        WHERE p.medium = ? AND c.active = TRUE
+        WHERE pm.medium = ? AND c.active = TRUE
         ORDER BY m.nom
       `, [medium]);
       [packs] = await pool.query(`
         SELECT DISTINCT p.id, p.marque_id, p.nom, p.nb_couleurs
         FROM packs p
+        JOIN pack_mediums pm ON pm.pack_id = p.id
         JOIN pack_couleurs pc ON pc.pack_id = p.id
         JOIN couleurs c ON c.id = pc.couleur_id
-        WHERE p.medium = ? AND c.active = TRUE
+        WHERE pm.medium = ? AND c.active = TRUE
         ORDER BY p.marque_id, p.nb_couleurs
       `, [medium]);
     } else {
