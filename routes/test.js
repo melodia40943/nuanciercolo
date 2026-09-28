@@ -32,7 +32,7 @@ router.get('/api/couleurs/all', async (req, res) => {
              c.hex_photo, c.r_photo, c.g_photo, c.b_photo,
              c.marque_id,
              m.nom AS marque,
-             c.medium, c.couches,
+             p.medium AS medium, c.couches,
              c.pack_min_id,
              p.nb_couleurs AS pack_min_nb,
              (SELECT GROUP_CONCAT(pc.pack_id) FROM pack_couleurs pc WHERE pc.couleur_id = c.id) AS pack_ids
@@ -56,11 +56,12 @@ router.get('/api/couleurs/all', async (req, res) => {
 router.get('/api/mediums/active', async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT DISTINCT cm.medium
-      FROM couleur_mediums cm
-      JOIN couleurs c ON c.id = cm.couleur_id
-      WHERE c.active = TRUE
-      ORDER BY cm.medium
+      SELECT DISTINCT p.medium
+      FROM packs p
+      JOIN pack_couleurs pc ON pc.pack_id = p.id
+      JOIN couleurs c ON c.id = pc.couleur_id
+      WHERE c.active = TRUE AND p.medium IS NOT NULL
+      ORDER BY p.medium
     `);
     res.json(rows.map(r => r.medium));
   } catch (err) {
@@ -77,9 +78,10 @@ router.get('/api/marques-packs', async (req, res) => {
     if (medium) {
       [marques] = await pool.query(`
         SELECT DISTINCT m.id, m.nom FROM marques m
-        JOIN couleurs c ON c.marque_id = m.id
-        JOIN couleur_mediums cm ON cm.couleur_id = c.id
-        WHERE cm.medium = ? AND c.active = TRUE
+        JOIN packs p ON p.marque_id = m.id
+        JOIN pack_couleurs pc ON pc.pack_id = p.id
+        JOIN couleurs c ON c.id = pc.couleur_id
+        WHERE p.medium = ? AND c.active = TRUE
         ORDER BY m.nom
       `, [medium]);
       [packs] = await pool.query(`
@@ -87,8 +89,7 @@ router.get('/api/marques-packs', async (req, res) => {
         FROM packs p
         JOIN pack_couleurs pc ON pc.pack_id = p.id
         JOIN couleurs c ON c.id = pc.couleur_id
-        JOIN couleur_mediums cm ON cm.couleur_id = c.id
-        WHERE cm.medium = ? AND c.active = TRUE
+        WHERE p.medium = ? AND c.active = TRUE
         ORDER BY p.marque_id, p.nb_couleurs
       `, [medium]);
     } else {
@@ -100,20 +101,13 @@ router.get('/api/marques-packs', async (req, res) => {
       `);
     }
 
-    // Pointes par pack
-    const ptParams = medium ? [medium] : [];
-    const ptJoin   = medium ? 'JOIN couleur_mediums cm ON cm.couleur_id = c.id' : '';
-    const ptWhere  = medium ? 'AND cm.medium = ?' : '';
+    // Pointes par pack (vient directement de packs.pointe_id)
     const [packPtRows] = await pool.query(`
-      SELECT pc.pack_id, c.pointe_id, po.nom AS pointe_nom
-      FROM pack_couleurs pc
-      JOIN couleurs c ON c.id = pc.couleur_id
-      JOIN pointes po ON po.id = c.pointe_id
-      ${ptJoin}
-      WHERE c.active = TRUE AND c.pointe_id IS NOT NULL ${ptWhere}
-      GROUP BY pc.pack_id, c.pointe_id, po.nom
-      ORDER BY po.nom
-    `, ptParams);
+      SELECT p.id AS pack_id, p.pointe_id, po.nom AS pointe_nom
+      FROM packs p
+      JOIN pointes po ON po.id = p.pointe_id
+      WHERE p.pointe_id IS NOT NULL
+    `);
     const packPtMap = {};
     packPtRows.forEach(r => {
       if (!packPtMap[r.pack_id]) packPtMap[r.pack_id] = [];
