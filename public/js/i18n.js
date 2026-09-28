@@ -29,9 +29,9 @@ const TRANSLATIONS = {
 
     'tips.t2.h2':   'Les PDFs de référence : la meilleure source',
     'tips.t2.p':    'Certains artistes publient des PDFs avec les <strong>couleurs numériques exactes</strong> qu\'ils avaient en tête. Ces fichiers donnent des résultats bien meilleurs qu\'une photo. <strong>Pense quand même à faire la balance des blancs</strong> avant de cliquer sur la case colorée.',
-    'tips.t2.link': '🎨 Palettes de référence par Jeremy Mariez →',
-    'tips.t2.link2': '🎨 Palettes de référence par Alexandre Karam →',
-    'tips.t2.link3': '🎨 Palettes de référence par Alicia Dombrofsky →',
+    'tips.t2.link': '🎨 PDFs de référence par Jeremy Mariez →',
+    'tips.t2.link2': '🎨 PDFs de référence par Alexandre Karam →',
+    'tips.t2.link3': '🎨 PDFs de référence par Alicia Dombrofsky →',
 
     'tips.t3.h2': 'Éclairage',
     'tips.t3.p':  'Utilise une <strong>lampe de bureau</strong> plutôt que le flash de ton téléphone.<br>Le flash crée des reflets qui faussent les couleurs.<br><strong>Avec un PDF Jeremy Mariez, l\'éclairage n\'a aucune importance.</strong>',
@@ -69,8 +69,8 @@ const TRANSLATIONS = {
     'drop.sub':           'Images (jpg, png…) ou PDF couleurs',
     'drop.tips':          'Conseils pour de meilleurs résultats →',
     'drop.ref':           '🎨 PDFs de référence par Jeremy Mariez →',
-    'drop.ref2':          '🎨 Palettes de référence par Alexandre Karam →',
-    'drop.ref3':          '🎨 Palettes de référence par Alicia Dombrofsky →',
+    'drop.ref2':          '🎨 PDFs de référence par Alexandre Karam →',
+    'drop.ref3':          '🎨 PDFs de référence par Alicia Dombrofsky →',
 
     'sheet.tap':          'Tape sur une couleur',
     'sheet.all':          '↑ tous les matchs',
@@ -301,9 +301,9 @@ const TRANSLATIONS = {
 
     'tips.t2.h2':   'Reference PDFs: the best source',
     'tips.t2.p':    'Some artists publish PDFs with the <strong>exact digital colors</strong> they had in mind. These files give much better results than a photo. <strong>Still do the white balance</strong> before clicking on the colored cell.',
-    'tips.t2.link': '🎨 Reference palettes by Jeremy Mariez →',
-    'tips.t2.link2': '🎨 Reference palettes by Alexandre Karam →',
-    'tips.t2.link3': '🎨 Reference palettes by Alicia Dombrofsky →',
+    'tips.t2.link': '🎨 Reference PDFs by Jeremy Mariez →',
+    'tips.t2.link2': '🎨 Reference PDFs by Alexandre Karam →',
+    'tips.t2.link3': '🎨 Reference PDFs by Alicia Dombrofsky →',
 
     'tips.t3.h2': 'Lighting',
     'tips.t3.p':  'Use a <strong>desk lamp</strong> rather than your phone\'s flash.<br>Flash creates reflections that distort colors.<br><strong>With a Jeremy Mariez PDF, lighting doesn\'t matter at all.</strong>',
@@ -341,8 +341,8 @@ const TRANSLATIONS = {
     'drop.sub':           'Images (jpg, png…) or color PDF',
     'drop.tips':          'Tips for better results →',
     'drop.ref':           '🎨 Reference PDFs by Jeremy Mariez →',
-    'drop.ref2':          '🎨 Reference palettes by Alexandre Karam →',
-    'drop.ref3':          '🎨 Reference palettes by Alicia Dombrofsky →',
+    'drop.ref2':          '🎨 Reference PDFs by Alexandre Karam →',
+    'drop.ref3':          '🎨 Reference PDFs by Alicia Dombrofsky →',
 
     'sheet.tap':          'Tap on a color',
     'sheet.all':          '↑ all matches',
@@ -573,9 +573,9 @@ const TRANSLATIONS = {
 
     'tips.t2.h2':   'PDFs de referencia: la mejor fuente',
     'tips.t2.p':    'Algunos artistas publican PDFs con los <strong>colores digitales exactos</strong> que tenían en mente. Estos archivos dan resultados mucho mejores que una foto. <strong>Haz igualmente el balance de blancos</strong> antes de hacer clic en la celda de color.',
-    'tips.t2.link': '🎨 Paletas de referencia por Jeremy Mariez →',
-    'tips.t2.link2': '🎨 Paletas de referencia por Alexandre Karam →',
-    'tips.t2.link3': '🎨 Paletas de referencia por Alicia Dombrofsky →',
+    'tips.t2.link': '🎨 PDFs de referencia por Jeremy Mariez →',
+    'tips.t2.link2': '🎨 PDFs de referencia por Alexandre Karam →',
+    'tips.t2.link3': '🎨 PDFs de referencia por Alicia Dombrofsky →',
 
     'tips.t3.h2': 'Iluminación',
     'tips.t3.p':  'Usa una <strong>lámpara de escritorio</strong> en lugar del flash de tu teléfono.<br>El flash crea reflejos que distorsionan los colores.<br><strong>Con un PDF de Jeremy Mariez, la iluminación no importa.</strong>',
@@ -613,8 +613,8 @@ const TRANSLATIONS = {
     'drop.sub':           'Imágenes (jpg, png…) o PDF de colores',
     'drop.tips':          'Consejos para mejores resultados →',
     'drop.ref':           '🎨 PDFs de referencia por Jeremy Mariez →',
-    'drop.ref2':          '🎨 Paletas de referencia por Alexandre Karam →',
-    'drop.ref3':          '🎨 Paletas de referencia por Alicia Dombrofsky →',
+    'drop.ref2':          '🎨 PDFs de referencia por Alexandre Karam →',
+    'drop.ref3':          '🎨 PDFs de referencia por Alicia Dombrofsky →',
 
     'sheet.tap':          'Toca un color',
     'sheet.all':          '↑ todos los resultados',
@@ -845,9 +845,9 @@ const TRANSLATIONS = {
 
     'tips.t2.h2':   'Referentie-PDF\'s: de beste bron',
     'tips.t2.p':    'Sommige artiesten publiceren PDF\'s met de <strong>exacte digitale kleuren</strong> die ze voor ogen hadden. Deze bestanden geven veel betere resultaten dan een foto. <strong>Doe toch de witbalans</strong> voordat je op de gekleurde cel klikt.',
-    'tips.t2.link': '🎨 Referentiepaletten van Jeremy Mariez →',
-    'tips.t2.link2': '🎨 Referentiepaletten van Alexandre Karam →',
-    'tips.t2.link3': '🎨 Referentiepaletten van Alicia Dombrofsky →',
+    'tips.t2.link': '🎨 Referentie-PDF's van Jeremy Mariez →',
+    'tips.t2.link2': '🎨 Referentie-PDF's van Alexandre Karam →',
+    'tips.t2.link3': '🎨 Referentie-PDF's van Alicia Dombrofsky →',
 
     'tips.t3.h2': 'Belichting',
     'tips.t3.p':  'Gebruik een <strong>bureaulamp</strong> in plaats van de flits van je telefoon.<br>De flits veroorzaakt reflecties die de kleuren verstoren.<br><strong>Met een Jeremy Mariez-PDF maakt belichting helemaal niet uit.</strong>',
@@ -885,8 +885,8 @@ const TRANSLATIONS = {
     'drop.sub':           'Afbeeldingen (jpg, png…) of kleur-PDF',
     'drop.tips':          'Tips voor betere resultaten →',
     'drop.ref':           '🎨 Referentie-PDF\'s van Jeremy Mariez →',
-    'drop.ref2':          '🎨 Referentiepaletten van Alexandre Karam →',
-    'drop.ref3':          '🎨 Referentiepaletten van Alicia Dombrofsky →',
+    'drop.ref2':          '🎨 Referentie-PDF's van Alexandre Karam →',
+    'drop.ref3':          '🎨 Referentie-PDF's van Alicia Dombrofsky →',
 
     'sheet.tap':          'Tik op een kleur',
     'sheet.all':          '↑ alle overeenkomsten',
@@ -1117,9 +1117,9 @@ const TRANSLATIONS = {
 
     'tips.t2.h2':   'Referenz-PDFs: die beste Quelle',
     'tips.t2.p':    'Einige Künstler veröffentlichen PDFs mit den <strong>genauen digitalen Farben</strong>, die sie im Sinn hatten. Diese Dateien liefern viel bessere Ergebnisse als ein Foto. <strong>Führe dennoch den Weißabgleich durch</strong>, bevor du auf die Farbzelle klickst.',
-    'tips.t2.link': '🎨 Referenzpaletten von Jeremy Mariez →',
-    'tips.t2.link2': '🎨 Referenzpaletten von Alexandre Karam →',
-    'tips.t2.link3': '🎨 Referenzpaletten von Alicia Dombrofsky →',
+    'tips.t2.link': '🎨 Referenz-PDFs von Jeremy Mariez →',
+    'tips.t2.link2': '🎨 Referenz-PDFs von Alexandre Karam →',
+    'tips.t2.link3': '🎨 Referenz-PDFs von Alicia Dombrofsky →',
 
     'tips.t3.h2': 'Beleuchtung',
     'tips.t3.p':  'Verwende eine <strong>Schreibtischlampe</strong> statt dem Blitz deines Telefons.<br>Der Blitz erzeugt Reflexionen, die die Farben verfälschen.<br><strong>Mit einem Jeremy Mariez-PDF spielt die Beleuchtung keine Rolle.</strong>',
@@ -1157,8 +1157,8 @@ const TRANSLATIONS = {
     'drop.sub':           'Bilder (jpg, png…) oder Farb-PDF',
     'drop.tips':          'Tipps für bessere Ergebnisse →',
     'drop.ref':           '🎨 Referenz-PDFs von Jeremy Mariez →',
-    'drop.ref2':          '🎨 Referenzpaletten von Alexandre Karam →',
-    'drop.ref3':          '🎨 Referenzpaletten von Alicia Dombrofsky →',
+    'drop.ref2':          '🎨 Referenz-PDFs von Alexandre Karam →',
+    'drop.ref3':          '🎨 Referenz-PDFs von Alicia Dombrofsky →',
 
     'sheet.tap':          'Tippe auf eine Farbe',
     'sheet.all':          '↑ alle Treffer',
