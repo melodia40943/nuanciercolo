@@ -22,13 +22,14 @@ router.get('/degrades', (req, res) => {
 router.get('/api/comparateur/couleurs', async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT c.reference, c.hex_photo, c.hex, c.medium,
+      SELECT c.reference, c.hex_photo, c.hex, p.medium,
              ma.nom AS brand, c.couches, c.reference_alt,
              (SELECT GROUP_CONCAT(pc.pack_id) FROM pack_couleurs pc WHERE pc.couleur_id = c.id) AS pack_ids
       FROM couleurs c
       JOIN marques ma ON ma.id = c.marque_id
+      LEFT JOIN packs p ON p.id = c.pack_min_id
       WHERE c.active = 1
-        AND c.medium IS NOT NULL AND c.medium != ''
+        AND p.medium IS NOT NULL AND p.medium != ''
         AND (c.hex IS NOT NULL OR c.hex_photo IS NOT NULL)
       ORDER BY ma.nom, c.reference
     `);

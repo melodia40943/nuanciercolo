@@ -845,9 +845,9 @@ const TRANSLATIONS = {
 
     'tips.t2.h2':   'Referentie-PDF\'s: de beste bron',
     'tips.t2.p':    'Sommige artiesten publiceren PDF\'s met de <strong>exacte digitale kleuren</strong> die ze voor ogen hadden. Deze bestanden geven veel betere resultaten dan een foto. <strong>Doe toch de witbalans</strong> voordat je op de gekleurde cel klikt.',
-    'tips.t2.link': '🎨 Referentie-PDF's van Jeremy Mariez →',
-    'tips.t2.link2': '🎨 Referentie-PDF's van Alexandre Karam →',
-    'tips.t2.link3': '🎨 Referentie-PDF's van Alicia Dombrofsky →',
+    'tips.t2.link': '🎨 Referentie-PDFs van Jeremy Mariez →',
+    'tips.t2.link2': '🎨 Referentie-PDFs van Alexandre Karam →',
+    'tips.t2.link3': '🎨 Referentie-PDFs van Alicia Dombrofsky →',
 
     'tips.t3.h2': 'Belichting',
     'tips.t3.p':  'Gebruik een <strong>bureaulamp</strong> in plaats van de flits van je telefoon.<br>De flits veroorzaakt reflecties die de kleuren verstoren.<br><strong>Met een Jeremy Mariez-PDF maakt belichting helemaal niet uit.</strong>',
@@ -885,8 +885,8 @@ const TRANSLATIONS = {
     'drop.sub':           'Afbeeldingen (jpg, png…) of kleur-PDF',
     'drop.tips':          'Tips voor betere resultaten →',
     'drop.ref':           '🎨 Referentie-PDF\'s van Jeremy Mariez →',
-    'drop.ref2':          '🎨 Referentie-PDF's van Alexandre Karam →',
-    'drop.ref3':          '🎨 Referentie-PDF's van Alicia Dombrofsky →',
+    'drop.ref2':          '🎨 Referentie-PDFs van Alexandre Karam →',
+    'drop.ref3':          '🎨 Referentie-PDFs van Alicia Dombrofsky →',
 
     'sheet.tap':          'Tik op een kleur',
     'sheet.all':          '↑ alle overeenkomsten',
