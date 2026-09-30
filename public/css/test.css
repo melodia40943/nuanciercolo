@@ -239,6 +239,21 @@ select.chrome-pill { min-width: 68px; }
 .sheet-peek-label { font-size: 0.7rem; color: #bbb; margin-left: auto; white-space: nowrap; }
 
 /* Top matchs en peek — dynamique (tous les "excellent" + min 3) */
+.results-section-label {
+  width: 100%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #aaa;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+.results-section-others {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 4px;
+}
 .top3-row {
   display: flex;
   flex-wrap: wrap;
@@ -336,7 +351,6 @@ select.chrome-pill { min-width: 68px; }
 }
 .result-entry:hover { background: #eef0ff; }
 .result-entry.color-selected { border-color: var(--success); background: #e8f8ee; }
-.result-entry:first-child { border-color: var(--accent); background: #f5f7ff; }
 .result-swatch {
   width: 40px; height: 40px;
   border-radius: 6px;

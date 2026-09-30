@@ -856,7 +856,9 @@ function renderForm({ marques, packs, couleur, packCouleurs = [] }) {
 
         <div id="sampling-controls" style="display:none">
           <div class="sampling-wb">
-            <button type="button" id="btn-wb" disabled>Cliquer sur zone blanche</button>
+            <button type="button" id="btn-wb" disabled>⬜ Carte blanche</button>
+            <button type="button" id="btn-wb-gray" disabled>🔲 Carte grise 18%</button>
+            <button type="button" id="btn-wb-clear" title="Effacer la calibration de session">✕</button>
             <span id="wb-status" class="wb-status pending">Non définie</span>
           </div>
           <div class="lens-size-ctrl">
@@ -896,7 +898,15 @@ function renderForm({ marques, packs, couleur, packCouleurs = [] }) {
                 <input type="range" id="sample-temp" min="-60" max="60" value="0">
                 <span id="sample-temp-val" class="wb-slider-val">0</span>
               </div>
-              <button type="button" id="sample-adj-reset" class="btn-secondary btn-sm">↺ Reset</button>
+              <div class="wb-slider-row">
+                <span class="wb-slider-label">Saturation</span>
+                <input type="range" id="sample-desat" min="-100" max="100" value="0">
+                <span id="sample-desat-val" class="wb-slider-val">0</span>
+              </div>
+              <div class="sample-adj-buttons">
+                <button type="button" id="sample-adj-reset" class="btn-secondary btn-sm">↺ Reset</button>
+                <button type="button" id="sample-preset-save" class="btn-secondary btn-sm">💾 Preset lightbox</button>
+              </div>
             </div>
           </div>
         </div>

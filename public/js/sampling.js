@@ -4,7 +4,8 @@
 let imgEl     = null;
 let imgData   = null;
 let natW = 0, natH = 0;
-let wbPending = false;
+let wbPending     = false;
+let wbGrayPending = false;
 let sampledColor    = null;
 let rawSampledColor = null;
 let toastTm;
@@ -66,16 +67,21 @@ function mountImage(img) {
   imgEl = oc;
   dropZone.style.display   = 'none';
   canvasWrap.style.display = 'block';
-  // Reset sliders au chargement d'une nouvelle image seulement
+  // Appliquer le preset au chargement (ou remettre à 0 si pas de preset)
   const brightEl = document.getElementById('sample-bright');
   const tempEl   = document.getElementById('sample-temp');
-  if (brightEl) brightEl.value = 0;
-  if (tempEl)   tempEl.value   = 0;
+  const desatEl2 = document.getElementById('sample-desat');
+  const preset   = loadSamplerPreset();
+  if (brightEl) brightEl.value = preset ? preset.bright : 0;
+  if (tempEl)   tempEl.value   = preset ? preset.temp   : 0;
+  if (desatEl2) desatEl2.value = preset ? preset.desat  : 0;
   rawSampledColor = null; sampledColor = null;
   resizeCanvas(); fitView(); render();
-  document.getElementById('btn-wb').disabled = false;
+  document.getElementById('btn-wb').disabled      = false;
+  document.getElementById('btn-wb-gray').disabled = false;
   document.getElementById('sampling-controls').style.display = 'block';
-  setWbStatus('pending');
+  // La session gris 18% reste active entre photos — on la conserve
+  refreshWbStatus();
 }
 
 async function loadPdf(f) {
@@ -225,7 +231,8 @@ cv.addEventListener('mousedown', e => {
   const {x,y}=cvXY(e);
   if (e.button===1||e.button===2) { panning=true; panStart={x,y}; cv.style.cursor='grabbing'; return; }
   if (e.button!==0) return;
-  if (wbPending) { triggerWB(x,y); return; }
+  if (wbPending)     { triggerWB(x,y);     return; }
+  if (wbGrayPending) { triggerWBGray(x,y); return; }
   drawing=true; drawStartCanvas={x,y}; circleCenter=null; circleRadius=0;
 });
 cv.addEventListener('mouseup', e => {
@@ -240,51 +247,105 @@ cv.addEventListener('mouseup', e => {
 });
 cv.addEventListener('contextmenu', e=>e.preventDefault());
 
-// WB
-document.getElementById('btn-wb').addEventListener('click', ()=>{
+// WB — carte blanche (annule seulement le mode clic en attente de l'autre bouton)
+document.getElementById('btn-wb').addEventListener('click', () => {
   if (!imgEl) return;
-  wbPending=!wbPending;
-  const btn=document.getElementById('btn-wb');
-  if (wbPending) { btn.textContent='⚠️ Clique sur zone blanche…'; btn.classList.add('active'); cv.style.cursor='cell'; }
+  if (wbGrayPending) { wbGrayPending = false; resetWbGrayBtn(); }
+  wbPending = !wbPending;
+  const btn = document.getElementById('btn-wb');
+  if (wbPending) { btn.textContent = '⚠️ Clique sur zone blanche…'; btn.classList.add('active'); cv.style.cursor = 'cell'; }
   else resetWbBtn();
 });
 
+// WB — carte grise 18% (annule seulement le mode clic en attente de l'autre bouton)
+document.getElementById('btn-wb-gray').addEventListener('click', () => {
+  if (!imgEl) return;
+  if (wbPending) { wbPending = false; resetWbBtn(); }
+  wbGrayPending = !wbGrayPending;
+  const btn = document.getElementById('btn-wb-gray');
+  if (wbGrayPending) { btn.textContent = '⚠️ Clique sur la carte grise…'; btn.classList.add('active'); cv.style.cursor = 'cell'; }
+  else resetWbGrayBtn();
+});
+
 function triggerWB(cvX, cvY) {
-  const img=canvasToImg(cvX,cvY);
-  const ok=doWBAtImgCoords(img.x,img.y,imgData,natW,natH,({white,black})=>{
-    const el=document.getElementById('wb-status');
-    el.textContent=`Blanc RGB(${Math.round(white.r)},${Math.round(white.g)},${Math.round(white.b)}) · Noir RGB(${black.r},${black.g},${black.b})`;
-    setWbStatus('ok');
-    showToast('✓ Balance des blancs définie');
+  const img = canvasToImg(cvX, cvY);
+  const ok = doWBAtImgCoords(img.x, img.y, imgData, natW, natH, () => {
+    refreshWbStatus();
+    showToast('✓ Carte blanche définie');
   });
   if (!ok) showToast('⚠️ Zone trop sombre — clique sur une zone blanche');
   resetWbBtn();
 }
 
+function triggerWBGray(cvX, cvY) {
+  const img = canvasToImg(cvX, cvY);
+  const ok = doGrayCardAtImgCoords(img.x, img.y, imgData, natW, natH, ({ measured }) => {
+    refreshWbStatus();
+    showToast(`✓ Gris 18% mesuré · RGB(${measured.r}, ${measured.g}, ${measured.b})`);
+  });
+  if (!ok) showToast('⚠️ Zone invalide — clique au centre de la carte grise (40–220)');
+  resetWbGrayBtn();
+}
+
 function resetWbBtn() {
-  wbPending=false;
-  const btn=document.getElementById('btn-wb');
-  btn.textContent=wbSet?'✓ Redéfinir les blancs':'Cliquer sur zone blanche';
-  btn.classList.toggle('active',false); btn.classList.toggle('done',wbSet);
-  cv.style.cursor='crosshair';
+  wbPending = false;
+  const btn = document.getElementById('btn-wb');
+  btn.textContent = '⬜ Carte blanche';
+  btn.classList.remove('active');
+  cv.style.cursor = 'crosshair';
 }
-function setWbStatus(state) {
-  const el=document.getElementById('wb-status');
-  if (state==='pending'){el.textContent='Non définie';el.className='wb-status pending';}
-  if (state==='ok'){el.className='wb-status ok';}
+
+function resetWbGrayBtn() {
+  wbGrayPending = false;
+  const btn = document.getElementById('btn-wb-gray');
+  btn.textContent = '🔲 Carte grise 18%';
+  btn.classList.remove('active');
+  cv.style.cursor = 'crosshair';
 }
+
+function refreshWbStatus() {
+  const info = getWBInfo();
+  const el   = document.getElementById('wb-status');
+  el.textContent = info.label;
+  el.className   = 'wb-status ' + (info.mode === 'none' ? 'pending' : 'ok');
+  const btnGray  = document.getElementById('btn-wb-gray');
+  if (btnGray) btnGray.classList.toggle('done', info.mode === 'gray18' || info.mode === 'both');
+  const btnWhite = document.getElementById('btn-wb');
+  if (btnWhite) btnWhite.classList.toggle('done', info.mode === 'white' || info.mode === 'both');
+}
+
+// Effacer le gain de session (bouton reset)
+const btnWbClear = document.getElementById('btn-wb-clear');
+if (btnWbClear) btnWbClear.addEventListener('click', () => {
+  clearSessionGain();
+  refreshWbStatus();
+  showToast('Calibration effacée');
+});
+
+// Afficher la calibration persistée dès le chargement de la page
+refreshWbStatus();
 
 function adjRgbToHex(r,g,b) {
   return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
 }
 
-function applyAdjCorrection(raw, bright, temp) {
+function applyAdjCorrection(raw, bright, temp, desat) {
   const bf = 1 + bright * 0.01;
   const ts = temp * 0.6;
+  let r = Math.min(255, Math.max(0, raw.r * bf + ts));
+  let g = Math.min(255, Math.max(0, raw.g * bf));
+  let b = Math.min(255, Math.max(0, raw.b * bf - ts));
+  if (desat !== 0) {
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const factor = 1 + desat / 100;
+    r = lum + factor * (r - lum);
+    g = lum + factor * (g - lum);
+    b = lum + factor * (b - lum);
+  }
   return {
-    r: Math.round(Math.min(255, Math.max(0, raw.r * bf + ts))),
-    g: Math.round(Math.min(255, Math.max(0, raw.g * bf))),
-    b: Math.round(Math.min(255, Math.max(0, raw.b * bf - ts)))
+    r: Math.round(r),
+    g: Math.round(g),
+    b: Math.round(b)
   };
 }
 
@@ -292,13 +353,16 @@ function updateSampleDisplay() {
   if (!rawSampledColor) return;
   const brightEl = document.getElementById('sample-bright');
   const tempEl   = document.getElementById('sample-temp');
+  const desatEl  = document.getElementById('sample-desat');
   if (!brightEl) return;
   const bright = parseInt(brightEl.value);
   const temp   = parseInt(tempEl.value);
+  const desat  = desatEl ? parseInt(desatEl.value) : 0;
   document.getElementById('sample-bright-val').textContent = bright > 0 ? '+' + bright : bright;
   document.getElementById('sample-temp-val').textContent   = temp   > 0 ? '+' + temp   : temp;
+  if (desatEl) document.getElementById('sample-desat-val').textContent = desat > 0 ? '+' + desat : desat;
 
-  const corr    = applyAdjCorrection(rawSampledColor, bright, temp);
+  const corr    = applyAdjCorrection(rawSampledColor, bright, temp, desat);
   const corrHex = adjRgbToHex(corr.r, corr.g, corr.b);
   sampledColor  = { hex: corrHex, r: corr.r, g: corr.g, b: corr.b };
 
@@ -345,15 +409,55 @@ function doSample() {
   updateSampleDisplay();
 }
 
+// ── Preset lightbox ───────────────────────────────────────────────────────────
+const PRESET_KEY = 'revelo_sampler_preset';
+
+function loadSamplerPreset() {
+  try {
+    const raw = localStorage.getItem(PRESET_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function refreshPresetBtn() {
+  const btn = document.getElementById('sample-preset-save');
+  if (!btn) return;
+  const preset = loadSamplerPreset();
+  btn.classList.toggle('done', !!preset);
+  btn.title = preset
+    ? `Preset actif : Lum ${preset.bright > 0 ? '+' : ''}${preset.bright} · Temp ${preset.temp > 0 ? '+' : ''}${preset.temp} · Sat ${preset.desat > 0 ? '+' : ''}${preset.desat}`
+    : 'Aucun preset';
+}
+
+const btnPresetSave = document.getElementById('sample-preset-save');
+if (btnPresetSave) btnPresetSave.addEventListener('click', () => {
+  const bright = sampleBrightEl ? parseInt(sampleBrightEl.value) : 0;
+  const temp   = sampleTempEl   ? parseInt(sampleTempEl.value)   : 0;
+  const desat  = sampleDesatEl  ? parseInt(sampleDesatEl.value)  : 0;
+  if (bright === 0 && temp === 0 && desat === 0) {
+    localStorage.removeItem(PRESET_KEY);
+    showToast('Preset effacé');
+  } else {
+    localStorage.setItem(PRESET_KEY, JSON.stringify({ bright, temp, desat }));
+    showToast(`✓ Preset sauvegardé · Lum ${bright > 0 ? '+' : ''}${bright} · Temp ${temp > 0 ? '+' : ''}${temp} · Sat ${desat > 0 ? '+' : ''}${desat}`);
+  }
+  refreshPresetBtn();
+});
+
+refreshPresetBtn();
+
 // Sliders d'ajustement en temps réel
 const sampleBrightEl = document.getElementById('sample-bright');
 const sampleTempEl   = document.getElementById('sample-temp');
+const sampleDesatEl  = document.getElementById('sample-desat');
 const sampleResetEl  = document.getElementById('sample-adj-reset');
 if (sampleBrightEl) sampleBrightEl.addEventListener('input', updateSampleDisplay);
 if (sampleTempEl)   sampleTempEl.addEventListener('input', updateSampleDisplay);
+if (sampleDesatEl)  sampleDesatEl.addEventListener('input', updateSampleDisplay);
 if (sampleResetEl)  sampleResetEl.addEventListener('click', () => {
   if (sampleBrightEl) sampleBrightEl.value = 0;
   if (sampleTempEl)   sampleTempEl.value   = 0;
+  if (sampleDesatEl)  sampleDesatEl.value  = 0;
   updateSampleDisplay();
 });
 

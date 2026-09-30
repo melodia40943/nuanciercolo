@@ -1,4 +1,4 @@
-const CACHE = 'revelo-v13';
+const CACHE = 'revelo-v17';
 
 // Installation : pas de pré-chargement pour éviter les bursts de requêtes au déploiement
 // Les assets sont mis en cache naturellement lors des premières visites (fetch handler)

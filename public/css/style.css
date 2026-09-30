@@ -385,9 +385,10 @@ tr:hover td { background: #fafafa; }
   font-size: 0.8rem;
   white-space: nowrap;
 }
-.sampling-wb button.active { border-color: #f0a500; color: #f0a500; }
-.sampling-wb button.done   { border-color: #27ae60; color: #27ae60; }
+.sampling-wb button.active   { border-color: #f0a500; color: #f0a500; }
+.sampling-wb button.done     { border-color: #27ae60; color: #27ae60; }
 .sampling-wb button:disabled { opacity: 0.4; cursor: not-allowed; }
+#btn-wb-clear { padding: 0.35rem 0.5rem; color: #aaa; border-color: #ddd; flex-shrink: 0; }
 
 .lens-size-ctrl {
   display: none;
@@ -636,6 +637,8 @@ tr:hover td { background: #fafafa; }
   border-radius: 6px;
   margin-top: 0.5rem;
 }
+.sample-adj-buttons { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+#sample-preset-save.done { border-color: var(--accent); color: var(--accent); }
 
 /* Panneau correction WB dans le formulaire */
 .wb-correction-panel { border-top: 1px solid #eee; padding-top: 1rem; }
